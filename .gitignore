@@ -1,0 +1,7 @@
+# datos personales: nunca subir
+*.xlsx
+*.csv
+*respaldo*.json
+*.bak*
+d25.json
+.DS_Store
