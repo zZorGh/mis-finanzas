@@ -1,4 +1,4 @@
-<title>Mis finanzas</title>
+<title>Plantilla Personal de Finanzas</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -358,6 +358,25 @@ h1{font-weight:700}
 .cr input{height:38px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:8px;padding:0 10px;font-family:var(--font-num);text-align:right;min-width:0}
 .cd{font-size:12px;text-align:right}.cd.ok{color:var(--ok)}.cd.bad{color:var(--bad)}
 @media (max-width:520px){.cr{grid-template-columns:1fr 100px}.cd{grid-column:1/-1;text-align:left}}
+
+.caplink{display:inline-flex;align-items:center;height:34px;padding:0 12px;border-radius:8px;background:var(--accent);color:#fff;text-decoration:none;font-size:13px;font-weight:600}
+.caplink:hover{filter:brightness(1.05)}
+.cap-wrap{max-width:560px;margin:0 auto;display:grid;gap:var(--sp-3);padding-top:var(--sp-2)}
+.cap-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.cap-l{color:var(--muted);font-size:13px}
+.cap-link{color:var(--accent);font-size:13px;text-decoration:none;white-space:nowrap}
+.cap-big{font-family:var(--font-num);font-weight:600;font-size:clamp(40px,13vw,64px);line-height:1;letter-spacing:-.02em}
+.cap-big.neg{color:var(--bad)}
+.cap-btn{height:60px;border:none;border-radius:16px;background:var(--accent);color:#fff;font:600 18px var(--font-body,inherit);cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.14)}
+.cap-btn:active{transform:scale(.98)}
+.cap-liq{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.cap-liq b{font-family:var(--font-num)}
+.cap-recent{border:1px solid var(--line);border-radius:12px;padding:4px 14px 8px}
+.cap-rt{font-size:12px;color:var(--muted);margin:10px 0 2px}
+.cap-r{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--line)}
+.cap-r span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cap-r b{font-family:var(--font-num);white-space:nowrap}.cap-r b.g{color:var(--bad)}
+.cap-tip{text-align:center}
 </style>
 
 <header id="hdr"></header>
@@ -395,7 +414,7 @@ const save=()=>{localSave();queueSync();};
 const now=new Date();
 let year=String(now.getFullYear());if(YEARS.indexOf(year)<0)year='2026';
 let view='resumen';
-function parseHash(){const i=SLUG.indexOf(location.hash.slice(1));view=i>=0?i:'resumen';}
+function parseHash(){const h=location.hash.slice(1);if(h==='capturar'){view='capturar';return;}const i=SLUG.indexOf(h);view=i>=0?i:'resumen';}
 parseHash();
 
 const curOf=id=>((LAY.mes&&LAY.mes.c&&LAY.mes.c[id])||{}).cur||'S/';
@@ -422,8 +441,8 @@ const tipMoney={callbacks:{label:c=>' '+c.dataset.label+': '+fmt(c.parsed.y)}};
 const goMonth=(e,els)=>{if(els&&els.length)location.hash='#'+SLUG[els[0].index];};
 
 function header(){
-  return `<div class="wrap hrow"><div class="brand"><span class="logo" aria-hidden="true">S/</span><span class="bt">Mis finanzas</span></div>
-  <div class="ctl"><label class="sr" for="yr">Año</label><select id="yr">${YEARS.map(y=>`<option${y===year?' selected':''}>${y}</option>`).join('')}</select><button id="syn" class="syn" type="button" hidden></button><button id="ed" type="button" aria-pressed="${edit}">Personalizar</button><button id="th" type="button">Tema</button></div></div>
+  return `<div class="wrap hrow"><div class="brand"><span class="logo" aria-hidden="true">S/</span><span class="bt">Plantilla de Finanzas</span></div>
+  <div class="ctl"><a class="caplink" href="#capturar">Registrar</a><label class="sr" for="yr">Año</label><select id="yr">${YEARS.map(y=>`<option${y===year?' selected':''}>${y}</option>`).join('')}</select><button id="syn" class="syn" type="button" hidden></button><button id="ed" type="button" aria-pressed="${edit}">Personalizar</button><button id="th" type="button">Tema</button></div></div>
   <nav class="wrap tabs" aria-label="Meses"><a class="tab" href="#resumen"${view==='resumen'?' aria-current="page"':''}>Resumen ${year}</a>${MES.map((m,i)=>`<a class="tab${dv(S[year][i]).on?'':' off'}" href="#${SLUG[i]}"${view===i?' aria-current="page"':''}>${ABR[i]}</a>`).join('')}</nav>`;
 }
 
@@ -753,7 +772,7 @@ function sheetInput(e){
 }
 function openSheet(){
   closeSheet();closePanel();sheetFrom=document.activeElement;
-  const mi=view==='resumen'?(year===String(now.getFullYear())?now.getMonth():0):view;
+  const mi=(view==='resumen'||view==='capturar')?(year===String(now.getFullYear())?now.getMonth():0):view;
   ent={t:lastType(),bank:'bbva',cat:'',src:'',mo:mi,yr:year,day:now.getDate()};
   const bg=document.createElement('div');bg.id='sheetbg';bg.className='sheetbg';
   const sh=document.createElement('div');sh.id='sheet';sh.className='sheet';
@@ -1102,17 +1121,31 @@ function restoreFrom(text){
 }
 function initDl(){if(window.claude&&window.claude.use)window.claude.use('downloads').then(d=>{dl=d||null;}).catch(()=>{});}
 
+function viewCapturar(){
+  const mi=(year===String(now.getFullYear()))?now.getMonth():0;
+  const m=S[year][mi],D=dv(m),rec=[];
+  ['ing','fij','hor','aho','inv'].forEach(s=>m[s].forEach(r=>{if(+r.m)rec.push({s,c:r.c,mt:+r.m||0,d:parseInt(r.f)||0});}));
+  rec.sort((a,b)=>b.d-a.d);const last=rec.slice(0,5),gastos=['fij','hor'];
+  return `<section class="cap-wrap">
+    <div class="cap-top"><div><div class="hero-k">${MES[mi]} ${year}</div><div class="cap-l">Te queda este mes</div></div><a class="cap-link" href="#resumen">Ver panel completo →</a></div>
+    <div class="cap-big ${D.res<0?'neg':''}">${fmt(D.res)}</div>
+    <button type="button" class="cap-btn" data-act="new">+ Registrar movimiento</button>
+    <div class="cap-liq"><span>Liquidez disponible</span><b>${fmtC('liq',sum(m.liq))}</b></div>
+    <div class="cap-recent"><div class="cap-rt">Últimos movimientos</div>${last.length?last.map(r=>`<div class="cap-r"><span>${esc(r.c||'(sin concepto)')}</span><b class="${gastos.indexOf(r.s)>=0?'g':''}">${gastos.indexOf(r.s)>=0?'-':''}${num2(r.mt)}</b></div>`).join(''):'<div class="ms">Aún no registras nada este mes.</div>'}</div>
+    <div class="ms cap-tip">Guarda esta pantalla en tu celular: menú del navegador → «Agregar a pantalla de inicio».</div>
+  </section>`;
+}
 /* ---------- Render y eventos ---------- */
 function render(){
   killCharts();
   document.body.classList.toggle('edit',edit);
   document.getElementById('hdr').innerHTML=header();
-  const ap=document.getElementById('app');ap.dataset.v=view==='resumen'?'r':'m';
-  ap.innerHTML=(edit?editBar():'')+(view==='resumen'?viewResumen():viewMes(view));
+  const ap=document.getElementById('app');ap.dataset.v=view==='capturar'?'c':view==='resumen'?'r':'m';
+  ap.innerHTML=(view==='capturar'?viewCapturar():(edit?editBar():'')+(view==='resumen'?viewResumen():viewMes(view)));
   updateChip();
   applyLayout();
   if(pf){const el=document.getElementById(pf[0]+'-'+pf[1]+'-'+pf[2]);pf=null;if(el)el.focus();}
-  if(view==='resumen')drawResumen();else refreshMonth(true);
+  if(view==='resumen')drawResumen();else if(typeof view==='number')refreshMonth(true);
   const cur=document.querySelector('.tab[aria-current]');if(cur&&cur.scrollIntoView)cur.scrollIntoView({inline:'center',block:'nearest'});
 }
 const app=document.getElementById('app'),hdr=document.getElementById('hdr');
@@ -1136,6 +1169,7 @@ app.addEventListener('input',e=>{
 app.addEventListener('change',e=>{if(e.target.id==='bk-file'){const f=e.target.files&&e.target.files[0];if(f){const r=new FileReader();r.onload=()=>restoreFrom(String(r.result));r.onerror=()=>bkMsg('No pude leer el archivo.',true);r.readAsText(f);}e.target.value='';return;}if(e.target.dataset.cfgt){cfg[e.target.dataset.cfgt]=e.target.value;save();render();return;}if(e.target.dataset.gs==='auto'){sync.auto=e.target.checked;persistSync();if(sync.auto&&sync.dirty&&sync.ready)queueSync();return;}if(e.target.dataset.gs==='id'){e.target.value=sync.id;return;}if(e.target.dataset.cfg||e.target.dataset.tc)render();else if(e.target.id==='pmode'){cfg.pmode=e.target.value;save();render();}});
 app.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+  if(d.act==='new'){openSheet();return;}
   if(d.act==='prev'){doPrev();return;}
   if(d.act==='rec'){doRec();return;}
   if(d.act==='cuad'){openCuadre();return;}

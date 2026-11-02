@@ -1,6 +1,6 @@
-# Mis finanzas
+# Plantilla Personal de Finanzas
 
-Proyecto personal (uso propio, no comercial) para llevar mis finanzas mensuales en una página web simple, con Google Sheets como base de datos. Es independiente de CoreFlow.
+Proyecto personal (uso propio, no comercial) para llevar mis finanzas mensuales en una página web simple (de ahí el nombre), con Google Sheets como base de datos. Es independiente de CoreFlow.
 
 ## Qué hace
 - Un apartado por mes y un Resumen por año, con gráficos (ingreso, gastado y ahorrado; ahorro sobre el ingreso; gastos hormiga; año contra año).
