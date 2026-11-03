@@ -27,3 +27,5 @@ Este repositorio no incluye datos personales: ni movimientos, ni saldos, ni el I
 ## Pendiente
 - Ingreso de gastos desde el celular por WhatsApp (requiere un servicio externo que reciba los mensajes).
 - Cargar enero a junio de 2025.
+
+Registro de decisiones (ADR): [`docs/DECISIONS.md`](docs/DECISIONS.md).

@@ -411,6 +411,15 @@ h1{letter-spacing:-.03em}
 .sh{letter-spacing:-.01em}
 .sh.solid{box-shadow:inset 0 -1px 0 rgba(0,0,0,.08)}
 .mv{letter-spacing:-.01em}
+
+.welcome{padding:var(--sp-5);margin-bottom:var(--sp-4);border-left:4px solid var(--accent)}
+.welcome h2{font:700 22px var(--font-display);letter-spacing:-.02em;margin:0 0 6px}
+.welcome-ul{margin:10px 0 14px;padding-left:18px;display:grid;gap:5px}
+.welcome .b.p{height:40px}
+.cap-streak{font-size:13px;color:var(--muted);text-align:center;margin-top:2px}
+.cap-streak b{color:var(--accent);font-family:var(--font-num)}
+.tc-date{margin:-2px 0 10px}
+#rc-src{min-width:120px}
 </style>
 
 <header id="hdr"></header>
@@ -437,7 +446,7 @@ const row=(c,m,f,k,src,card)=>{const o={c:c||'',m:m||0,f:f||'',k:k||''};if(src&&
 function LIQ(){return [row('Yape'),row('Plin'),row('Efectivo billetes'),row('Efectivo monedas')];}
 const blank=()=>({liq:LIQ(),ing:[row()],fij:[row()],hor:[row()],bbva:[row()],bcp:[row()],oh:[row()],aho:[row()],inv:[row()],eur:[{a:0,b:0,d:0,s:0,p:0}],p:[50,30,20],q:[50,30,20],nota:'',tot:false});
 const normCat=k=>k||'';
-const CFG0=()=>({alerta:500,meta:20,meses:3,pmode:'c',pv:2,tc:{'€':4.1,'$':3.4},eurCols:['Anterior','Actual','Debe','Saldo'],rec:[],fondoMes:'',credito:{bbva:0,bcp:0,oh:0},cats:['Necesidad','Deseo','Alquiler','Servicios','Menú','Transporte','Estudios','Salud','Ocio']});
+const CFG0=()=>({alerta:500,meta:20,meses:3,pmode:'c',pv:2,tc:{'€':4.1,'$':3.4},eurCols:['Anterior','Actual','Debe','Saldo'],rec:[],fondoMes:'',tcDate:'',credito:{bbva:0,bcp:0,oh:0},cats:['Necesidad','Deseo','Alquiler','Servicios','Menú','Transporte','Estudios','Salud','Ocio']});
 function build(){return {'2025':Array.from({length:12},blank),'2026':Array.from({length:12},blank),'2027':Array.from({length:12},blank)};}
 let S=build(),cfg=CFG0();
 try{const raw=localStorage.getItem(KEY);if(raw){const j=JSON.parse(raw);if(j&&j.v===1&&j.S&&j.cfg){S=j.S;cfg=Object.assign(CFG0(),j.cfg);if(cfg.pv!==2){cfg.pmode='c';cfg.pv=2;}}}}catch(e){}
@@ -481,6 +490,14 @@ function header(){
 }
 
 /* ---------- Resumen del año ---------- */
+function recentCount(days){
+  const today=new Date();today.setHours(23,59,59,999);
+  const cut=new Date();cut.setHours(0,0,0,0);cut.setDate(cut.getDate()-days+1);
+  let n=0;
+  YEARS.forEach(y=>S[y].forEach((m,mi)=>['ing','fij','hor','aho','inv','bbva','bcp','oh'].forEach(sec=>(m[sec]||[]).forEach(r=>{
+    if(!(+r.m))return;const dd=parseInt(r.f)||0;if(!dd)return;const dt=new Date(+y,mi,dd);if(dt>=cut&&dt<=today)n++;}))));
+  return n;
+}
 function viewResumen(){
   const ms=S[year],D=ms.map(dv),any=D.some(x=>x.on),nOn=D.filter(x=>x.on).length;
   const gas=D.reduce((a,x)=>a+x.gas,0),aho=D.reduce((a,x)=>a+x.aho,0),inv=D.reduce((a,x)=>a+x.inv,0);
@@ -503,12 +520,14 @@ function viewResumen(){
     return `<a class="mcard${x.on?'':' off'}" href="#${SLUG[i]}"><div class="mh"><b>${MES[i]}</b>${st}</div><div class="mv">${fmt(ing)}</div>
     <div class="pbar" aria-hidden="true"><span style="width:${w(x.fij)}%;background:var(--c-fij)"></span><span style="width:${w(x.hor)}%;background:var(--c-hor)"></span><span style="width:${w(x.aho)}%;background:var(--c-aho)"></span><span style="width:${w(x.inv)}%;background:var(--c-inv)"></span></div>
     <div class="ms">${ing>0?'Ahorro '+pct(x.aho/ing)+' · Gastado '+fmt(x.gas):'Sin movimientos'}</div></a>`;}).join('');
-  return `<section class="hero">
+  const vacio=YEARS.every(y=>S[y].every(m=>!dv(m).on));
+  return `${vacio?`<section class="welcome card"><h2>Bienvenido a tu plantilla de finanzas</h2><p class="ms">Aún no hay datos. Registra tu primer movimiento y verás aparecer tus gráficos, metas y el resumen del año.</p><ul class="welcome-ul ms"><li>Toca <b>Registrar</b> para anotar un ingreso o un gasto.</li><li>Elige de dónde sale cada gasto y se descuenta solo de esa cuenta.</li><li>Ponle la línea de crédito a tus tarjetas para ver cuánto te queda.</li></ul><button type="button" class="b p" data-act="new">Registrar mi primer movimiento</button></section>`:''}
+  <section class="hero">
     <div class="hero-top"><div><div class="hero-k">${year}</div><h1>Resumen</h1></div></div>
     <div><div class="hero-l">Ahorrado en el año</div><div class="hero-v">${fmt(aho)}</div></div>
     <div class="hbar" aria-hidden="true"><span style="width:${Math.min(100,prog*100)}%;background:var(--c-aho)"></span></div>
     <div class="hleg"><span>Fondo de emergencia: ${Math.round(prog*100)}% de ${fmt(meta)}</span></div>
-    <div class="hint">${any?nOn+(nOn===1?' mes':' meses')+' con datos. Toca una barra o una tarjeta para abrir el mes.':'Año sin movimientos todavía.'}</div>
+    <div class="hint">${any?nOn+(nOn===1?' mes':' meses')+' con datos'+(recentCount(7)?' · '+recentCount(7)+(recentCount(7)===1?' movimiento':' movimientos')+' en los últimos 7 días':'')+'. Toca una barra o una tarjeta para abrir el mes.':'Año sin movimientos todavía.'}</div>
   </section>
   <div class="board" id="board"><div class="kpis bcard bare" data-cid="rk">${kp('Gastado en el año',fmt(gas),'Fijos más hormiga')}${kp('Ahorrado',fmt(aho),'Suma de los meses')}${kp('Invertido',fmt(inv),'Suma de los meses')}${kp('Mejor mes de ahorro',bi>=0?MES[bi]:'Sin datos',bi>=0?pct(bp)+' del ingreso':'')}</div>
   <div class="g2">
@@ -532,13 +551,14 @@ function viewResumen(){
       <label for="tc-e">Tipo de cambio: 1 € en S/<input id="tc-e" type="number" step="0.01" data-tc="€" value="${(cfg.tc||{})['€']}"></label>
       <label for="tc-d">Tipo de cambio: 1 $ en S/<input id="tc-d" type="number" step="0.01" data-tc="$" value="${(cfg.tc||{})['$']}"></label>
     </div>
+    <div class="ms tc-date">${cfg.tcDate?'Tipos de cambio actualizados el '+esc(cfg.tcDate)+'.':'Los tipos de cambio son de ejemplo. Actualízalos y se guardará la fecha.'}</div>
     <div class="ms">Categorías de gastos</div>
     <div class="chips">${cfg.cats.map((c,i)=>`<span class="chip">${esc(c)}<button type="button" data-cat="${i}" aria-label="Quitar ${esc(c)}">×</button></span>`).join('')}</div>
     <div class="qa"><input type="text" id="nc" placeholder="Nueva categoría, por ejemplo Mascotas" aria-label="Nueva categoría"><button class="b" id="addcat" type="button">Agregar categoría</button><button class="b" id="reset" type="button">Restablecer ejemplo</button></div>
     <div class="gs"><h3>Gastos recurrentes</h3>
       <div class="ms">Se cargan con «Cargar recurrentes» dentro de cada mes y no se duplican si ya existen.</div>
-      <div class="chips">${(cfg.rec||[]).map((r,i)=>`<span class="chip">${esc(r.c)} · ${num2(r.m)}${r.k?' · '+esc(r.k):''} · día ${r.f}<button type="button" data-recdel="${i}" aria-label="Quitar ${esc(r.c)}">×</button></span>`).join('')||'<span class="ms">Todavía no hay recurrentes.</span>'}</div>
-      <div class="qa"><select id="rc-s" aria-label="Tipo"><option value="fij">Gasto fijo</option><option value="hor">Hormiga</option></select><input id="rc-c" type="text" placeholder="Concepto, por ejemplo Internet" aria-label="Concepto"><input id="rc-m" type="number" step="0.01" placeholder="Monto" aria-label="Monto" style="width:100px"><select id="rc-k" aria-label="Categoría"><option value="">Categoría</option>${cfg.cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select><input id="rc-d" type="number" min="1" max="31" value="1" aria-label="Día del mes" style="width:70px"><button class="b" id="rc-add" type="button">Agregar</button></div>
+      <div class="chips">${(cfg.rec||[]).map((r,i)=>`<span class="chip">${esc(r.c)} · ${num2(r.m)}${r.k?' · '+esc(r.k):''}${r.src&&r.src!=='none'?' · '+esc(DEFLIQ[+r.src.slice(4)]||''):''} · día ${r.f}<button type="button" data-recdel="${i}" aria-label="Quitar ${esc(r.c)}">×</button></span>`).join('')||'<span class="ms">Todavía no hay recurrentes.</span>'}</div>
+      <div class="qa"><select id="rc-s" aria-label="Tipo"><option value="fij">Gasto fijo</option><option value="hor">Hormiga</option></select><input id="rc-c" type="text" placeholder="Concepto, por ejemplo Internet" aria-label="Concepto"><input id="rc-m" type="number" step="0.01" placeholder="Monto" aria-label="Monto" style="width:100px"><select id="rc-k" aria-label="Categoría"><option value="">Categoría</option>${cfg.cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select><select id="rc-src" aria-label="De dónde sale"><option value="none">No descontar</option>${DEFLIQ.map((n,i)=>`<option value="liq:${i}">${esc(n)}</option>`).join('')}</select><input id="rc-d" type="number" min="1" max="31" value="1" aria-label="Día del mes" style="width:70px"><button class="b" id="rc-add" type="button">Agregar</button></div>
     </div>
     <div class="gs"><h3>Respaldo</h3>
       <div class="qa"><button class="b" id="bk-json" type="button">Descargar respaldo (JSON)</button><button class="b" id="bk-csv" type="button">Descargar movimientos (CSV)</button><button class="b" id="bk-load" type="button">Restaurar desde respaldo</button><input id="bk-file" type="file" accept=".json,application/json" hidden></div>
@@ -1127,7 +1147,8 @@ function doRec(){
   const m=S[year][view];let n=0;
   rec.forEach(r=>{
     if(m[r.s].some(x=>(x.c||'').trim().toLowerCase()===r.c.trim().toLowerCase()))return;
-    addRow(year,view,r.s,row(r.c,r.m,Math.min(31,Math.max(1,+r.f||1))+'-'+ABR[view].toLowerCase(),r.k||''));n++;
+    const u=addRow(year,view,r.s,row(r.c,r.m,Math.min(31,Math.max(1,+r.f||1))+'-'+ABR[view].toLowerCase(),r.k||'',(r.src&&r.src!=='none')?r.src:''));
+    if(u.r.src)applyDed(m,u.r,r.s);n++;
   });
   if(!n){toast('Tus recurrentes ya están cargados en este mes.');return;}
   save();render();toast('Se cargaron '+n+(n===1?' recurrente':' recurrentes')+' en '+MES[view]);
@@ -1188,12 +1209,13 @@ function viewCapturar(){
   const mi=(year===String(now.getFullYear()))?now.getMonth():0;
   const m=S[year][mi],D=dv(m),rec=[];
   ['ing','fij','hor','aho','inv'].forEach(s=>m[s].forEach((r,i)=>{if(+r.m)rec.push({s,c:r.c,mt:+r.m||0,d:parseInt(r.f)||0,idx:i});}));
-  rec.sort((a,b)=>b.d-a.d);const last=rec.slice(0,5),gastos=['fij','hor'];
+  rec.sort((a,b)=>b.d-a.d);const last=rec.slice(0,5),gastos=['fij','hor'],r7=recentCount(7);
   return `<section class="cap-wrap">
     <div class="cap-top"><div><div class="hero-k">${MES[mi]} ${year}</div><div class="cap-l">Te queda este mes</div></div><a class="cap-link" href="#resumen">Ver panel completo →</a></div>
     <div class="cap-big ${D.res<0?'neg':''}">${fmt(D.res)}</div>
     <button type="button" class="cap-btn" data-act="new">+ Registrar movimiento</button>
     <div class="cap-liq"><span>Liquidez disponible</span><b>${fmtC('liq',sum(m.liq))}</b></div>
+    <div class="cap-streak">Has registrado <b>${r7}</b> ${r7===1?'movimiento':'movimientos'} en los últimos 7 días</div>
     <div class="cap-recent"><div class="cap-rt">Últimos movimientos</div>${last.length?last.map(r=>`<div class="cap-r"><span>${esc(r.c||'(sin concepto)')}</span><b class="${gastos.indexOf(r.s)>=0?'g':''}">${gastos.indexOf(r.s)>=0?'-':''}${num2(r.mt)}</b><button type="button" class="capx" data-capdel="${r.s}:${r.idx}" aria-label="Borrar ${esc(r.c||'')}">×</button></div>`).join(''):'<div class="ms">Aún no registras nada este mes.</div>'}</div>
     <div class="ms cap-tip">Guarda esta pantalla en tu celular: menú del navegador → «Agregar a pantalla de inicio».</div>
   </section>`;
@@ -1222,7 +1244,7 @@ app.addEventListener('input',e=>{
   if(d.gs==='id'){sync.id=sheetId(t.value);sync.tabs=false;persistSync();return;}
   if(d.cfg){cfg[d.cfg]=parseFloat(t.value)||0;save();return;}
   if(d.credito!==undefined){if(!cfg.credito)cfg.credito={bbva:0,bcp:0,oh:0};cfg.credito[d.credito]=parseFloat(t.value)||0;save();if(typeof view==='number')refreshMonth(false);return;}
-  if(d.tc){cfg.tc[d.tc]=parseFloat(t.value)||0;save();return;}
+  if(d.tc){cfg.tc[d.tc]=parseFloat(t.value)||0;cfg.tcDate=new Date().toLocaleDateString('es-PE');save();return;}
   if(d.ec!==undefined){cfg.eurCols[+d.ec]=t.value;save();return;}
   if(view==='resumen')return;
   const m=S[year][view];
@@ -1242,7 +1264,7 @@ app.addEventListener('click',e=>{
   if(d.recdel!==undefined){cfg.rec.splice(+d.recdel,1);save();render();return;}
   if(b.id==='rc-add'){const g=id=>document.getElementById(id),c=g('rc-c').value.trim(),m=parseFloat(String(g('rc-m').value).replace(',','.'));
     if(!c||!(m>0)){toast('Escribe el concepto y el monto del recurrente.');return;}
-    cfg.rec=cfg.rec||[];cfg.rec.push({sec:g('rc-s').value,s:g('rc-s').value,c,m,k:g('rc-k').value,f:Math.min(31,Math.max(1,+g('rc-d').value||1))});save();render();return;}
+    cfg.rec=cfg.rec||[];cfg.rec.push({sec:g('rc-s').value,s:g('rc-s').value,c,m,k:g('rc-k').value,src:g('rc-src').value,f:Math.min(31,Math.max(1,+g('rc-d').value||1))});save();render();return;}
   if(b.id==='bk-json'){saveFile('mis-finanzas-respaldo-'+BK()+'.json',JSON.stringify({v:1,fecha:BK(),S,cfg,LAY},null,1));return;}
   if(b.id==='bk-csv'){saveFile('mis-finanzas-movimientos-'+BK()+'.csv','\ufeff'+[REGHEAD].concat(toRows()).map(r=>r.map(csvCell).join(',')).join('\n'));return;}
   if(b.id==='bk-load'){document.getElementById('bk-file').click();return;}
