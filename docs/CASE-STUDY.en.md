@@ -9,6 +9,22 @@
 
 ---
 
+## Screenshots
+
+> Images use **demo data** (made up). The published version opens empty.
+
+**Yearly dashboard — savings, spending and goals**
+
+![Yearly summary dashboard with KPIs and charts](img/demo-dashboard.png)
+
+**Credit cards — limit, balance owed and available**
+
+![Credit cards showing credit limit, balance owed and available credit](img/demo-cards.png)
+
+**Fast logging from the phone**
+
+<img src="img/demo-mobile.png" width="340" alt="Quick expense capture screen on mobile">
+
 ## 1. The problem
 
 I tracked my finances in a Google Sheets template — thorough, but painful to use.

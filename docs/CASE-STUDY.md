@@ -9,6 +9,22 @@
 
 ---
 
+## Capturas
+
+> Imágenes con **datos de demostración** (inventados). La versión publicada abre vacía.
+
+**Panel del año — ahorro, gastos y metas**
+
+![Panel resumen anual con indicadores y gráficos](img/demo-dashboard.png)
+
+**Tarjetas de crédito — línea, deuda y disponible**
+
+![Tarjetas de crédito mostrando línea de crédito, deuda y disponible](img/demo-cards.png)
+
+**Registro rápido desde el celular**
+
+<img src="img/demo-mobile.png" width="340" alt="Pantalla de registro rápido en el celular">
+
 ## 1. El problema
 
 Llevaba mis finanzas en una plantilla de Google Sheets: completa, pero incómoda.
