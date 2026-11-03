@@ -10,6 +10,11 @@ Proyecto personal (uso propio, no comercial) para llevar mis finanzas mensuales 
 - Tarjetas que se mueven, cambian de tamaño, se configuran o se ocultan (modo Personalizar). Moneda configurable por apartado.
 - Respaldo: descarga en JSON o CSV y restauración desde el JSON.
 
+
+## Case study
+
+Las decisiones de producto y sus trade-offs están en [`docs/CASE-STUDY.md`](docs/CASE-STUDY.md).
+
 ## Cómo está hecho
 - Un solo archivo `index.html`: HTML, CSS y JavaScript sin framework. Gráficos con Chart.js 4.4.1 (cdnjs) y fuentes IBM Plex (Google Fonts).
 - Los datos se guardan en el navegador (localStorage) y, si se conecta, en dos pestañas de una hoja de Google: `Registro` (un movimiento por fila) y `Config` (ajustes, diseño y marca de guardado).
