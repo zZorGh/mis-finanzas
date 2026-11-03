@@ -546,8 +546,8 @@ function viewResumen(){
       <div class="ms">«Restaurar» reemplaza todo lo que ves aquí por el contenido del archivo.</div>
     </div>
     <div class="ms">Sin conexión, los cambios quedan solo en este navegador.</div>
-    <div class="gs"><h3>Google Sheets</h3>
-      <label class="fld" for="gs-id">ID o enlace de tu hoja<input id="gs-id" type="text" data-gs="id" value="${esc(sync.id)}" autocomplete="off"></label>
+    <div class="gs"><h3>${IS_GAS?'Tu hoja de Google':'Google Sheets'}</h3>
+      ${IS_GAS?'<div class="ms">Conectado a tu hoja de Google (app web). No necesitas el ID aquí.</div>':'<label class="fld" for="gs-id">ID o enlace de tu hoja<input id="gs-id" type="text" data-gs="id" value="'+esc(sync.id)+'" autocomplete="off"></label>'}
       <label class="chk"><input type="checkbox" id="gs-auto" data-gs="auto"${sync.auto?' checked':''}> Guardar automáticamente en la hoja</label>
       <div class="qa"><button class="b" id="gs-load" type="button">Cargar desde la hoja</button><button class="b" id="gs-push" type="button">Subir todo a la hoja</button></div>
       <div class="ms" id="gs-msg" role="status">${esc(sync.msg||'')}</div>
@@ -960,7 +960,8 @@ const APART_INV={};Object.keys(APART).forEach(k=>{APART_INV[APART[k]]=k;});
 const SECKEYS=Object.keys(APART);
 const REGHEAD=['año','mes','mes_nombre','apartado','concepto','monto','categoría','fecha','a','b','d','s','p','fuente','tarjeta'];
 const DEFLIQ=['Yape','Plin','Efectivo billetes','Efectivo monedas'];
-let mcp=null,sync={id:SHEET_DEFAULT,auto:true,connected:false,ready:false,state:'idle',msg:'',at:0,stamp:'',busy:false,again:false,dirty:false,timer:0,tabs:false};
+let mcp=null,backend=null;const IS_GAS=(typeof google!=='undefined')&&!!(google.script&&google.script.run);
+let sync={id:SHEET_DEFAULT,auto:true,connected:false,ready:false,state:'idle',msg:'',at:0,stamp:'',busy:false,again:false,dirty:false,timer:0,tabs:false};
 try{const j=JSON.parse(localStorage.getItem(SKEY));if(j){if(j.id)sync.id=j.id;sync.auto=j.auto!==false;sync.connected=!!j.connected;}}catch(e){}
 const persistSync=()=>{try{localStorage.setItem(SKEY,JSON.stringify({id:sync.id,auto:sync.auto,connected:sync.connected}));}catch(e){}};
 const txt=v=>{const t=String(v==null?'':v);return(/^[=+\-@]/.test(t)||/^\d{1,2}[-\/][a-záéíóú]{3,4}$/i.test(t))?"'"+t:t;};
@@ -1045,57 +1046,58 @@ function applyRemote(rows,conf){
 const chipText=()=>({idle:'Conectar hoja',loading:'Cargando…',saving:'Guardando…',saved:'Guardado '+new Date(sync.at).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'}),dirty:'Sin guardar',error:'Reintentar',conflict:'Conflicto'})[sync.state]||'Hoja';
 function updateChip(){
   const c=document.getElementById('syn');
-  if(c){c.hidden=!mcp;c.textContent=chipText();c.dataset.s=sync.state;c.title=sync.msg||'Google Sheets';}
+  if(c){c.hidden=!backend;c.textContent=chipText();c.dataset.s=sync.state;c.title=sync.msg||'Google Sheets';}
   const m=document.getElementById('gs-msg');if(m)m.textContent=sync.msg||'';
 }
 function queueSync(){
-  if(!mcp||!sync.ready||!sync.auto){if(mcp&&sync.ready){sync.dirty=true;sync.state='dirty';updateChip();}return;}
+  if(!backend||!sync.ready||!sync.auto){if(backend&&sync.ready){sync.dirty=true;sync.state='dirty';updateChip();}return;}
   clearTimeout(sync.timer);sync.state='saving';sync.dirty=true;updateChip();
   sync.timer=setTimeout(()=>pushNow(false),2500);
 }
+function gasRun(fn,arg){return new Promise((res,rej)=>{try{google.script.run.withSuccessHandler(res).withFailureHandler(e=>rej({code:'tool_error',message:(e&&e.message)||'Error de Apps Script'}))[fn](arg);}catch(e){rej({code:'tool_error',message:String(e)});}});}
+const gasBackend={name:'gas',
+  stamp:()=>gasRun('apiStamp'),
+  read:async()=>{const d=await gasRun('apiGet');return {reg:(d&&d.reg)||[],conf:(d&&d.conf)||[]};},
+  write:async(rows,conf3)=>{await gasRun('apiSave',{reg:rows,conf:conf3});}};
+const mcpBackend={name:'mcp',
+  stamp:async()=>{const c=await gs('get_values',{spreadsheetId:sync.id,range:'Config!B3'});return ((c.values||[])[0]||[])[0];},
+  read:async()=>{sync.tabs=false;await ensureTabs();const reg=await gs('get_values',{spreadsheetId:sync.id,range:'Registro!A2:O3000'});const conf=await gs('get_values',{spreadsheetId:sync.id,range:'Config!A1:B3'});return {reg:reg.values||[],conf:conf.values||[]};},
+  write:async(rows,conf3)=>{await ensureTabs();await gs('update_values',{spreadsheetId:sync.id,range:'Registro!A1:O'+(rows.length+1),values:[REGHEAD].concat(rows)});await gs('batch_clear_values',{spreadsheetId:sync.id,ranges:['Registro!A'+(rows.length+2)+':O3000']});await gs('update_values',{spreadsheetId:sync.id,range:'Config!A1:B3',values:conf3});}};
+
 async function pushNow(force){
-  if(!mcp||!sync.id)return;
+  if(!backend)return;if(backend.name==='mcp'&&!sync.id)return;
   if(sync.busy){sync.again=true;return;}
   sync.busy=true;sync.state='saving';updateChip();
   try{
-    await ensureTabs();
-    if(!force){
-      const c=await gs('get_values',{spreadsheetId:sync.id,range:'Config!B3'});
-      const remote=((c.values||[])[0]||[])[0];
-      if(remote&&remote!==sync.stamp){sync.state='conflict';sync.msg='Tu hoja cambió desde otro dispositivo. Usa «Cargar desde la hoja» para traer esos cambios o «Subir todo a la hoja» para sobrescribirla.';return;}
-    }
+    if(!force){const remote=await backend.stamp();if(remote&&remote!==sync.stamp){sync.state='conflict';sync.msg='Tu hoja cambió desde otro dispositivo. Usa «Cargar desde la hoja» para traer esos cambios o «Subir todo a la hoja» para sobrescribirla.';return;}}
     const rows=toRows();
     if(rows.length>2900)throw{code:'tool_error',message:'La pestaña Registro está llena (más de 2900 filas).'};
     const stamp='v'+Date.now();
-    await gs('update_values',{spreadsheetId:sync.id,range:'Registro!A1:O'+(rows.length+1),values:[REGHEAD].concat(rows)});
-    await gs('batch_clear_values',{spreadsheetId:sync.id,ranges:['Registro!A'+(rows.length+2)+':O3000']});
-    await gs('update_values',{spreadsheetId:sync.id,range:'Config!A1:B3',values:[['cfg',JSON.stringify(cfg)],['layout',JSON.stringify(LAY)],['guardado',stamp]]});
+    await backend.write(rows,[['cfg',JSON.stringify(cfg)],['layout',JSON.stringify(LAY)],['guardado',stamp]]);
     sync.stamp=stamp;sync.ready=true;sync.connected=true;sync.dirty=false;persistSync();
     sync.state='saved';sync.at=Date.now();sync.msg='Guardado en tu hoja ('+rows.length+' movimientos).';
   }catch(e){sync.state='error';sync.msg=errMsg(e);}
   finally{sync.busy=false;updateChip();if(sync.again){sync.again=false;queueSync();}}
 }
 async function loadFromSheet(){
-  if(!mcp){sync.msg='Esta vista no puede conectarse a Google Sheets.';updateChip();return;}
-  if(!sync.id){sync.state='error';sync.msg='Escribe el ID de tu hoja.';updateChip();return;}
+  if(!backend){sync.msg='Esta vista no puede conectarse a Google Sheets.';updateChip();return;}
+  if(backend.name==='mcp'&&!sync.id){sync.state='error';sync.msg='Escribe el ID de tu hoja.';updateChip();return;}
   clearTimeout(sync.timer);sync.state='loading';updateChip();
   try{
-    sync.tabs=false;await ensureTabs();
-    const reg=await gs('get_values',{spreadsheetId:sync.id,range:'Registro!A2:O3000'});
-    const conf=await gs('get_values',{spreadsheetId:sync.id,range:'Config!A1:B3'});
-    const rows=reg.values||[];
+    const d=await backend.read();const rows=d.reg||[];
     if(!rows.length){sync.ready=true;sync.msg='La hoja estaba vacía: subiendo tus datos…';await pushNow(true);toast('Tus datos se subieron a la hoja (pestaña Registro)');return;}
-    applyRemote(rows,conf.values||[]);
+    applyRemote(rows,d.conf||[]);
     sync.ready=true;sync.connected=true;sync.dirty=false;persistSync();
     sync.state='saved';sync.at=Date.now();sync.msg='Datos cargados desde tu hoja ('+rows.length+' movimientos).';
     render();toast('Datos cargados desde tu hoja');
   }catch(e){sync.state='error';sync.msg=errMsg(e);updateChip();}
 }
 function initSync(){
+  if(IS_GAS){backend=gasBackend;sync.connected=true;updateChip();loadFromSheet();return;}
   if(!(window.claude&&window.claude.use))return;
   window.claude.use('mcp').then(m=>{
-    mcp=m||null;updateChip();
-    if(mcp&&sync.connected&&sync.id)loadFromSheet();
+    mcp=m||null;backend=mcp?mcpBackend:null;updateChip();
+    if(backend&&sync.connected&&sync.id)loadFromSheet();
   }).catch(()=>{});
 }
 
