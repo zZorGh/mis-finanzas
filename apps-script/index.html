@@ -438,6 +438,16 @@ h1{letter-spacing:-.03em}
 .ed-row{font-size:12px}
 .cap-r .capx+.capx{margin-left:0}
 [data-s="del-mov"].danger{color:var(--bad);border-color:var(--bad)}
+
+.authbg{position:fixed;inset:0;z-index:60;background:var(--bg);display:grid;place-items:center;padding:24px}
+.authbox{width:min(380px,100%);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-2);padding:28px 24px;display:grid;gap:12px}
+.authlogo{width:46px;height:46px;border-radius:13px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font:600 17px var(--font-num)}
+.authbox h2{font:700 21px var(--font-display);letter-spacing:-.02em;margin:2px 0 0}
+.authbox .fld{margin:0}
+.authbox input{height:42px}
+.authbox .b{height:44px}
+.authbox .err{min-height:16px}
+.authbox .err.err{color:var(--bad)}
 </style>
 
 <header id="hdr"></header>
@@ -446,6 +456,7 @@ h1{letter-spacing:-.03em}
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 (function(){
 const MES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -584,12 +595,12 @@ function viewResumen(){
       <div class="ms">«Restaurar» reemplaza todo lo que ves aquí por el contenido del archivo.</div>
     </div>
     <div class="ms">Sin conexión, los cambios quedan solo en este navegador.</div>
-    <div class="gs"><h3>${IS_GAS?'Tu hoja de Google':'Google Sheets'}</h3>
-      ${IS_GAS?'<div class="ms">Conectado a tu hoja de Google (app web). No necesitas el ID aquí.</div>':'<label class="fld" for="gs-id">ID o enlace de tu hoja<input id="gs-id" type="text" data-gs="id" value="'+esc(sync.id)+'" autocomplete="off"></label>'}
-      <label class="chk"><input type="checkbox" id="gs-auto" data-gs="auto"${sync.auto?' checked':''}> Guardar automáticamente en la hoja</label>
-      <div class="qa"><button class="b" id="gs-load" type="button">Cargar desde la hoja</button><button class="b" id="gs-push" type="button">Subir todo a la hoja</button></div>
+    <div class="gs"><h3>${IS_SB?'Tu cuenta':IS_GAS?'Tu hoja de Google':'Google Sheets'}</h3>
+      ${IS_SB?('<div class="ms">'+(sbUser?'Conectado como '+esc(sbUser.email||'tu cuenta')+'. ':'')+'Tus datos se guardan en tu base de datos privada.</div><div class="qa"><button class="b" id="sb-logout" type="button">Cerrar sesión</button></div>'):IS_GAS?'<div class="ms">Conectado a tu hoja de Google (app web). No necesitas el ID aquí.</div>':'<label class="fld" for="gs-id">ID o enlace de tu hoja<input id="gs-id" type="text" data-gs="id" value="'+esc(sync.id)+'" autocomplete="off"></label>'}
+      <label class="chk"><input type="checkbox" id="gs-auto" data-gs="auto"${sync.auto?' checked':''}> Guardar automáticamente${IS_SB?'':' en la hoja'}</label>
+      <div class="qa"><button class="b" id="gs-load" type="button">${IS_SB?'Recargar mis datos':'Cargar desde la hoja'}</button><button class="b" id="gs-push" type="button">${IS_SB?'Guardar todo ahora':'Subir todo a la hoja'}</button></div>
       <div class="ms" id="gs-msg" role="status">${esc(sync.msg||'')}</div>
-      <div class="ms">Los datos se guardan en las pestañas Registro y Config de esa hoja. «Cargar» reemplaza lo que ves aquí; «Subir» reemplaza lo que hay en la hoja.</div>
+      <div class="ms">${IS_SB?'Tus datos están en tu base de datos privada; solo tú los ves. «Recargar» trae lo guardado; «Guardar» sube lo que ves aquí.':'Los datos se guardan en las pestañas Registro y Config de esa hoja. «Cargar» reemplaza lo que ves aquí; «Subir» reemplaza lo que hay en la hoja.'}</div>
     </div>
   </div></section></div>`;
 }
@@ -1021,6 +1032,9 @@ const SECKEYS=Object.keys(APART);
 const REGHEAD=['año','mes','mes_nombre','apartado','concepto','monto','categoría','fecha','a','b','d','s','p','fuente','tarjeta'];
 const DEFLIQ=['Yape','Plin','Efectivo billetes','Efectivo monedas'];
 let mcp=null,backend=null;const IS_GAS=(typeof google!=='undefined')&&!!(google.script&&google.script.run);
+const SB_URL='https://lmjhlghwthydpeismulb.supabase.co',SB_KEY='sb_publishable_Chi2CqOxqdL_15IggSgUZA_09aZ4XEf';
+const IS_SB=!IS_GAS&&!(window.claude&&window.claude.use)&&!!SB_URL&&typeof supabase!=='undefined';
+let sb=null,sbUser=null;
 let sync={id:SHEET_DEFAULT,auto:true,connected:false,ready:false,state:'idle',msg:'',at:0,stamp:'',busy:false,again:false,dirty:false,timer:0,tabs:false};
 try{const j=JSON.parse(localStorage.getItem(SKEY));if(j){if(j.id)sync.id=j.id;sync.auto=j.auto!==false;sync.connected=!!j.connected;}}catch(e){}
 const persistSync=()=>{try{localStorage.setItem(SKEY,JSON.stringify({id:sync.id,auto:sync.auto,connected:sync.connected}));}catch(e){}};
@@ -1126,6 +1140,43 @@ const mcpBackend={name:'mcp',
   read:async()=>{sync.tabs=false;await ensureTabs();const reg=await gs('get_values',{spreadsheetId:sync.id,range:'Registro!A2:O3000'});const conf=await gs('get_values',{spreadsheetId:sync.id,range:'Config!A1:B3'});return {reg:reg.values||[],conf:conf.values||[]};},
   write:async(rows,conf3)=>{await ensureTabs();await gs('update_values',{spreadsheetId:sync.id,range:'Registro!A1:O'+(rows.length+1),values:[REGHEAD].concat(rows)});await gs('batch_clear_values',{spreadsheetId:sync.id,ranges:['Registro!A'+(rows.length+2)+':O3000']});await gs('update_values',{spreadsheetId:sync.id,range:'Config!A1:B3',values:conf3});}};
 
+const supabaseBackend={name:'sb',
+  stamp:async()=>{const r=await sb.from('estado').select('stamp').eq('user_id',sbUser.id).maybeSingle();return r.data&&r.data.stamp;},
+  read:async()=>{const r=await sb.from('estado').select('registro,config').eq('user_id',sbUser.id).maybeSingle();if(r.error)throw{code:'tool_error',message:r.error.message};return {reg:(r.data&&r.data.registro)||[],conf:(r.data&&r.data.config)||[]};},
+  write:async(rows,conf3)=>{const stamp=((conf3.find(x=>x[0]==='guardado')||[])[1])||('v'+Date.now());const r=await sb.from('estado').upsert({user_id:sbUser.id,registro:rows,config:conf3,stamp,updated_at:new Date().toISOString()});if(r.error)throw{code:'tool_error',message:r.error.message};}};
+function initSupabase(){
+  try{sb=supabase.createClient(SB_URL,SB_KEY);}catch(e){return;}
+  sb.auth.getSession().then(({data})=>{if(data&&data.session)sbReady(data.session);else showAuth();});
+  sb.auth.onAuthStateChange((_e,session)=>{if(session){if(!sbUser)sbReady(session);}else{sbUser=null;backend=null;showAuth();}});
+}
+function sbReady(session){sbUser=session.user;backend=supabaseBackend;sync.connected=true;hideAuth();updateChip();loadFromSheet();}
+async function sbAuth(mode,email,pass,msgEl,btn){
+  if(!sb)return;msgEl.className='ms err';msgEl.textContent='';if(btn)btn.disabled=true;
+  try{
+    const r=mode==='signup'?await sb.auth.signUp({email,password:pass}):await sb.auth.signInWithPassword({email,password:pass});
+    if(r.error){msgEl.textContent=r.error.message;return;}
+    if(mode==='signup'&&r.data&&!r.data.session){msgEl.className='ms';msgEl.textContent='Cuenta creada. Si te pide confirmar el correo, revísalo; luego entra.';}
+  }catch(e){msgEl.textContent='No se pudo conectar. Revisa tu internet.';}
+  finally{if(btn)btn.disabled=false;}
+}
+function showAuth(){
+  if(document.getElementById('authbg'))return;
+  const bg=document.createElement('div');bg.id='authbg';bg.className='authbg';
+  bg.innerHTML=`<form class="authbox" id="authbox" novalidate><div class="authlogo" aria-hidden="true">S/</div><h2>Plantilla de Finanzas</h2><p class="ms">Entra con tu cuenta para ver tus finanzas en cualquier dispositivo.</p>
+    <label class="fld">Correo<input type="email" id="au-email" autocomplete="username" required></label>
+    <label class="fld">Contraseña<input type="password" id="au-pass" autocomplete="current-password" required minlength="6"></label>
+    <div class="ms err" id="au-msg" role="status"></div>
+    <button class="b p" type="submit" id="au-in">Entrar</button>
+    <button class="b" type="button" id="au-up">Crear cuenta</button></form>`;
+  document.body.appendChild(bg);
+  const g=id=>document.getElementById(id);
+  g('authbox').addEventListener('submit',e=>{e.preventDefault();sbAuth('signin',g('au-email').value.trim(),g('au-pass').value,g('au-msg'),g('au-in'));});
+  g('au-up').addEventListener('click',()=>{const em=g('au-email').value.trim(),pw=g('au-pass').value;if(!em||pw.length<6){g('au-msg').textContent='Escribe tu correo y una contraseña de 6+ caracteres.';return;}sbAuth('signup',em,pw,g('au-msg'),g('au-up'));});
+  g('au-email').focus();
+}
+function hideAuth(){const e=document.getElementById('authbg');if(e)e.remove();}
+async function sbLogout(){if(sb){try{await sb.auth.signOut();}catch(e){}location.reload();}}
+
 async function pushNow(force){
   if(!backend)return;if(backend.name==='mcp'&&!sync.id)return;
   if(sync.busy){sync.again=true;return;}
@@ -1156,7 +1207,7 @@ async function loadFromSheet(){
 }
 function initSync(){
   if(IS_GAS){backend=gasBackend;sync.connected=true;updateChip();loadFromSheet();return;}
-  if(!(window.claude&&window.claude.use))return;
+  if(!(window.claude&&window.claude.use)){if(IS_SB)initSupabase();return;}
   window.claude.use('mcp').then(m=>{
     mcp=m||null;backend=mcp?mcpBackend:null;updateChip();
     if(backend&&sync.connected&&sync.id)loadFromSheet();
@@ -1231,9 +1282,9 @@ let dl=null;
 const BK=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 function bkMsg(t,bad){const e=document.getElementById('bk-msg');if(e){e.textContent=t;e.style.color=bad?'var(--bad)':'';}}
 async function saveFile(name,data){
-  if(!dl){bkMsg('Las descargas no están disponibles en esta vista. Ábrela dentro de claude.ai.',true);return;}
-  try{await dl.save({filename:name,data});bkMsg('Listo: confirma la descarga de '+name+'.');}
-  catch(e){bkMsg(e&&e.code==='user_declined'?'Cancelaste la descarga.':'No se pudo descargar ('+((e&&e.code)||'error')+').',true);}
+  if(dl){try{await dl.save({filename:name,data});bkMsg('Listo: confirma la descarga de '+name+'.');}catch(e){bkMsg(e&&e.code==='user_declined'?'Cancelaste la descarga.':'No se pudo descargar ('+((e&&e.code)||'error')+').',true);}return;}
+  try{const blob=new Blob([data],{type:name.endsWith('.json')?'application/json':'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},800);bkMsg('Descargado '+name+'.');}
+  catch(e){bkMsg('No se pudo descargar en esta vista.',true);}
 }
 const csvCell=v=>{const t=String(v==null?'':v).replace(/^'/,'');return /[",\n;]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t;};
 function restoreFrom(text){
@@ -1315,6 +1366,7 @@ app.addEventListener('click',e=>{
   if(b.id==='bk-json'){saveFile('mis-finanzas-respaldo-'+BK()+'.json',JSON.stringify({v:1,fecha:BK(),S,cfg,LAY},null,1));return;}
   if(b.id==='bk-csv'){saveFile('mis-finanzas-movimientos-'+BK()+'.csv','\ufeff'+[REGHEAD].concat(toRows()).map(r=>r.map(csvCell).join(',')).join('\n'));return;}
   if(b.id==='bk-load'){document.getElementById('bk-file').click();return;}
+  if(b.id==='sb-logout'){sbLogout();return;}
   if(b.id==='gs-load'){loadFromSheet();return;}
   if(b.id==='gs-push'){pushNow(true);return;}
   if(d.cfgcard){openPanel(d.cfgcard,b);return;}
