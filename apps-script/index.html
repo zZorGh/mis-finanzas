@@ -432,6 +432,12 @@ h1{letter-spacing:-.03em}
 .cardfields{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2);margin:0 0 10px}
 .cardfields .fld{margin:0}
 @media (max-width:360px){.cardfields{grid-template-columns:1fr}}
+
+.rwx{display:flex;gap:2px;justify-content:flex-end;align-items:center}
+.rwx .x{width:20px}
+.ed-row{font-size:12px}
+.cap-r .capx+.capx{margin-left:0}
+[data-s="del-mov"].danger{color:var(--bad);border-color:var(--bad)}
 </style>
 
 <header id="hdr"></header>
@@ -606,7 +612,9 @@ function drawResumen(){
 const inp=(s,i,k,v,t,ph)=>`<input id="${s}-${i}-${k}" data-s="${s}" data-i="${i}" data-k="${k}" type="${t}" ${t==='number'?'step="0.01" inputmode="decimal" value="'+(v?v:'')+'"':'value="'+esc(v)+'"'} placeholder="${ph}" aria-label="${ph}">`;
 const catSel=(s,i,v)=>`<select class="f" id="${s}-${i}-k" data-s="${s}" data-i="${i}" data-k="k" aria-label="Categoría"><option value="">Categoría</option>${cfg.cats.map(c=>`<option${c===v?' selected':''}>${esc(c)}</option>`).join('')}</select>`;
 const del=(s,i)=>`<button type="button" class="x" data-del="${s}" data-i="${i}" aria-label="Quitar fila">×</button>`;
-const TPL={ing:'1fr 58px 90px 22px',gas:'1fr 88px 112px 58px 22px',aho:'1fr 90px 58px 22px',bnk:'1fr 100px 22px'};
+const TPL={ing:'1fr 58px 90px 44px',gas:'1fr 88px 112px 58px 44px',aho:'1fr 90px 58px 44px',bnk:'1fr 100px 44px'};
+const EDITABLE=['ing','fij','hor','aho','inv'];
+const act=(s,i)=>`<div class="rwx">${EDITABLE.indexOf(s)>=0?`<button type="button" class="x ed-row" data-edit="${s}" data-i="${i}" aria-label="Editar fila" title="Editar">✎</button>`:''}<button type="button" class="x" data-del="${s}" data-i="${i}" aria-label="Quitar fila">×</button></div>`;
 const HEAD={ing:['Concepto','Fecha','Monto',''],gas:['Concepto','Monto','Categoría','Fecha',''],aho:['Banco','Monto','Fecha',''],bnk:['Concepto','Monto','']};
 function rowsHtml(m,s,t){return m[s].map((r,i)=>{
   let c='';
@@ -614,7 +622,7 @@ function rowsHtml(m,s,t){return m[s].map((r,i)=>{
   else if(t==='gas')c=inp(s,i,'c',r.c,'text','Concepto')+inp(s,i,'m',r.m,'number','0.00')+catSel(s,i,r.k)+inp(s,i,'f',r.f,'text','Fecha');
   else if(t==='aho')c=inp(s,i,'c',r.c,'text','Banco')+inp(s,i,'m',r.m,'number','0.00')+inp(s,i,'f',r.f,'text','Fecha');
   else c=inp(s,i,'c',r.c,'text','Concepto')+inp(s,i,'m',r.m,'number','0.00');
-  return `<div class="rw" style="grid-template-columns:${TPL[t]}">${c}${del(s,i)}</div>`;}).join('');}
+  return `<div class="rw" style="grid-template-columns:${TPL[t]}">${c}${act(s,i)}</div>`;}).join('');}
 function sec(m,s,title,hue,t,cls,solid){
   return `<section class="card bcard ${cls||''}" data-cid="${s}" style="--h:var(--${hue})"><div class="sh${solid?' solid':''}"><i></i><span class="ttl">${title}</span></div><div class="tb"><div class="rw lb" style="grid-template-columns:${TPL[t]}">${HEAD[t].map(h=>`<span>${h}</span>`).join('')}</div>${rowsHtml(m,s,t)}</div><button type="button" class="b add" data-add="${s}">+ Agregar fila</button><div class="tot"><span>Total</span><span id="t-${s}">S/ 0.00</span></div></section>`;
 }
@@ -829,6 +837,7 @@ function saveSheet(more){
   if((compra||pago)&&!ent.card){err('Elige la tarjeta.');return;}
   if(pago&&(!ent.src||ent.src==='none')){err('Elige con qué pagas la tarjeta.');g('ssrcw').scrollIntoView({block:'nearest'});return;}
   const m=S[ent.yr][+ent.mo],mo=+ent.mo,desc=g('sd').value.trim(),day=Math.max(1,Math.min(31,+g('sday').value||ent.day)),fch=day+'-'+ABR[mo].toLowerCase();
+  const editing=!!ent.edit;if(editing)delMov(S[ent.edit.yr][ent.edit.mo],ent.edit.s,ent.edit.i);
   const hBefore=dv(m).hor;let u,msg;
   if(compra){
     u=addRow(ent.yr,mo,ent.card,row(desc||'Compra',amt,fch,''));
@@ -845,8 +854,8 @@ function saveSheet(more){
   try{localStorage.setItem(KEY+'-tipo',t);}catch(e){}
   save();
   msg+=(mo!==view||ent.yr!==year?' · '+MES[mo]:'')+hormAlert(hBefore,dv(m).hor,t==='hor'?'hor':'');
-  if(more){g('sa').value='';g('sd').value='';g('smsg').value='';ent.cat='';ent.src='';syncSheet();g('sa').focus();}else closeSheet();
-  render();toast(msg,u);
+  if(more&&!editing){g('sa').value='';g('sd').value='';g('smsg').value='';ent.cat='';ent.src='';syncSheet();g('sa').focus();}else closeSheet();
+  render();toast(editing?('Movimiento actualizado · '+msg):msg,editing?null:u);
 }
 function sheetClick(e){
   const b=e.target.closest('button');if(!b)return;const d=b.dataset;
@@ -857,6 +866,7 @@ function sheetClick(e){
   else if(d.sc!==undefined){ent.cat=ent.cat===d.sc?'':d.sc;syncSheet();}
   else if(d.s==='close')closeSheet();
   else if(d.s==='save')saveSheet(false);
+  else if(d.s==='del-mov'){if(ent.edit){delMov(S[ent.edit.yr][ent.edit.mo],ent.edit.s,ent.edit.i);save();closeSheet();render();toast('Movimiento eliminado');}}
   else if(d.s==='more')saveSheet(true);
 }
 function sheetInput(e){
@@ -893,6 +903,21 @@ function openSheet(){
   document.getElementById('sa').focus();
 }
 document.getElementById('fab').addEventListener('click',openSheet);
+function openEdit(s,i,mo){
+  const mi=(mo==null)?(typeof view==='number'?view:((year===String(now.getFullYear()))?now.getMonth():0)):mo;
+  const r=S[year][mi]&&S[year][mi][s]&&S[year][mi][s][i];if(!r)return;
+  openSheet();
+  let t=s,card='';
+  if(s==='fij'&&r.card){t='pago';card=r.card;}
+  else if(s==='bbva'||s==='bcp'||s==='oh'){t='compra';card=s;}
+  ent.t=t;if(card)ent.card=card;ent.cat=(s==='fij'||s==='hor')?(r.k||''):'';ent.src=r.src||'';ent.mo=mi;ent.yr=year;ent.day=parseInt(r.f)||ent.day;ent.edit={yr:year,mo:mi,s:s,i:i};
+  const g=id=>document.getElementById(id);
+  g('sa').value=(+r.m)||'';if(t!=='pago')g('sd').value=r.c||'';
+  g('smo').value=mi;g('syr').value=year;g('sday').value=ent.day;
+  const h=document.querySelector('#sheet .sh-h b');if(h)h.textContent='Editar movimiento';
+  const more=document.querySelector('#sheet [data-s="more"]');if(more){more.textContent='Eliminar';more.dataset.s='del-mov';more.classList.add('danger');}
+  syncSheet();g('sa').focus();try{g('sa').select();}catch(e){}
+}
 document.addEventListener('click',e=>{if(e.target.closest('[data-undo]')&&lastUndo){const u=lastUndo;lastUndo=null;undoRow(u);toast('Movimiento deshecho');}});
 
 /* ---------- Tarjetas: orden, tamaño y configuración ---------- */
@@ -1083,7 +1108,7 @@ function applyRemote(rows,conf){
 const chipText=()=>({idle:'Conectar hoja',loading:'Cargando…',saving:'Guardando…',saved:'Guardado '+new Date(sync.at).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'}),dirty:'Sin guardar',error:'Reintentar',conflict:'Conflicto'})[sync.state]||'Hoja';
 function updateChip(){
   const c=document.getElementById('syn');
-  if(c){c.hidden=!backend;c.textContent=chipText();c.dataset.s=sync.state;c.title=sync.msg||'Google Sheets';}
+  if(c){c.hidden=!backend;c.textContent=chipText();c.dataset.s=sync.state;c.title=sync.msg||'Google Sheets';c.setAttribute('aria-label','Hoja de Google: '+chipText());}
   const m=document.getElementById('gs-msg');if(m)m.textContent=sync.msg||'';
 }
 function queueSync(){
@@ -1235,7 +1260,7 @@ function viewCapturar(){
     <button type="button" class="cap-btn" data-act="new">+ Registrar movimiento</button>
     <div class="cap-liq"><span>Liquidez disponible</span><b>${fmtC('liq',sum(m.liq))}</b></div>
     <div class="cap-streak">Has registrado <b>${r7}</b> ${r7===1?'movimiento':'movimientos'} en los últimos 7 días</div>
-    <div class="cap-recent"><div class="cap-rt">Últimos movimientos</div>${last.length?last.map(r=>`<div class="cap-r"><span>${esc(r.c||'(sin concepto)')}</span><b class="${gastos.indexOf(r.s)>=0?'g':''}">${gastos.indexOf(r.s)>=0?'-':''}${num2(r.mt)}</b><button type="button" class="capx" data-capdel="${r.s}:${r.idx}" aria-label="Borrar ${esc(r.c||'')}">×</button></div>`).join(''):'<div class="ms">Aún no registras nada este mes.</div>'}</div>
+    <div class="cap-recent"><div class="cap-rt">Últimos movimientos</div>${last.length?last.map(r=>`<div class="cap-r"><span>${esc(r.c||'(sin concepto)')}</span><b class="${gastos.indexOf(r.s)>=0?'g':''}">${gastos.indexOf(r.s)>=0?'-':''}${num2(r.mt)}</b><button type="button" class="capx" data-capedit="${r.s}:${r.idx}" aria-label="Editar ${esc(r.c||'')}">✎</button><button type="button" class="capx" data-capdel="${r.s}:${r.idx}" aria-label="Borrar ${esc(r.c||'')}">×</button></div>`).join(''):'<div class="ms">Aún no registras nada este mes.</div>'}</div>
     <div class="ms cap-tip">Guarda esta pantalla en tu celular: menú del navegador → «Agregar a pantalla de inicio».</div>
   </section>`;
 }
@@ -1277,6 +1302,8 @@ app.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;const d=b.dataset;
   if(d.act==='new'){openSheet();return;}
   if(d.act==='pagar'){openSheet();ent.t='pago';ent.card=d.card;syncSheet();return;}
+  if(d.edit!==undefined){openEdit(d.edit,+d.i);return;}
+  if(d.capedit!==undefined){const a=d.capedit.split(':');openEdit(a[0],+a[1]);return;}
   if(d.capdel!==undefined){const a=d.capdel.split(':'),mi=(year===String(now.getFullYear()))?now.getMonth():0;delMov(S[year][mi],a[0],+a[1]);save();render();toast('Movimiento borrado');return;}
   if(d.act==='prev'){doPrev();return;}
   if(d.act==='rec'){doRec();return;}
