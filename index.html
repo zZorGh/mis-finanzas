@@ -591,6 +591,8 @@ function viewResumen(){
     ${chartCard('Gastos hormiga por mes','En rojo, los meses que pasan de '+fmt(cfg.alerta)+'.','r3','',true)}
     ${chartCard('En qué se fue el año','Distribución de lo gastado, ahorrado e invertido.','r4',lg([['Gastos fijos','var(--c-fij)'],['Gastos hormiga','var(--c-hor)'],['Ahorros','var(--c-aho)'],['Inversión','var(--c-inv)']]),true)}
   </div>
+  ${chartCard('A dónde fue tu ingreso','Cómo se repartió el ingreso del año: gastos, inversión, ahorro y lo que quedó disponible.','r6')}
+  ${chartCard('Capital acumulado','Lo que llevas sumado en ahorro e inversión, mes a mes.','r7')}
   ${chartCard('Año contra año','Lo ahorrado en cada mes, un año contra otro.','r5','',true)}
   ${(()=>{const ins=insights();return ins.length?`<section class="card bcard" data-cid="ins"><div class="cb"><h2 class="ttl">En resumen</h2><ul class="inslist">${ins.map(t=>`<li>${t}</li>`).join('')}</ul></div></section>`:'';})()}
   ${(cfg.metas&&cfg.metas.length)?`<section class="card bcard" data-cid="mg"><div class="cb"><h2 class="ttl">Metas de ahorro</h2><div class="cap">Progreso de cada meta, según los ahorros que le asignaste.</div>${cfg.metas.map(gm=>{const pr=metaProg(gm.n),ob=+gm.o||0,pc=ob>0?Math.min(100,pr/ob*100):0;return `<div class="metarow"><div class="l"><b>${esc(gm.n)}</b><span class="ms">${fmt(pr)}${ob>0?' de '+fmt(ob):''}</span></div><div class="meter"><div style="width:${pc}%;background:var(--c-aho)"></div></div><div class="ms">${ob>0?(pr>=ob?'¡Meta cumplida!':'Faltan '+fmt(ob-pr)+' ('+Math.round(pc)+'%)'):'Sin objetivo fijado'}</div></div>`;}).join('')}</div></section>`:''}
@@ -646,6 +648,19 @@ function drawResumen(){
   mkChart('r3',{type:'bar',data:{labels:ABR,datasets:[{type:t3,label:'Gastos hormiga',data:D.map(x=>x.hor),backgroundColor:t3==='bar'?hc:cv('--c-hor'),borderColor:cv('--c-hor'),pointBackgroundColor:hc,pointRadius:4,tension:.25,borderRadius:4,maxBarThickness:22},{type:'line',label:'Alerta',data:ABR.map(()=>cfg.alerta),borderColor:cv('--muted'),borderDash:[5,4],pointRadius:0,borderWidth:1.5}]},options:{...b,onClick:goMonth,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:tipMoney},scales:axes()}});
   const t4=ctype('r4','doughnut');
   mkChart('r4',{type:t4,data:{labels:['Gastos fijos','Gastos hormiga','Ahorros','Inversión'],datasets:[{data:[t('fij'),t('hor'),t('aho'),t('inv')],backgroundColor:[cv('--c-fij'),cv('--c-hor'),cv('--c-aho'),cv('--c-inv')],borderColor:cv('--surface'),borderWidth:2}]},options:{...b,cutout:t4==='doughnut'?'64%':0,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.label+': '+fmt(c.parsed)}}}}});
+  /* Cascada: a dónde fue el ingreso del año (barras flotantes) */
+  if(document.getElementById('r6')){
+    const steps=[['Ingreso',t('ing'),'--muted'],['Fijos',-t('fij'),'--c-fij'],['Hormiga',-t('hor'),'--c-hor'],['Inversión',-t('inv'),'--c-inv'],['Ahorro',-t('aho'),'--c-aho']];
+    let run=0;const bars=[],cols=[],mags=[];
+    steps.forEach(s=>{const start=run;run+=s[1];bars.push([Math.min(start,run),Math.max(start,run)]);cols.push(cv(s[2]));mags.push(s[1]);});
+    bars.push([Math.min(0,run),Math.max(0,run)]);cols.push(cv('--accent'));mags.push(run);
+    mkChart('r6',{type:'bar',data:{labels:['Ingreso','Fijos','Hormiga','Inversión','Ahorro','Queda'],datasets:[{data:bars,backgroundColor:cols,borderColor:cols,borderRadius:4,maxBarThickness:46}]},options:{...b,plugins:{legend:{display:false},tooltip:{callbacks:{title:c=>c[0].label,label:c=>{const m=mags[c.dataIndex];return ' '+(m<0?'−':'')+fmt(Math.abs(m));}}}},scales:axes()}});
+  }
+  /* Capital acumulado: ahorro + inversión acumulados mes a mes */
+  if(document.getElementById('r7')){
+    let acc=0,started=false;const cap=D.map(x=>{if(x.on)started=true;if(!started)return null;acc+=x.aho+x.inv;return Math.round(acc*100)/100;});
+    mkChart('r7',{type:ctype('r7','line'),data:{labels:ABR,datasets:[{label:'Capital acumulado',data:cap,borderColor:cv('--c-aho'),backgroundColor:cv('--c-aho'),borderWidth:2.5,tension:.25,pointRadius:3,maxBarThickness:22,borderRadius:4,spanGaps:true,fill:false}]},options:{...b,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:tipMoney},scales:axes()}});
+  }
 }
 
 /* ---------- Detalle de un mes ---------- */
@@ -709,7 +724,7 @@ function viewMes(i){
   </div>
   <div class="secs">
     ${sec(m,'ing','Ingresos','h-ing','ing')}
-    <section class="card bcard" data-cid="pre" style="--h:var(--h-pre)"><div class="sh"><i></i><span class="ttl">Presupuesto</span></div><div class="cb"><label class="sr" for="pmode">Modo del presupuesto</label><select id="pmode" class="f" style="margin-bottom:12px"><option value="s"${cfg.pmode!=='c'?' selected':''}>Mi hoja: fondo, inversión y gastos</option><option value="c"${cfg.pmode==='c'?' selected':''}>Clásica 50/30/20: necesidades, deseos y ahorro (según la categoría de cada gasto)</option></select>${pr}</div><div class="note" id="psum"></div></section>
+    <section class="card bcard" data-cid="pre" style="--h:var(--h-pre)"><div class="sh"><i></i><span class="ttl">Presupuesto</span></div><div class="cb"><div class="ms" style="margin-bottom:12px">Regla 50/30/20: necesidades, deseos y ahorro, según la categoría de cada gasto.</div>${pr}</div><div class="note" id="psum"></div></section>
     ${eurSec(m)}
     ${sec(m,'fij','Gastos fijos','h-fij','gas','span2')}
     ${sec(m,'hor','Gastos hormiga','h-hor','gas','span2')}
@@ -965,17 +980,17 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-undo]')&&lastUn
 
 /* ---------- Tarjetas: orden, tamaño y configuración ---------- */
 const LKEY=KEY+'-layout';
-const DEFW={resumen:{rk:12,r1:6,r2:6,r3:6,r4:6,r5:12,ins:12,mg:12,rf:12,rm:12,ra:12},mes:{mk:12,mc1:4,mc2:4,mc3:4,ing:6,pre:6,eur:12,fij:6,hor:6,bbva:4,bcp:4,oh:4,aho:6,inv:6}};
-const TYPES={r1:['bar','line'],r2:['line','bar'],r3:['bar','line'],r4:['doughnut','pie'],r5:['line','bar'],mc1:['doughnut','pie'],mc2:['bar','line'],mc3:['bar','doughnut']};
+const DEFW={resumen:{rk:12,r1:6,r2:6,r3:6,r4:6,r6:12,r7:12,r5:12,ins:12,mg:12,rf:12,rm:12,ra:12},mes:{mk:12,mc1:4,mc2:4,mc3:4,ing:6,pre:6,eur:12,fij:6,hor:6,bbva:4,bcp:4,oh:4,aho:6,inv:6}};
+const TYPES={r1:['bar','line'],r2:['line','bar'],r3:['bar','line'],r4:['doughnut','pie'],r5:['line','bar'],r7:['line','bar'],mc1:['doughnut','pie'],mc2:['bar','line'],mc3:['bar','doughnut']};
 const TNAME={bar:'Barras',line:'Líneas',doughnut:'Dona',pie:'Torta'};
-const CNAME={ins:'En resumen',mg:'Metas de ahorro',rk:'Indicadores',r1:'Ingreso, gastado y ahorrado',r2:'Ahorro sobre el ingreso',r3:'Gastos hormiga por mes',r4:'En qué se fue el año',r5:'Año contra año',rf:'Fondo de emergencia',rm:'Meses',ra:'Ajustes',mk:'Indicadores',mc1:'Distribución del mes',mc2:'Contra el mes anterior',mc3:'Saldo por cuenta',ing:'Ingresos',liq:'Liquidez',pre:'Presupuesto',eur:'Apuntes',fij:'Gastos fijos',hor:'Gastos hormiga',bbva:'BBVA',bcp:'BCP',oh:'oh!',aho:'Ahorros',inv:'Inversiones'};
+const CNAME={ins:'En resumen',mg:'Metas de ahorro',rk:'Indicadores',r1:'Ingreso, gastado y ahorrado',r2:'Ahorro sobre el ingreso',r3:'Gastos hormiga por mes',r4:'En qué se fue el año',r6:'A dónde fue tu ingreso',r7:'Capital acumulado',r5:'Año contra año',rf:'Fondo de emergencia',rm:'Meses',ra:'Ajustes',mk:'Indicadores',mc1:'Distribución del mes',mc2:'Contra el mes anterior',mc3:'Saldo por cuenta',ing:'Ingresos',liq:'Liquidez',pre:'Presupuesto',eur:'Apuntes',fij:'Gastos fijos',hor:'Gastos hormiga',bbva:'BBVA',bcp:'BCP',oh:'oh!',aho:'Ahorros',inv:'Inversiones'};
 const WOPT=[[3,'1/4 de ancho'],[4,'1/3 de ancho'],[6,'1/2 de ancho'],[8,'2/3 de ancho'],[9,'3/4 de ancho'],[12,'Ancho completo']];
 const HOPT=[[0,'Automático'],[160,'Compacto'],[240,'Normal'],[340,'Alto'],[460,'Muy alto']];
 let LAY={};try{LAY=JSON.parse(localStorage.getItem(LKEY))||{};}catch(e){LAY={};}
 const localLay=()=>{try{localStorage.setItem(LKEY,JSON.stringify(LAY));}catch(e){}};
 const saveLay=()=>{localLay();queueSync();};
 const grp=()=>view==='resumen'?'resumen':'mes';
-const PM=()=>cfg.pmode==='c'?{k:'q',rows:[['Necesidades','var(--c-fij)','need','max'],['Deseos','var(--c-hor)','want','max'],['Ahorro e inversión','var(--c-aho)','ai','min']]}:{k:'p',rows:[['Fondo de emergencia','var(--c-aho)','aho','min'],['Inversiones','var(--c-inv)','inv','min'],['Gastos','var(--c-gas)','gas','max']]};
+const PM=()=>({k:'q',rows:[['Necesidades','var(--c-fij)','need','max'],['Deseos','var(--c-hor)','want','max'],['Ahorro e inversión','var(--c-aho)','ai','min']]});
 const SECS=['ing','liq','fij','hor','bbva','bcp','oh','aho','inv'];
 const L=()=>LAY[grp()]||(LAY[grp()]={order:[],c:{}});
 const cs=id=>L().c[id]||(L().c[id]={});
@@ -1380,7 +1395,7 @@ app.addEventListener('input',e=>{
   if(d.p!==undefined){const k=PM().k;if(!m.q)m.q=[50,30,20];m[k][+d.p]=parseFloat(t.value)||0;save();refreshMonth(false);return;}
   if(d.s){const r=m[d.s][+d.i];const wasM=d.k==='m';r[d.k]=(d.s==='eur'||d.k==='m')?(parseFloat(t.value)||0):t.value;if(wasM&&r.src)reconcile(m,r,d.s);save();refreshMonth(false);}
 });
-app.addEventListener('change',e=>{if(e.target.id==='bk-file'){const f=e.target.files&&e.target.files[0];if(f){const r=new FileReader();r.onload=()=>restoreFrom(String(r.result));r.onerror=()=>bkMsg('No pude leer el archivo.',true);r.readAsText(f);}e.target.value='';return;}if(e.target.dataset.cfgt){cfg[e.target.dataset.cfgt]=e.target.value;save();render();return;}if(e.target.dataset.gs==='auto'){sync.auto=e.target.checked;persistSync();if(sync.auto&&sync.dirty&&sync.ready)queueSync();return;}if(e.target.dataset.gs==='id'){e.target.value=sync.id;return;}if(e.target.dataset.cfg||e.target.dataset.tc)render();else if(e.target.id==='pmode'){cfg.pmode=e.target.value;save();render();}});
+app.addEventListener('change',e=>{if(e.target.id==='bk-file'){const f=e.target.files&&e.target.files[0];if(f){const r=new FileReader();r.onload=()=>restoreFrom(String(r.result));r.onerror=()=>bkMsg('No pude leer el archivo.',true);r.readAsText(f);}e.target.value='';return;}if(e.target.dataset.cfgt){cfg[e.target.dataset.cfgt]=e.target.value;save();render();return;}if(e.target.dataset.gs==='auto'){sync.auto=e.target.checked;persistSync();if(sync.auto&&sync.dirty&&sync.ready)queueSync();return;}if(e.target.dataset.gs==='id'){e.target.value=sync.id;return;}if(e.target.dataset.cfg||e.target.dataset.tc)render();});
 app.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;const d=b.dataset;
   if(d.act==='new'){openSheet();return;}
