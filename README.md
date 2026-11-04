@@ -29,3 +29,5 @@ Este repositorio no incluye datos personales: ni movimientos, ni saldos, ni el I
 - Cargar enero a junio de 2025.
 
 Registro de decisiones (ADR): [`docs/DECISIONS.md`](docs/DECISIONS.md).
+
+Análisis y roadmap: [`docs/ROADMAP.md`](docs/ROADMAP.md).
