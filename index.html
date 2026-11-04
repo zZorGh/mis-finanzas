@@ -106,6 +106,12 @@ h2{font:600 15px var(--font-display);margin:0}
 .fond b{font:600 34px var(--font-display);letter-spacing:-.02em}
 .meter{height:12px;border-radius:6px;background:var(--surface-2);overflow:hidden;border:1px solid var(--line)}
 .meter div{height:100%;background:var(--c-aho);border-radius:6px}
+.hm7{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:36px;gap:4px;align-content:start}
+.hmhead{text-align:center;font-size:11px;color:var(--muted);padding-bottom:2px}
+.hmcell{height:36px;border-radius:7px;border:1px solid var(--line);display:grid;place-items:center}
+.hmcell span{font-size:11px;color:var(--muted)}
+.hmcell.on span{color:var(--fg);font-weight:600}
+.hmcell.empty{border:none;background:transparent!important}
 .cfg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px}
 .cfg label{display:grid;gap:4px;font-size:12px;color:var(--muted)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
@@ -722,6 +728,7 @@ function viewMes(i){
     <section class="card bcard" data-cid="mc2"><div class="cb"><h2 class="ttl">Contra el mes anterior</h2><div class="cap">Fijos, hormiga, ahorros e inversión.</div><div id="w2" class="cw s"><canvas id="mc2" role="img" aria-label="Comparación con el mes anterior"></canvas></div><div class="empty" id="e2" hidden>Sin movimientos todavía en ${MES[i].toLowerCase()}.</div><div class="lg" id="lg2"></div></div></section>
     <section class="card bcard" data-cid="mc3"><div class="cb"><h2 class="ttl">Saldo por cuenta</h2><div class="cap">BBVA, BCP, oh!, ahorros e inversiones.</div><div id="w3" class="cw s"><canvas id="mc3" role="img" aria-label="Saldo por cuenta"></canvas></div><div class="empty" id="e3" hidden>Agrega montos en los bancos, ahorros o inversiones para verlos aquí.</div></div></section>
   </div>
+  <section class="card bcard" data-cid="hm1"><div class="cb"><h2 class="ttl">Gasto por día</h2><div class="cap">Calendario de ${MES[i].toLowerCase()}: más oscuro, más gasto ese día.</div><div id="hmgrid" class="hm7"></div><div class="ms" id="hmleg" style="margin-top:10px"></div></div></section>
   <div class="secs">
     ${sec(m,'ing','Ingresos','h-ing','ing')}
     <section class="card bcard" data-cid="pre" style="--h:var(--h-pre)"><div class="sh"><i></i><span class="ttl">Presupuesto</span></div><div class="cb"><div class="ms" style="margin-bottom:12px">Regla 50/30/20: necesidades, deseos y ahorro, según la categoría de cada gasto.</div>${pr}</div><div class="note" id="psum"></div></section>
@@ -759,6 +766,18 @@ function drawMonthCharts(anim){
     const t3=ctype('mc3','bar'),dn=t3==='doughnut',bc=[cv('--h-bbva'),cv('--h-bcp'),cv('--h-oh'),cv('--h-aho'),cv('--h-inv')];
     mkChart('mc3',{type:t3,data:{labels:['BBVA','BCP','oh!','Ahorros','Inversiones'],datasets:[{label:'Saldo',data:[cb,cc,co,D.aho,D.inv],backgroundColor:bc,borderColor:dn?cv('--surface'):bc,borderWidth:dn?2:0,borderRadius:dn?0:4,maxBarThickness:34}]},options:{...b,cutout:dn?'60%':undefined,plugins:{legend:{display:dn,position:'bottom',labels:{color:cv('--muted'),boxWidth:10,font:{size:11}}},tooltip:{callbacks:{label:c=>' '+(dn?c.label+': ':'')+fmt(dn?c.parsed:c.parsed.y)}}},scales:dn?{}:axes()}});
   }
+  drawHeatmap();
+}
+function drawHeatmap(){
+  const g=document.getElementById('hmgrid');if(!g)return;
+  const m=S[year][view],days=new Date(+year,view+1,0).getDate(),first=(new Date(+year,view,1).getDay()+6)%7;
+  const tot={};let max=0;
+  ['fij','hor'].forEach(s=>(m[s]||[]).forEach(r=>{const d=parseInt(r.f)||0,v=+r.m||0;if(d>=1&&d<=days&&v){tot[d]=(tot[d]||0)+v;if(tot[d]>max)max=tot[d];}}));
+  let html=['L','M','M','J','V','S','D'].map(h=>`<div class="hmhead">${h}</div>`).join('');
+  for(let i=0;i<first;i++)html+='<div class="hmcell empty"></div>';
+  for(let d=1;d<=days;d++){const v=tot[d]||0,int=max>0?v/max:0,bg=v>0?`color-mix(in srgb, var(--accent) ${Math.round(14+int*76)}%, var(--surface-2))`:'var(--surface-2)';html+=`<div class="hmcell${v>0?' on':''}" style="background:${bg}" title="${MES[view]} ${d}: ${fmt(v)}"><span>${d}</span></div>`;}
+  g.innerHTML=html;
+  const lg=document.getElementById('hmleg');if(lg)lg.textContent=max>0?'Día de mayor gasto: '+fmt(max)+'. Pasa el cursor por cada día para ver el detalle.':'Sin gastos registrados en '+MES[view].toLowerCase()+' todavía.';
 }
 function refreshMonth(anim){
   const m=S[year][view],D=dv(m);
@@ -980,10 +999,10 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-undo]')&&lastUn
 
 /* ---------- Tarjetas: orden, tamaño y configuración ---------- */
 const LKEY=KEY+'-layout';
-const DEFW={resumen:{rk:12,r1:6,r2:6,r3:6,r4:6,r6:12,r7:12,r5:12,ins:12,mg:12,rf:12,rm:12,ra:12},mes:{mk:12,mc1:4,mc2:4,mc3:4,ing:6,pre:6,eur:12,fij:6,hor:6,bbva:4,bcp:4,oh:4,aho:6,inv:6}};
+const DEFW={resumen:{rk:12,r1:6,r2:6,r3:6,r4:6,r6:12,r7:12,r5:12,ins:12,mg:12,rf:12,rm:12,ra:12},mes:{mk:12,mc1:4,mc2:4,mc3:4,hm1:12,ing:6,pre:6,eur:12,fij:6,hor:6,bbva:4,bcp:4,oh:4,aho:6,inv:6}};
 const TYPES={r1:['bar','line'],r2:['line','bar'],r3:['bar','line'],r4:['doughnut','pie'],r5:['line','bar'],r7:['line','bar'],mc1:['doughnut','pie'],mc2:['bar','line'],mc3:['bar','doughnut']};
 const TNAME={bar:'Barras',line:'Líneas',doughnut:'Dona',pie:'Torta'};
-const CNAME={ins:'En resumen',mg:'Metas de ahorro',rk:'Indicadores',r1:'Ingreso, gastado y ahorrado',r2:'Ahorro sobre el ingreso',r3:'Gastos hormiga por mes',r4:'En qué se fue el año',r6:'A dónde fue tu ingreso',r7:'Capital acumulado',r5:'Año contra año',rf:'Fondo de emergencia',rm:'Meses',ra:'Ajustes',mk:'Indicadores',mc1:'Distribución del mes',mc2:'Contra el mes anterior',mc3:'Saldo por cuenta',ing:'Ingresos',liq:'Liquidez',pre:'Presupuesto',eur:'Apuntes',fij:'Gastos fijos',hor:'Gastos hormiga',bbva:'BBVA',bcp:'BCP',oh:'oh!',aho:'Ahorros',inv:'Inversiones'};
+const CNAME={ins:'En resumen',mg:'Metas de ahorro',rk:'Indicadores',r1:'Ingreso, gastado y ahorrado',r2:'Ahorro sobre el ingreso',r3:'Gastos hormiga por mes',r4:'En qué se fue el año',r6:'A dónde fue tu ingreso',r7:'Capital acumulado',r5:'Año contra año',rf:'Fondo de emergencia',rm:'Meses',ra:'Ajustes',mk:'Indicadores',mc1:'Distribución del mes',mc2:'Contra el mes anterior',mc3:'Saldo por cuenta',hm1:'Gasto por día',ing:'Ingresos',liq:'Liquidez',pre:'Presupuesto',eur:'Apuntes',fij:'Gastos fijos',hor:'Gastos hormiga',bbva:'BBVA',bcp:'BCP',oh:'oh!',aho:'Ahorros',inv:'Inversiones'};
 const WOPT=[[3,'1/4 de ancho'],[4,'1/3 de ancho'],[6,'1/2 de ancho'],[8,'2/3 de ancho'],[9,'3/4 de ancho'],[12,'Ancho completo']];
 const HOPT=[[0,'Automático'],[160,'Compacto'],[240,'Normal'],[340,'Alto'],[460,'Muy alto']];
 let LAY={};try{LAY=JSON.parse(localStorage.getItem(LKEY))||{};}catch(e){LAY={};}
