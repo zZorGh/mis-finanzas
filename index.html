@@ -435,7 +435,7 @@ h1{letter-spacing:-.03em}
 .welcome .b.p{height:40px}
 .cap-streak{font-size:13px;color:var(--muted);text-align:center;margin-top:2px}
 .cap-streak b{color:var(--accent);font-family:var(--font-num)}
-.tc-date{margin:-2px 0 10px}
+.tcm-row{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:8px 0}.tcm-row label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:120px;flex:0 1 160px}.tc-date{margin:-2px 0 10px}
 #rc-src{min-width:120px}
 
 .cardfields{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2);margin:0 0 10px}
@@ -508,16 +508,16 @@ function parseHash(){const h=location.hash.slice(1);if(h==='capturar'){view='cap
 parseHash();
 
 const curOf=id=>((LAY.mes&&LAY.mes.c&&LAY.mes.c[id])||{}).cur||'S/';
-const rate=id=>{const c=curOf(id);return c==='S/'?1:(+((cfg.tc||{})[c])||1);};
+const rate=(id,m)=>{const c=curOf(id);if(c==='S/')return 1;return (m&&m.tc&&+m.tc[c])||(+((cfg.tc||{})[c]))||1;};
 const fmtC=(id,v)=>curOf(id)+' '+num2(v);
 function needWant(m){
   let n=0,w=0;
   [['fij','n'],['hor','w']].forEach(x=>{(m[x[0]]||[]).forEach(r=>{
-    const v=(+r.m||0)*rate(x[0]),k=(r.k||'').toLowerCase(),t=k.indexOf('necesid')===0?'n':k.indexOf('deseo')===0?'w':x[1];
+    const v=(+r.m||0)*rate(x[0],m),k=(r.k||'').toLowerCase(),t=k.indexOf('necesid')===0?'n':k.indexOf('deseo')===0?'w':x[1];
     if(t==='n')n+=v;else w+=v;});});
   return{need:n,want:w};
 }
-function dv(m){const f=(k)=>sum(m[k])*rate(k);
+function dv(m){const f=(k)=>sum(m[k])*rate(k,m);
   const ing=f('ing'),fij=f('fij'),hor=f('hor'),aho=f('aho'),inv=f('inv'),gas=fij+hor;
   return{...needWant(m),ing,fij,hor,gas,aho,inv,res:ing-gas-aho-inv,bb:cardDebt(m,'bbva'),bc:cardDebt(m,'bcp'),oh:cardDebt(m,'oh'),on:(ing>0||gas>0||aho>0||inv>0)};}
 
@@ -537,7 +537,7 @@ function header(){
 }
 
 /* ---------- Resumen del año ---------- */
-function metaProg(name){let t=0;YEARS.forEach(y=>S[y].forEach(m=>(m.aho||[]).forEach(r=>{if((r.k||'')===name)t+=(+r.m||0)*rate('aho');})));return Math.round(t*100)/100;}
+function metaProg(name){let t=0;YEARS.forEach(y=>S[y].forEach(m=>(m.aho||[]).forEach(r=>{if((r.k||'')===name)t+=(+r.m||0)*rate('aho',m);})));return Math.round(t*100)/100;}
 function insights(){
   const out=[],ms=S[year].map(dv),cur=(year===String(now.getFullYear()))?now.getMonth():-1;
   const wi=ms.filter(x=>x.ing>0);
@@ -611,10 +611,13 @@ function viewResumen(){
       <label for="cf-alerta">Alerta de gastos hormiga (S/)<input id="cf-alerta" type="number" step="10" data-cfg="alerta" value="${cfg.alerta}"></label>
       <label for="cf-meta">Meta de ahorro (% del ingreso)<input id="cf-meta" type="number" step="1" data-cfg="meta" value="${cfg.meta}"></label>
       <label for="cf-meses">Meses de gastos fijos en el fondo<input id="cf-meses" type="number" step="1" data-cfg="meses" value="${cfg.meses}"></label>
-      <label for="tc-e">Tipo de cambio: 1 € en S/<input id="tc-e" type="number" step="0.01" data-tc="€" value="${(cfg.tc||{})['€']}"></label>
-      <label for="tc-d">Tipo de cambio: 1 $ en S/<input id="tc-d" type="number" step="0.01" data-tc="$" value="${(cfg.tc||{})['$']}"></label>
+      <label for="tc-e">Respaldo: 1 € en S/<input id="tc-e" type="number" step="0.01" data-tc="€" value="${(cfg.tc||{})['€']}"></label>
+      <label for="tc-d">Respaldo: 1 $ en S/<input id="tc-d" type="number" step="0.01" data-tc="$" value="${(cfg.tc||{})['$']}"></label>
     </div>
-    <div class="ms tc-date">${cfg.tcDate?'Tipos de cambio actualizados el '+esc(cfg.tcDate)+'.':'Los tipos de cambio son de ejemplo. Actualízalos y se guardará la fecha.'}</div>
+    <div class="ms tc-date" id="fx-msg" role="status">${cfg.tcLast?'Última consulta: 1 $ = S/ '+tc3(cfg.tcLast.usd)+(cfg.tcLast.eur?' · 1 € = S/ '+tc3(cfg.tcLast.eur):'')+' ('+esc(cfg.tcLast.s)+(cfg.tcLast.f?', '+fmtISO(cfg.tcLast.f):'')+').':'Todavía no se consultó el tipo de cambio.'}</div>
+    <label class="chk"><input type="checkbox" id="fx-auto" data-fx="auto"${cfg.tcAuto!==false?' checked':''}> Guardar cada día la tasa SUNAT en el mes actual (al abrir la app)</label>
+    <div class="qa"><button class="b" id="fx-now" type="button">Consultar ahora</button></div>
+    <div class="ms" style="margin-bottom:12px">Cada mes guarda su propia tasa y los meses anteriores no cambian. Los valores de respaldo de arriba se usan solo en meses sin tasa propia. SUNAT publica solo el dólar (usamos el precio de venta); el euro sale del mercado y es referencial. <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener">Rates By Exchange Rate API</a></div>
     <div class="ms">Categorías de gastos</div>
     <div class="chips">${cfg.cats.map((c,i)=>`<span class="chip">${esc(c)}<button type="button" data-cat="${i}" aria-label="Quitar ${esc(c)}">×</button></span>`).join('')}</div>
     <div class="qa"><input type="text" id="nc" placeholder="Nueva categoría, por ejemplo Mascotas" aria-label="Nueva categoría"><button class="b" id="addcat" type="button">Agregar categoría</button><button class="b" id="reset" type="button">Restablecer ejemplo</button></div>
@@ -728,6 +731,7 @@ function viewMes(i){
     <section class="card bcard" data-cid="mc2"><div class="cb"><h2 class="ttl">Contra el mes anterior</h2><div class="cap">Fijos, hormiga, ahorros e inversión.</div><div id="w2" class="cw s"><canvas id="mc2" role="img" aria-label="Comparación con el mes anterior"></canvas></div><div class="empty" id="e2" hidden>Sin movimientos todavía en ${MES[i].toLowerCase()}.</div><div class="lg" id="lg2"></div></div></section>
     <section class="card bcard" data-cid="mc3"><div class="cb"><h2 class="ttl">Saldo por cuenta</h2><div class="cap">BBVA, BCP, oh!, ahorros e inversiones.</div><div id="w3" class="cw s"><canvas id="mc3" role="img" aria-label="Saldo por cuenta"></canvas></div><div class="empty" id="e3" hidden>Agrega montos en los bancos, ahorros o inversiones para verlos aquí.</div></div></section>
   </div>
+  ${tcmCard(m,i)}
   <section class="card bcard" data-cid="hm1"><div class="cb"><h2 class="ttl">Gasto por día</h2><div class="cap">Calendario de ${MES[i].toLowerCase()}: más oscuro, más gasto ese día.</div><div id="hmgrid" class="hm7"></div><div class="ms" id="hmleg" style="margin-top:10px"></div></div></section>
   <div class="secs">
     ${sec(m,'ing','Ingresos','h-ing','ing')}
@@ -782,9 +786,10 @@ function drawHeatmap(){
 function refreshMonth(anim){
   const m=S[year][view],D=dv(m);
   const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  set('tcm-st',tcmInfo(m));
   set('kI',fmt(D.ing));set('kG',fmt(D.gas));set('kV',fmt(D.inv));set('kA',fmt(D.aho));set('kR',fmt(D.res));
   const r=document.getElementById('kR');if(r)r.classList.toggle('neg',D.res<0);
-  ['ing','liq','fij','hor','aho','inv'].forEach(s=>{const v=sum(m[s]);set('t-'+s,fmtC(s,v)+(curOf(s)!=='S/'?' ≈ '+fmt(v*rate(s)):''));});
+  ['ing','liq','fij','hor','aho','inv'].forEach(s=>{const v=sum(m[s]);set('t-'+s,fmtC(s,v)+(curOf(s)!=='S/'?' ≈ '+fmt(v*rate(s,m)):''));});
   ['bbva','bcp','oh'].forEach(k=>{const debt=cardEnding(year,view,k),lim=+(cfg.credito||{})[k]||0,cd=document.getElementById('cd-'+k);set('cd-'+k,fmtC(k,debt));set('ca-'+k,fmtC(k,lim-debt));const cm=document.getElementById('cm-'+k);if(cm)cm.style.width=(lim>0?Math.min(100,Math.max(0,debt/lim*100)):0)+'%';if(cd)cd.style.color=debt>0?'var(--bad)':'var(--ok)';});
   const pm=PM();if(!m.q)m.q=[50,30,20];
   pm.rows.forEach((r,j)=>{
@@ -856,7 +861,7 @@ function srcList(none){
   return out;
 }
 function liqRef(m,src){return (src&&src.slice(0,4)==='liq:')?m.liq[+src.slice(4)]:null;}
-function dedAmt(m,r,sec){return Math.round((+r.m||0)*rate(sec)/rate('liq')*100)/100;}
+function dedAmt(m,r,sec){return Math.round((+r.m||0)*rate(sec,m)/rate('liq',m)*100)/100;}
 function applyDed(m,r,sec){const l=liqRef(m,r.src);if(!l)return'';const a=dedAmt(m,r,sec);l.m=Math.round(((+l.m||0)-a)*100)/100;r._d=a;return ' · descontado de '+l.c+(l.m<0?' (quedó en negativo)':'');}
 function revDed(m,r){const l=liqRef(m,r.src);if(l&&r._d!=null)l.m=Math.round(((+l.m||0)+r._d)*100)/100;delete r._d;}
 function reconcile(m,r,sec){if(!r.src)return;revDed(m,r);applyDed(m,r,sec);}
@@ -999,10 +1004,10 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-undo]')&&lastUn
 
 /* ---------- Tarjetas: orden, tamaño y configuración ---------- */
 const LKEY=KEY+'-layout';
-const DEFW={resumen:{rk:12,r1:6,r2:6,r3:6,r4:6,r6:12,r7:12,r5:12,ins:12,mg:12,rf:12,rm:12,ra:12},mes:{mk:12,mc1:4,mc2:4,mc3:4,hm1:12,ing:6,pre:6,eur:12,fij:6,hor:6,bbva:4,bcp:4,oh:4,aho:6,inv:6}};
+const DEFW={resumen:{rk:12,r1:6,r2:6,r3:6,r4:6,r6:12,r7:12,r5:12,ins:12,mg:12,rf:12,rm:12,ra:12},mes:{mk:12,tcm:12,mc1:4,mc2:4,mc3:4,hm1:12,ing:6,pre:6,eur:12,fij:6,hor:6,bbva:4,bcp:4,oh:4,aho:6,inv:6}};
 const TYPES={r1:['bar','line'],r2:['line','bar'],r3:['bar','line'],r4:['doughnut','pie'],r5:['line','bar'],r7:['line','bar'],mc1:['doughnut','pie'],mc2:['bar','line'],mc3:['bar','doughnut']};
 const TNAME={bar:'Barras',line:'Líneas',doughnut:'Dona',pie:'Torta'};
-const CNAME={ins:'En resumen',mg:'Metas de ahorro',rk:'Indicadores',r1:'Ingreso, gastado y ahorrado',r2:'Ahorro sobre el ingreso',r3:'Gastos hormiga por mes',r4:'En qué se fue el año',r6:'A dónde fue tu ingreso',r7:'Capital acumulado',r5:'Año contra año',rf:'Fondo de emergencia',rm:'Meses',ra:'Ajustes',mk:'Indicadores',mc1:'Distribución del mes',mc2:'Contra el mes anterior',mc3:'Saldo por cuenta',hm1:'Gasto por día',ing:'Ingresos',liq:'Liquidez',pre:'Presupuesto',eur:'Apuntes',fij:'Gastos fijos',hor:'Gastos hormiga',bbva:'BBVA',bcp:'BCP',oh:'oh!',aho:'Ahorros',inv:'Inversiones'};
+const CNAME={ins:'En resumen',mg:'Metas de ahorro',rk:'Indicadores',r1:'Ingreso, gastado y ahorrado',r2:'Ahorro sobre el ingreso',r3:'Gastos hormiga por mes',r4:'En qué se fue el año',r6:'A dónde fue tu ingreso',r7:'Capital acumulado',r5:'Año contra año',rf:'Fondo de emergencia',rm:'Meses',ra:'Ajustes',mk:'Indicadores',mc1:'Distribución del mes',mc2:'Contra el mes anterior',mc3:'Saldo por cuenta',tcm:'Tipo de cambio del mes',hm1:'Gasto por día',ing:'Ingresos',liq:'Liquidez',pre:'Presupuesto',eur:'Apuntes',fij:'Gastos fijos',hor:'Gastos hormiga',bbva:'BBVA',bcp:'BCP',oh:'oh!',aho:'Ahorros',inv:'Inversiones'};
 const WOPT=[[3,'1/4 de ancho'],[4,'1/3 de ancho'],[6,'1/2 de ancho'],[8,'2/3 de ancho'],[9,'3/4 de ancho'],[12,'Ancho completo']];
 const HOPT=[[0,'Automático'],[160,'Compacto'],[240,'Normal'],[340,'Alto'],[460,'Muy alto']];
 let LAY={};try{LAY=JSON.parse(localStorage.getItem(LKEY))||{};}catch(e){LAY={};}
@@ -1146,6 +1151,7 @@ function toRows(){
     if(out.length>n0||m.tot||m.nota||JSON.stringify(m.p)!==dflt||JSON.stringify(m.q||[50,30,20])!==dflt)
       out.push(base.concat(['_Mes',JSON.stringify({p:m.p,q:m.q||[50,30,20],nota:m.nota||'',tot:!!m.tot}),0,'','','','','','','','','']));
     if(m.copen&&Object.keys(m.copen).some(k=>+m.copen[k]))out.push(base.concat(['_Card',JSON.stringify(m.copen),0,'','','','','','','','','']));
+    if(m.tc&&(+m.tc['$']||+m.tc['€']))out.push(base.concat(['_TC',JSON.stringify(m.tc),0,'','','','','','','','','']));
   }));
   return out;
 }
@@ -1158,6 +1164,7 @@ function fromRows(rows){
     const m=years[y][mi],ap=String(r[3]||'').trim();
     if(ap==='_Mes'){try{const j=JSON.parse(r[4]);if(j.p)m.p=j.p;if(j.q)m.q=j.q;m.nota=j.nota||'';m.tot=!!j.tot;}catch(e){}return;}
     if(ap==='_Card'){try{m.copen=JSON.parse(r[4]);}catch(e){}return;}
+    if(ap==='_TC'){try{m.tc=JSON.parse(r[4]);}catch(e){}return;}
     if(ap==='Apuntes'){m.eur.push({a:num(r[8]),b:num(r[9]),d:num(r[10]),s:num(r[11]),p:num(r[12])});return;}
     const k=APART_INV[ap];
     if(k)m[k].push(row(r[4]||'',num(r[5]),r[7]||'',r[6]||'',r[13]||'',r[14]||''));
@@ -1268,7 +1275,7 @@ async function loadFromSheet(){
     applyRemote(rows,d.conf||[]);
     sync.ready=true;sync.connected=true;sync.dirty=false;persistSync();
     sync.state='saved';sync.at=Date.now();sync.msg='Datos cargados desde tu hoja ('+rows.length+' movimientos).';
-    render();toast('Datos cargados desde tu hoja');
+    render();toast('Datos cargados desde tu hoja');fxAuto();
   }catch(e){sync.state='error';sync.msg=errMsg(e);updateChip();}
 }
 function initSync(){
@@ -1278,6 +1285,91 @@ function initSync(){
     mcp=m||null;backend=mcp?mcpBackend:null;updateChip();
     if(backend&&sync.connected&&sync.id)loadFromSheet();
   }).catch(()=>{});
+}
+
+/* ---------- Tipo de cambio: SUNAT guardado por mes ---------- */
+const FX_SRC=[
+  {n:'ExchangeRate-API',url:'https://open.er-api.com/v6/latest/USD',pen:j=>j&&j.result==='success'&&j.rates?+j.rates.PEN:0,eur:j=>j&&j.rates&&+j.rates.EUR?+j.rates.PEN/+j.rates.EUR:0},
+  {n:'currency-api',url:'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json',pen:j=>j&&j.usd?+j.usd.pen:0,eur:j=>j&&j.usd&&+j.usd.eur?+j.usd.pen/+j.usd.eur:0}
+];
+const fxToday=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const fxRound=v=>Math.round(v*1000)/1000;
+const tc3=v=>{const n=+v;return n?String(Math.round(n*1000)/1000):'';};
+const fmtISO=f=>/^\d{4}-\d{2}-\d{2}$/.test(String(f||''))?f.slice(8)+'/'+f.slice(5,7)+'/'+f.slice(0,4):'';
+/* Mercado (referencial): dólar y euro. Se usa para el euro y como plan B del dólar. */
+async function fxFetch(){
+  let last=null;
+  for(const s of FX_SRC){
+    const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),8000);
+    try{
+      const r=await fetch(s.url,{signal:ctl.signal,cache:'no-store'});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const j=await r.json(),pen=s.pen(j),eur=s.eur(j);
+      if(pen>1&&pen<20&&eur>1&&eur<30)return{usd:pen,eur:eur,src:s.n};
+      throw new Error('datos fuera de rango');
+    }catch(e){last=e;}finally{clearTimeout(to);}
+  }
+  throw last||new Error('sin conexión');
+}
+/* SUNAT (oficial, dólar): llega por una función de tu Supabase que lee el archivo público de SUNAT. */
+async function fxSunat(){
+  if(!SB_URL)return null;
+  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),8000);
+  try{
+    const r=await fetch(SB_URL+'/functions/v1/tipo-cambio',{headers:{apikey:SB_KEY},signal:ctl.signal,cache:'no-store'});
+    if(!r.ok)return null;
+    const j=await r.json();
+    if(j&&+j.venta>1&&+j.venta<20&&/^\d{4}-\d{2}-\d{2}$/.test(String(j.fecha)))return{usd:+j.venta,compra:+j.compra||0,fecha:j.fecha};
+    return null;
+  }catch(e){return null;}finally{clearTimeout(to);}
+}
+function tcmInfo(m){
+  const t=m.tc;
+  if(!t||!(+t['$']||+t['€']))return 'Sin tasa propia: este mes usa la de respaldo (1 $ = S/ '+(tc3((cfg.tc||{})['$'])||'—')+' · 1 € = S/ '+(tc3((cfg.tc||{})['€'])||'—')+').';
+  const s=t.s==='SUNAT'?'SUNAT (venta)':t.s==='Mercado'?'Mercado, no SUNAT':t.s==='Manual'?'Manual':'';
+  return 'Tasa propia de este mes'+(s?' · '+s:'')+(t.f?' · '+fmtISO(t.f):'')+'.';
+}
+function tcmCard(m,i){
+  const t=m.tc||{},cur=(year===String(now.getFullYear())&&i===now.getMonth()),fb=cfg.tc||{};
+  return `<section class="card bcard" data-cid="tcm"><div class="cb"><h2 class="ttl">Tipo de cambio del mes</h2>
+    <div class="tcm-row"><label for="tcm-d">1 $ en S/<input id="tcm-d" type="number" step="0.001" inputmode="decimal" data-tcm="$" value="${tc3(t['$'])}" placeholder="${tc3(fb['$'])}"></label><label for="tcm-e">1 € en S/<input id="tcm-e" type="number" step="0.001" inputmode="decimal" data-tcm="€" value="${tc3(t['€'])}" placeholder="${tc3(fb['€'])}"></label>${cur?'<button class="b" id="tcm-sunat" type="button">Actualizar con SUNAT</button>':''}</div>
+    <div class="ms" id="tcm-st" role="status">${esc(tcmInfo(m))}</div>
+    <div class="ms">${cur?'Cada día se guarda aquí la tasa SUNAT; al cambiar de mes queda congelada.':'SUNAT solo publica la tasa del día: para este mes escribe la tasa a mano.'} El euro es referencial (SUNAT no lo publica).</div></div></section>`;
+}
+let fxBusy=false;
+async function fxUpdate(manual){
+  const say=t=>['fx-msg','tcm-st'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=t;});
+  const btns=()=>['fx-now','tcm-sunat'].forEach(id=>{const b=document.getElementById(id);if(b)b.disabled=fxBusy;});
+  if(window.claude&&window.claude.use){if(manual)say('La actualización con SUNAT funciona en la versión web, no en esta vista previa.');return;}
+  if(fxBusy)return;fxBusy=true;btns();
+  if(manual)say('Consultando SUNAT…');
+  try{
+    const sun=await fxSunat(),mkt=await fxFetch().catch(()=>null);
+    if(!sun&&!mkt)throw new Error('sin datos');
+    const usd=sun?sun.usd:mkt.usd,fecha=sun?sun.fecha:fxToday();
+    const eur=mkt?usd*(mkt.eur/mkt.usd):0;
+    const d=new Date(),y=String(d.getFullYear()),m=S[y]&&S[y][d.getMonth()];
+    if(m){
+      const lockManual=!manual&&m.tc&&m.tc.s==='Manual',downgrade=!manual&&!sun&&m.tc&&m.tc.s==='SUNAT';
+      if(!lockManual&&!downgrade){
+        const prev=m.tc||{},n={'$':fxRound(usd),f:fecha,s:sun?'SUNAT':'Mercado'};
+        if(sun&&sun.compra)n.c=sun.compra;
+        const e2=eur?fxRound(eur):(+prev['€']||0);if(e2)n['€']=e2;
+        m.tc=n;
+      }
+    }
+    if(sun)cfg.tcAt=fxToday();
+    cfg.tcLast={f:fecha,s:sun?'SUNAT':'Mercado',usd:fxRound(usd),eur:eur?fxRound(eur):0};
+    save();render();
+    if(manual||sun)toast((sun?'SUNAT':'Mercado (SUNAT no respondió)')+': 1 $ = S/ '+tc3(usd)+(eur?' · 1 € = S/ '+tc3(eur):''));
+  }catch(e){
+    if(manual)say('No pude consultar el tipo de cambio ahora. Se mantiene el que tenías.');
+  }finally{fxBusy=false;btns();}
+}
+function fxAuto(){
+  if(window.claude&&window.claude.use)return;
+  if(cfg.tcAuto===false||cfg.tcAt===fxToday())return;
+  fxUpdate(false);
 }
 
 /* ---------- Mejoras: recurrentes, mes anterior, cuadre, respaldo, meta ---------- */
@@ -1406,6 +1498,7 @@ app.addEventListener('input',e=>{
   if(d.cfg){cfg[d.cfg]=parseFloat(t.value)||0;save();return;}
   if(d.credito!==undefined){if(!cfg.credito)cfg.credito={bbva:0,bcp:0,oh:0};cfg.credito[d.credito]=parseFloat(t.value)||0;save();if(typeof view==='number')refreshMonth(false);return;}
   if(d.tc){cfg.tc[d.tc]=parseFloat(t.value)||0;cfg.tcDate=new Date().toLocaleDateString('es-PE');save();return;}
+  if(d.tcm&&typeof view==='number'){const mm=S[year][view],v=parseFloat(t.value);mm.tc=mm.tc||{};if(v>0)mm.tc[d.tcm]=v;else delete mm.tc[d.tcm];if(!(+mm.tc['$']||+mm.tc['€']))delete mm.tc;else{mm.tc.s='Manual';mm.tc.f=fxToday();delete mm.tc.c;}save();refreshMonth(false);return;}
   if(d.ec!==undefined){cfg.eurCols[+d.ec]=t.value;save();return;}
   if(view==='resumen')return;
   const m=S[year][view];
@@ -1414,7 +1507,7 @@ app.addEventListener('input',e=>{
   if(d.p!==undefined){const k=PM().k;if(!m.q)m.q=[50,30,20];m[k][+d.p]=parseFloat(t.value)||0;save();refreshMonth(false);return;}
   if(d.s){const r=m[d.s][+d.i];const wasM=d.k==='m';r[d.k]=(d.s==='eur'||d.k==='m')?(parseFloat(t.value)||0):t.value;if(wasM&&r.src)reconcile(m,r,d.s);save();refreshMonth(false);}
 });
-app.addEventListener('change',e=>{if(e.target.id==='bk-file'){const f=e.target.files&&e.target.files[0];if(f){const r=new FileReader();r.onload=()=>restoreFrom(String(r.result));r.onerror=()=>bkMsg('No pude leer el archivo.',true);r.readAsText(f);}e.target.value='';return;}if(e.target.dataset.cfgt){cfg[e.target.dataset.cfgt]=e.target.value;save();render();return;}if(e.target.dataset.gs==='auto'){sync.auto=e.target.checked;persistSync();if(sync.auto&&sync.dirty&&sync.ready)queueSync();return;}if(e.target.dataset.gs==='id'){e.target.value=sync.id;return;}if(e.target.dataset.cfg||e.target.dataset.tc)render();});
+app.addEventListener('change',e=>{if(e.target.id==='bk-file'){const f=e.target.files&&e.target.files[0];if(f){const r=new FileReader();r.onload=()=>restoreFrom(String(r.result));r.onerror=()=>bkMsg('No pude leer el archivo.',true);r.readAsText(f);}e.target.value='';return;}if(e.target.dataset.cfgt){cfg[e.target.dataset.cfgt]=e.target.value;save();render();return;}if(e.target.dataset.gs==='auto'){sync.auto=e.target.checked;persistSync();if(sync.auto&&sync.dirty&&sync.ready)queueSync();return;}if(e.target.dataset.gs==='id'){e.target.value=sync.id;return;}if(e.target.dataset.fx==='auto'){cfg.tcAuto=e.target.checked;save();if(cfg.tcAuto)fxUpdate(true);return;}if(e.target.dataset.tcm){return;}if(e.target.dataset.cfg||e.target.dataset.tc)render();});
 app.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;const d=b.dataset;
   if(d.act==='new'){openSheet();return;}
@@ -1433,6 +1526,7 @@ app.addEventListener('click',e=>{
   if(b.id==='bk-csv'){saveFile('mis-finanzas-movimientos-'+BK()+'.csv','\ufeff'+[REGHEAD].concat(toRows()).map(r=>r.map(csvCell).join(',')).join('\n'));return;}
   if(b.id==='bk-load'){document.getElementById('bk-file').click();return;}
   if(b.id==='sb-logout'){sbLogout();return;}
+  if(b.id==='fx-now'||b.id==='tcm-sunat'){fxUpdate(true);return;}
   if(b.id==='gs-load'){loadFromSheet();return;}
   if(b.id==='gs-push'){pushNow(true);return;}
   if(d.cfgcard){openPanel(d.cfgcard,b);return;}
@@ -1509,6 +1603,7 @@ try{const th=localStorage.getItem(KEY+'-tema');if(th==='dark'||th==='light')docu
 if(window.Chart){Chart.defaults.font.family=getComputedStyle(document.body).fontFamily;}
 render();
 initSync();initDl();
+if(!IS_SB&&!IS_GAS)fxAuto();
 if('serviceWorker' in navigator && !(window.claude&&window.claude.use) && !IS_GAS){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}
 })();
 </script>
