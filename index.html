@@ -435,7 +435,10 @@ h1{letter-spacing:-.03em}
 .welcome .b.p{height:40px}
 .cap-streak{font-size:13px;color:var(--muted);text-align:center;margin-top:2px}
 .cap-streak b{color:var(--accent);font-family:var(--font-num)}
-.tcm-row{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:8px 0}.tcm-row label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:120px;flex:0 1 160px}.tc-date{margin:-2px 0 10px}
+@media (max-width:560px){.rw.ring,.rw.rgas,.rw.raho{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 84px!important;min-width:0!important;row-gap:6px;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--line)}.rw.lb.ring,.rw.lb.rgas,.rw.lb.raho,.rw.lb.reur{display:none}.rw.ring>:first-child,.rw.rgas>:first-child,.rw.raho>:first-child{grid-column:1/3}.rw.ring>.rwx,.rw.rgas>.rwx,.rw.raho>.rwx{grid-column:3;grid-row:1}.rw.reur{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px!important;min-width:0!important;row-gap:6px;margin-bottom:8px}.rw.reur>.x{grid-column:3;grid-row:1/span 2;align-self:center}.kv{font-size:clamp(14px,4.4vw,18px);white-space:nowrap}}
+@media (pointer:coarse){.x{width:40px;height:40px;font-size:18px}.rw .rwx .x{width:38px}.fab{width:54px;height:54px}}
+.sh.solid .cbadge{color:#fff;border-color:rgba(255,255,255,.75)}
+.tcm .cb{display:flex;flex-wrap:wrap;align-items:center;gap:6px 20px}.tcm .cb>.ttl{margin:0}.tcm .cb>.ms{flex:1 0 100%;margin:0}.tcm-row{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:4px 0}.tcm-row label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:120px;flex:0 1 160px}.tc-date{margin:-2px 0 10px}
 #rc-src{min-width:120px}
 
 .cardfields{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2);margin:0 0 10px}
@@ -673,8 +676,8 @@ function drawResumen(){
 }
 
 /* ---------- Detalle de un mes ---------- */
-const inp=(s,i,k,v,t,ph)=>`<input id="${s}-${i}-${k}" data-s="${s}" data-i="${i}" data-k="${k}" type="${t}" ${t==='number'?'step="0.01" inputmode="decimal" value="'+(v?v:'')+'"':'value="'+esc(v)+'"'} placeholder="${ph}" aria-label="${ph}">`;
-const catSel=(s,i,v)=>`<select class="f" id="${s}-${i}-k" data-s="${s}" data-i="${i}" data-k="k" aria-label="Categoría"><option value="">Categoría</option>${cfg.cats.map(c=>`<option${c===v?' selected':''}>${esc(c)}</option>`).join('')}</select>`;
+const inp=(s,i,k,v,t,ph)=>`<input id="${s}-${i}-${k}" data-s="${s}" data-i="${i}" data-k="${k}" type="${t}" ${t==='number'?'step="0.01" inputmode="decimal" value="'+(v?v:'')+'"':'value="'+esc(v)+'"'} placeholder="${ph}" aria-label="${ph==='0.00'?'Monto':ph}">`;
+const catSel=(s,i,v)=>`<select class="f" id="${s}-${i}-k" data-s="${s}" data-i="${i}" data-k="k" aria-label="Categoría"><option value="">Categoría</option>${v&&cfg.cats.indexOf(v)<0?`<option selected>${esc(v)}</option>`:''}${cfg.cats.map(c=>`<option${c===v?' selected':''}>${esc(c)}</option>`).join('')}</select>`;
 const del=(s,i)=>`<button type="button" class="x" data-del="${s}" data-i="${i}" aria-label="Quitar fila">×</button>`;
 const TPL={ing:'1fr 58px 90px 44px',gas:'1fr 88px 112px 58px 44px',aho:'1fr 90px 58px 44px',bnk:'1fr 100px 44px'};
 const EDITABLE=['ing','fij','hor','aho','inv'];
@@ -686,9 +689,9 @@ function rowsHtml(m,s,t){return m[s].map((r,i)=>{
   else if(t==='gas')c=inp(s,i,'c',r.c,'text','Concepto')+inp(s,i,'m',r.m,'number','0.00')+catSel(s,i,r.k)+inp(s,i,'f',r.f,'text','Fecha');
   else if(t==='aho')c=inp(s,i,'c',r.c,'text','Banco')+inp(s,i,'m',r.m,'number','0.00')+inp(s,i,'f',r.f,'text','Fecha');
   else c=inp(s,i,'c',r.c,'text','Concepto')+inp(s,i,'m',r.m,'number','0.00');
-  return `<div class="rw" style="grid-template-columns:${TPL[t]}">${c}${act(s,i)}</div>`;}).join('');}
+  return `<div class="rw${t==='bnk'?'':' r'+t}" style="grid-template-columns:${TPL[t]}">${c}${act(s,i)}</div>`;}).join('');}
 function sec(m,s,title,hue,t,cls,solid){
-  return `<section class="card bcard ${cls||''}" data-cid="${s}" style="--h:var(--${hue})"><div class="sh${solid?' solid':''}"><i></i><span class="ttl">${title}</span></div><div class="tb"><div class="rw lb" style="grid-template-columns:${TPL[t]}">${HEAD[t].map(h=>`<span>${h}</span>`).join('')}</div>${rowsHtml(m,s,t)}</div><button type="button" class="b add" data-add="${s}">+ Agregar fila</button><div class="tot"><span>Total</span><span id="t-${s}">S/ 0.00</span></div></section>`;
+  return `<section class="card bcard ${cls||''}" data-cid="${s}" style="--h:var(--${hue})"><div class="sh${solid?' solid':''}"><i></i><span class="ttl">${title}</span></div><div class="tb"><div class="rw lb${t==='bnk'?'':' r'+t}" style="grid-template-columns:${TPL[t]}">${HEAD[t].map(h=>`<span>${h}</span>`).join('')}</div>${rowsHtml(m,s,t)}</div><button type="button" class="b add" data-add="${s}">+ Agregar fila</button><div class="tot"><span>Total</span><span id="t-${s}">S/ 0.00</span></div></section>`;
 }
 function cardSec(i,k){
   const m=S[year][i],name=BANKN[k],open=+((m.copen||{})[k])||0,debt=cardEnding(year,i,k),lim=+(cfg.credito||{})[k]||0,av=lim-debt;
@@ -705,8 +708,8 @@ function cardSec(i,k){
 }
 function eurSec(m){
   const hd=(cfg.eurCols||['Anterior','Actual','Debe','Saldo']).slice(0,4),ks=['a','b','d','s'];
-  const rows=m.eur.map((r,i)=>`<div class="rw" style="grid-template-columns:repeat(4,1fr) 22px;min-width:360px">${ks.map((k,j)=>inp('eur',i,k,r[k],'number',hd[j])).join('')}${del('eur',i)}</div>`).join('');
-  return `<section class="card bcard" data-cid="eur" style="--h:var(--h-eur)"><div class="sh"><i></i><span class="ttl">Apuntes</span></div><div class="tb"><div class="rw lb" style="grid-template-columns:repeat(4,1fr) 22px;min-width:360px">${hd.map((h,j)=>`<input type="text" class="eh" data-ec="${j}" value="${esc(h)}" aria-label="Nombre de la columna ${j+1}">`).join('')}<span></span></div>${rows}<label class="sr" for="nota">Notas</label><textarea id="nota" data-nota="1" rows="3" placeholder="Notas para recordar">${esc(m.nota||'')}</textarea></div><button type="button" class="b add" data-add="eur">+ Agregar fila</button><div class="tot"><span>Apuntes personales</span><span>No entra en los totales</span></div></section>`;
+  const rows=m.eur.map((r,i)=>`<div class="rw reur" style="grid-template-columns:repeat(4,1fr) 22px;min-width:360px">${ks.map((k,j)=>inp('eur',i,k,r[k],'number',hd[j])).join('')}${del('eur',i)}</div>`).join('');
+  return `<section class="card bcard" data-cid="eur" style="--h:var(--h-eur)"><div class="sh"><i></i><span class="ttl">Apuntes</span></div><div class="tb"><div class="rw lb reur" style="grid-template-columns:repeat(4,1fr) 22px;min-width:360px">${hd.map((h,j)=>`<input type="text" class="eh" data-ec="${j}" value="${esc(h)}" aria-label="Nombre de la columna ${j+1}">`).join('')}<span></span></div>${rows}<label class="sr" for="nota">Notas</label><textarea id="nota" data-nota="1" rows="3" placeholder="Notas para recordar">${esc(m.nota||'')}</textarea></div><button type="button" class="b add" data-add="eur">+ Agregar fila</button><div class="tot"><span>Apuntes personales</span><span>No entra en los totales</span></div></section>`;
 }
 function viewMes(i){
   const m=S[year][i],D=dv(m);
@@ -1331,7 +1334,7 @@ function tcmInfo(m){
 }
 function tcmCard(m,i){
   const t=m.tc||{},cur=(year===String(now.getFullYear())&&i===now.getMonth()),fb=cfg.tc||{};
-  return `<section class="card bcard" data-cid="tcm"><div class="cb"><h2 class="ttl">Tipo de cambio del mes</h2>
+  return `<section class="card bcard tcm" data-cid="tcm"><div class="cb"><h2 class="ttl">Tipo de cambio del mes</h2>
     <div class="tcm-row"><label for="tcm-d">1 $ en S/<input id="tcm-d" type="number" step="0.001" inputmode="decimal" data-tcm="$" value="${tc3(t['$'])}" placeholder="${tc3(fb['$'])}"></label><label for="tcm-e">1 € en S/<input id="tcm-e" type="number" step="0.001" inputmode="decimal" data-tcm="€" value="${tc3(t['€'])}" placeholder="${tc3(fb['€'])}"></label>${cur?'<button class="b" id="tcm-sunat" type="button">Actualizar con SUNAT</button>':''}</div>
     <div class="ms" id="tcm-st" role="status">${esc(tcmInfo(m))}</div>
     <div class="ms">${cur?'Cada día se guarda aquí la tasa SUNAT; al cambiar de mes queda congelada.':'SUNAT solo publica la tasa del día: para este mes escribe la tasa a mano.'} El euro es referencial (SUNAT no lo publica).</div></div></section>`;
@@ -1549,7 +1552,9 @@ app.addEventListener('submit',e=>{
   save();render();toast('Guardado: '+r.ok,r.u);
 });
 app.addEventListener('keydown',e=>{
-  const t=e.target;if(e.key!=='Enter'||!t.dataset||t.dataset.k!=='m'||view==='resumen')return;
+  const t=e.target;if(e.key!=='Enter'||e.isComposing||t.tagName!=='INPUT'||!t.dataset||!t.dataset.s||view==='resumen')return;
+  if(t.dataset.k==='c'){const row=t.closest('.rw'),ins=row?[...row.querySelectorAll('input')]:[],nx=ins[ins.indexOf(t)+1];if(nx){e.preventDefault();nx.focus();if(nx.select)nx.select();}return;}
+  if(t.dataset.k!=='m'&&t.dataset.k!=='f')return;
   e.preventDefault();const sc=t.dataset.s,i=+t.dataset.i,arr=S[year][view][sc];
   if(i>=arr.length-1){arr.push(row());pf=[sc,arr.length-1,'c'];save();render();}
   else{const nx=document.getElementById(sc+'-'+(i+1)+'-c');if(nx)nx.focus();}
