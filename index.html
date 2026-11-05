@@ -43,7 +43,7 @@
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:14px;line-height:1.5;min-height:100vh}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--surface);z-index:10}
-.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 a{color:inherit;text-decoration:none}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -438,6 +438,7 @@ h1{letter-spacing:-.03em}
 @media (max-width:560px){.rw.ring,.rw.rgas,.rw.raho{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 84px!important;min-width:0!important;row-gap:6px;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--line)}.rw.lb.ring,.rw.lb.rgas,.rw.lb.raho,.rw.lb.reur{display:none}.rw.ring>:first-child,.rw.rgas>:first-child,.rw.raho>:first-child{grid-column:1/3}.rw.ring>.rwx,.rw.rgas>.rwx,.rw.raho>.rwx{grid-column:3;grid-row:1}.rw.reur{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px!important;min-width:0!important;row-gap:6px;margin-bottom:8px}.rw.reur>.x{grid-column:3;grid-row:1/span 2;align-self:center}.kv{font-size:clamp(14px,4.4vw,18px);white-space:nowrap}}
 @media (pointer:coarse){.x{width:40px;height:40px;font-size:18px}.rw .rwx .x{width:38px}.fab{width:54px;height:54px}}
 .sh.solid .cbadge{color:#fff;border-color:rgba(255,255,255,.75)}
+.mwrap{position:relative;display:block;min-width:0}.mwrap input{padding-left:24px!important;width:100%}.curb{position:absolute;left:8px;top:50%;transform:translateY(-50%);font:600 11px var(--mono,ui-monospace,monospace);color:var(--accent);pointer-events:none}.curbtn{font:inherit;color:inherit;background:var(--surface-2,transparent);border:1px solid var(--line);border-radius:8px;padding:2px 8px;cursor:pointer}.curbtn:disabled{cursor:default;opacity:.8}.ahonote{margin:8px 15px;padding:8px 10px;border-radius:8px;background:var(--surface-2,rgba(0,0,0,.04))}.ahoflow{margin:6px 15px}.movl{margin:10px 15px;display:grid;gap:4px}.movi{display:grid;grid-template-columns:64px 1fr auto;gap:8px;font-size:13px;padding:4px 0;border-top:1px solid var(--line)}.ahm{display:grid;gap:6px;margin:6px 0 10px}
 .tcm .cb{display:flex;flex-wrap:wrap;align-items:center;gap:6px 20px}.tcm .cb>.ttl{margin:0}.tcm .cb>.ms{flex:1 0 100%;margin:0}.tcm-row{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:4px 0}.tcm-row label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:120px;flex:0 1 160px}.tc-date{margin:-2px 0 10px}
 #rc-src{min-width:120px}
 
@@ -511,18 +512,57 @@ function parseHash(){const h=location.hash.slice(1);if(h==='capturar'){view='cap
 parseHash();
 
 const curOf=id=>((LAY.mes&&LAY.mes.c&&LAY.mes.c[id])||{}).cur||'S/';
-const rate=(id,m)=>{const c=curOf(id);if(c==='S/')return 1;return (m&&m.tc&&+m.tc[c])||(+((cfg.tc||{})[c]))||1;};
+const rateC=(c,m)=>c==='S/'?1:((m&&m.tc&&+m.tc[c])||(+((cfg.tc||{})[c]))||1);
+const rate=(id,m)=>rateC(curOf(id),m);
+const CURS=['S/','$','€'];
+const rowCur=(k,r)=>(r&&r.cur)||curOf(k);
+/* Total de una sección en soles, respetando la moneda de cada fila */
+const solesOf=(m,k)=>(m&&m[k]||[]).reduce((a,r)=>a+(+r.m||0)*rateC(rowCur(k,r),m),0);
+/* Total en la moneda de la sección */
+const sumIn=(m,k)=>{const rc=rate(k,m);return (m&&m[k]||[]).reduce((a,r)=>a+(+r.m||0)*rateC(rowCur(k,r),m)/rc,0);};
+const mixedCur=(m,k)=>(m[k]||[]).some(r=>r.cur&&r.cur!==curOf(k)&&+r.m);
+/* ---------- Ahorros: saldo por cuenta (o aportes, según el año) ---------- */
+const ahoMode=y=>((cfg.ahoModo||{})[y])||'saldo';
+const ahoHas=m=>!!m&&((m.aho||[]).some(r=>+r.m)||!!m.az);
+function ahoBase(y){
+  const ini=(cfg.ahoIni||{})[y];if(ini!==undefined&&ini!==''&&!isNaN(+ini))return +ini;
+  const py=String(+y-1);if(!S[py])return ahoMode(y)==='aporte'?0:null;
+  if(ahoMode(y)==='aporte'||ahoMode(py)==='saldo')return ahoBal(py,11);
+  return null;
+}
+/* Saldo de ahorros (en soles) al cierre del mes; null = todavía sin dato */
+function ahoBal(y,i){
+  const m=S[y]&&S[y][i];if(!m)return null;
+  const pb=i>0?ahoBal(y,i-1):ahoBase(y),s=solesOf(m,'aho');
+  if(ahoMode(y)==='aporte')return (pb||0)+s;
+  return ahoHas(m)?s:pb;
+}
+function ahoPos(m){for(const y of Object.keys(S)){const i=S[y].indexOf(m);if(i>=0)return [y,i];}return null;}
+/* Lo que creció (o bajó) tu ahorro en el mes */
+function ahoFlow(m){
+  const p=ahoPos(m);if(!p)return solesOf(m,'aho');
+  const [y,i]=p;if(ahoMode(y)==='aporte')return solesOf(m,'aho');
+  const b=ahoBal(y,i),pb=i>0?ahoBal(y,i-1):ahoBase(y);
+  return (b==null||pb==null)?0:Math.round((b-pb)*100)/100;
+}
+/* Mes que define el saldo vigente (para copiar sus cuentas) */
+function ahoSrcMonth(y,i){
+  for(let yy=y,ii=i;S[yy];){const m=S[yy][ii];if(ahoMode(yy)!=='saldo')return null;if(ahoHas(m))return m;if(ii>0)ii--;else{yy=String(+yy-1);ii=11;}}
+  return null;
+}
+const lastIdx=y=>y===String(now.getFullYear())?now.getMonth():11;
+const ahoNow=y=>ahoBal(y,lastIdx(y))||0;
 const fmtC=(id,v)=>curOf(id)+' '+num2(v);
 function needWant(m){
   let n=0,w=0;
   [['fij','n'],['hor','w']].forEach(x=>{(m[x[0]]||[]).forEach(r=>{
-    const v=(+r.m||0)*rate(x[0],m),k=(r.k||'').toLowerCase(),t=k.indexOf('necesid')===0?'n':k.indexOf('deseo')===0?'w':x[1];
+    const v=(+r.m||0)*rateC(rowCur(x[0],r),m),k=(r.k||'').toLowerCase(),t=k.indexOf('necesid')===0?'n':k.indexOf('deseo')===0?'w':x[1];
     if(t==='n')n+=v;else w+=v;});});
   return{need:n,want:w};
 }
-function dv(m){const f=(k)=>sum(m[k])*rate(k,m);
-  const ing=f('ing'),fij=f('fij'),hor=f('hor'),aho=f('aho'),inv=f('inv'),gas=fij+hor;
-  return{...needWant(m),ing,fij,hor,gas,aho,inv,res:ing-gas-aho-inv,bb:cardDebt(m,'bbva'),bc:cardDebt(m,'bcp'),oh:cardDebt(m,'oh'),on:(ing>0||gas>0||aho>0||inv>0)};}
+function dv(m){const f=(k)=>solesOf(m,k);
+  const ing=f('ing'),fij=f('fij'),hor=f('hor'),aRaw=f('aho'),aho=ahoFlow(m),inv=f('inv'),gas=fij+hor,p=ahoPos(m),sAho=p?(ahoBal(p[0],p[1])||0):aRaw;
+  return{...needWant(m),ing,fij,hor,gas,aho,sAho,inv,res:ing-gas-aho-inv,bb:cardDebt(m,'bbva'),bc:cardDebt(m,'bcp'),oh:cardDebt(m,'oh'),on:(ing>0||gas>0||aRaw>0||inv>0)};}
 
 const cv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const CH=[];
@@ -540,7 +580,7 @@ function header(){
 }
 
 /* ---------- Resumen del año ---------- */
-function metaProg(name){let t=0;YEARS.forEach(y=>S[y].forEach(m=>(m.aho||[]).forEach(r=>{if((r.k||'')===name)t+=(+r.m||0)*rate('aho',m);})));return Math.round(t*100)/100;}
+function metaProg(name){let t=0;YEARS.forEach(y=>{if(ahoMode(y)==='aporte')S[y].forEach(m=>(m.aho||[]).forEach(r=>{if((r.k||'')===name)t+=(+r.m||0)*rateC(rowCur('aho',r),m);}));});const ly=YEARS[YEARS.length-1],sm=ly&&ahoSrcMonth(ly,lastIdx(ly));if(sm)(sm.aho||[]).forEach(r=>{if((r.k||'')===name)t+=(+r.m||0)*rateC(rowCur('aho',r),sm);});return Math.round(t*100)/100;}
 function insights(){
   const out=[],ms=S[year].map(dv),cur=(year===String(now.getFullYear()))?now.getMonth():-1;
   const wi=ms.filter(x=>x.ing>0);
@@ -565,7 +605,7 @@ function viewResumen(){
   const gas=D.reduce((a,x)=>a+x.gas,0),aho=D.reduce((a,x)=>a+x.aho,0),inv=D.reduce((a,x)=>a+x.inv,0);
   let bi=-1,bp=0;D.forEach((x,i)=>{if(x.ing>0&&x.aho/x.ing>bp){bp=x.aho/x.ing;bi=i;}});
   const fm=D.filter(x=>x.fij>0),avg=fm.length?fm.reduce((a,x)=>a+x.fij,0)/fm.length:0;
-  const meta=cfg.meses*avg,prog=meta>0?aho/meta:0;
+  const saldo=ahoNow(year),meta=cfg.meses*avg,prog=meta>0?Math.max(0,saldo)/meta:0;
   const kp=(l,v,s)=>`<div class="kpi"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks">${s}</div></div>`;
   const emp=t=>`<div class="empty">${t}</div>`;
   const nodata='Todavía no hay datos en '+year+'. Abre un mes y registra el primer movimiento.';
@@ -586,12 +626,12 @@ function viewResumen(){
   return `${vacio?`<section class="welcome card"><h2>Bienvenido a tu plantilla de finanzas</h2><p class="ms">Aún no hay datos. Registra tu primer movimiento y verás aparecer tus gráficos, metas y el resumen del año.</p><ul class="welcome-ul ms"><li>Toca <b>Registrar</b> para anotar un ingreso o un gasto.</li><li>Elige de dónde sale cada gasto y se descuenta solo de esa cuenta.</li><li>Ponle la línea de crédito a tus tarjetas para ver cuánto te queda.</li></ul><button type="button" class="b p" data-act="new">Registrar mi primer movimiento</button></section>`:''}
   <section class="hero">
     <div class="hero-top"><div><div class="hero-k">${year}</div><h1>Resumen</h1></div></div>
-    <div><div class="hero-l">Ahorrado en el año</div><div class="hero-v">${fmt(aho)}</div></div>
+    <div><div class="hero-l">Tienes ahorrado</div><div class="hero-v">${fmt(saldo)}</div></div>
     <div class="hbar" aria-hidden="true"><span style="width:${Math.min(100,prog*100)}%;background:var(--c-aho)"></span></div>
     <div class="hleg"><span>Fondo de emergencia: ${Math.round(prog*100)}% de ${fmt(meta)}</span></div>
     <div class="hint">${any?nOn+(nOn===1?' mes':' meses')+' con datos'+(recentCount(7)?' · '+recentCount(7)+(recentCount(7)===1?' movimiento':' movimientos')+' en los últimos 7 días':'')+'. Toca una barra o una tarjeta para abrir el mes.':'Año sin movimientos todavía.'}</div>
   </section>
-  <div class="board" id="board"><div class="kpis bcard bare" data-cid="rk">${kp('Gastado en el año',fmt(gas),'Fijos más hormiga')}${kp('Ahorrado',fmt(aho),'Suma de los meses')}${kp('Invertido',fmt(inv),'Suma de los meses')}${kp('Mejor mes de ahorro',bi>=0?MES[bi]:'Sin datos',bi>=0?pct(bp)+' del ingreso':'')}</div>
+  <div class="board" id="board"><div class="kpis bcard bare" data-cid="rk">${kp('Gastado en el año',fmt(gas),'Fijos más hormiga')}${kp('Ahorro neto del año',(aho>0?'+':'')+fmt(aho),aho<0?'Sacaste más de lo que guardaste':'Lo que creció tu ahorro')}${kp('Invertido',fmt(inv),'Suma de los meses')}${kp('Mejor mes de ahorro',bi>=0?MES[bi]:'Sin datos',bi>=0?pct(bp)+' del ingreso':'')}</div>
   <div class="g2">
     ${chartCard('Ingreso, gastado y ahorrado','Ingreso, gasto y ahorro de cada mes. El saldo que sobra de un mes no se suma al siguiente.','r1',lg([['Ingreso','var(--c-ing)'],['Gastado','var(--c-gas)'],['Ahorrado','var(--c-aho)']]))}
     ${chartCard('Ahorro sobre el ingreso','La línea punteada es tu meta de '+cfg.meta+'%.','r2')}
@@ -601,12 +641,12 @@ function viewResumen(){
     ${chartCard('En qué se fue el año','Distribución de lo gastado, ahorrado e invertido.','r4',lg([['Gastos fijos','var(--c-fij)'],['Gastos hormiga','var(--c-hor)'],['Ahorros','var(--c-aho)'],['Inversión','var(--c-inv)']]),true)}
   </div>
   ${chartCard('A dónde fue tu ingreso','Cómo se repartió el ingreso del año: gastos, inversión, ahorro y lo que quedó disponible.','r6')}
-  ${chartCard('Capital acumulado','Lo que llevas sumado en ahorro e inversión, mes a mes.','r7')}
+  ${chartCard('Capital acumulado','Tu saldo de ahorros más lo invertido en el año, mes a mes.','r7')}
   ${chartCard('Año contra año','Lo ahorrado en cada mes, un año contra otro.','r5','',true)}
   ${(()=>{const ins=insights();return ins.length?`<section class="card bcard" data-cid="ins"><div class="cb"><h2 class="ttl">En resumen</h2><ul class="inslist">${ins.map(t=>`<li>${t}</li>`).join('')}</ul></div></section>`:'';})()}
   ${(cfg.metas&&cfg.metas.length)?`<section class="card bcard" data-cid="mg"><div class="cb"><h2 class="ttl">Metas de ahorro</h2><div class="cap">Progreso de cada meta, según los ahorros que le asignaste.</div>${cfg.metas.map(gm=>{const pr=metaProg(gm.n),ob=+gm.o||0,pc=ob>0?Math.min(100,pr/ob*100):0;return `<div class="metarow"><div class="l"><b>${esc(gm.n)}</b><span class="ms">${fmt(pr)}${ob>0?' de '+fmt(ob):''}</span></div><div class="meter"><div style="width:${pc}%;background:var(--c-aho)"></div></div><div class="ms">${ob>0?(pr>=ob?'¡Meta cumplida!':'Faltan '+fmt(ob-pr)+' ('+Math.round(pc)+'%)'):'Sin objetivo fijado'}</div></div>`;}).join('')}</div></section>`:''}
   <section class="card bcard" data-cid="rf"><div class="cb"><h2 class="ttl">Fondo de emergencia</h2>
-    ${meta>0?`<div class="fond"><b>${Math.round(prog*100)}%</b><span class="ms">${fmt(aho)} ahorrados de una meta de ${fmt(meta)} (${cfg.meses} meses de gastos fijos)</span></div><div class="meter" role="img" aria-label="Avance del fondo de emergencia"><div style="width:${Math.min(100,prog*100)}%"></div></div><div class="ms" style="margin-top:8px">${fondoPlan(meta,aho)}</div><label class="fld" style="margin-top:10px;max-width:220px">Fecha para llegar a la meta<input type="month" data-cfgt="fondoMes" value="${esc(cfg.fondoMes||'')}"></label>`:emp('Carga tus gastos fijos para calcular la meta del fondo.')}
+    ${meta>0?`<div class="fond"><b>${Math.round(prog*100)}%</b><span class="ms">${fmt(saldo)} ahorrados de una meta de ${fmt(meta)} (${cfg.meses} meses de gastos fijos)</span></div><div class="meter" role="img" aria-label="Avance del fondo de emergencia"><div style="width:${Math.min(100,prog*100)}%"></div></div><div class="ms" style="margin-top:8px">${fondoPlan(meta,saldo)}</div><label class="fld" style="margin-top:10px;max-width:220px">Fecha para llegar a la meta<input type="month" data-cfgt="fondoMes" value="${esc(cfg.fondoMes||'')}"></label>`:emp('Carga tus gastos fijos para calcular la meta del fondo.')}
   </div></section>
   <section class="bcard bare" data-cid="rm"><h2 class="ttl" style="margin:0 0 10px">Meses de ${year}</h2><div class="mgrid">${cards}</div></section>
   <section class="card bcard" data-cid="ra"><div class="sh" style="--h:var(--accent)"><i></i><span class="ttl">Ajustes</span></div><div class="cb">
@@ -621,6 +661,10 @@ function viewResumen(){
     <label class="chk"><input type="checkbox" id="fx-auto" data-fx="auto"${cfg.tcAuto!==false?' checked':''}> Guardar cada día la tasa SUNAT en el mes actual (al abrir la app)</label>
     <div class="qa"><button class="b" id="fx-now" type="button">Consultar ahora</button></div>
     <div class="ms" style="margin-bottom:12px">Cada mes guarda su propia tasa y los meses anteriores no cambian. Los valores de respaldo de arriba se usan solo en meses sin tasa propia. SUNAT publica solo el dólar (usamos el precio de venta); el euro sale del mercado y es referencial. <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener">Rates By Exchange Rate API</a></div>
+    <div class="ms">Ahorros de ${year}</div>
+    <div class="ahm" role="radiogroup" aria-label="Cómo registras tus ahorros"><label class="chk"><input type="radio" name="ahm" data-ahm="saldo"${ahoMode(year)==='saldo'?' checked':''}> Escribo el saldo de cada cuenta (recomendado)</label><label class="chk"><input type="radio" name="ahm" data-ahm="aporte"${ahoMode(year)==='aporte'?' checked':''}> Escribo lo que deposito cada mes</label></div>
+    <label class="fld" style="max-width:320px">Saldo de ahorros al 1 de enero de ${year} (opcional)<input type="number" step="0.01" inputmode="decimal" data-ahini="1" value="${(cfg.ahoIni||{})[year]!=null?(cfg.ahoIni||{})[year]:''}" placeholder="${(()=>{const b=ahoBase(year);return b==null?'Sin dato':String(Math.round(b*100)/100);})()}"></label>
+    <div class="ms" style="margin-bottom:12px">Con «saldo», el resumen muestra lo que realmente tienes y el ahorro del mes es la diferencia contra el mes anterior. Para sacar o meter dinero usa «Mover dinero».</div>
     <div class="ms">Categorías de gastos</div>
     <div class="chips">${cfg.cats.map((c,i)=>`<span class="chip">${esc(c)}<button type="button" data-cat="${i}" aria-label="Quitar ${esc(c)}">×</button></span>`).join('')}</div>
     <div class="qa"><input type="text" id="nc" placeholder="Nueva categoría, por ejemplo Mascotas" aria-label="Nueva categoría"><button class="b" id="addcat" type="button">Agregar categoría</button><button class="b" id="reset" type="button">Restablecer ejemplo</button></div>
@@ -659,7 +703,7 @@ function drawResumen(){
   const t3=ctype('r3','bar'),hc=D.map(x=>x.hor>cfg.alerta?cv('--bad'):cv('--c-hor'));
   mkChart('r3',{type:'bar',data:{labels:ABR,datasets:[{type:t3,label:'Gastos hormiga',data:D.map(x=>x.hor),backgroundColor:t3==='bar'?hc:cv('--c-hor'),borderColor:cv('--c-hor'),pointBackgroundColor:hc,pointRadius:4,tension:.25,borderRadius:4,maxBarThickness:22},{type:'line',label:'Alerta',data:ABR.map(()=>cfg.alerta),borderColor:cv('--muted'),borderDash:[5,4],pointRadius:0,borderWidth:1.5}]},options:{...b,onClick:goMonth,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:tipMoney},scales:axes()}});
   const t4=ctype('r4','doughnut');
-  mkChart('r4',{type:t4,data:{labels:['Gastos fijos','Gastos hormiga','Ahorros','Inversión'],datasets:[{data:[t('fij'),t('hor'),t('aho'),t('inv')],backgroundColor:[cv('--c-fij'),cv('--c-hor'),cv('--c-aho'),cv('--c-inv')],borderColor:cv('--surface'),borderWidth:2}]},options:{...b,cutout:t4==='doughnut'?'64%':0,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.label+': '+fmt(c.parsed)}}}}});
+  mkChart('r4',{type:t4,data:{labels:['Gastos fijos','Gastos hormiga','Ahorros','Inversión'],datasets:[{data:[t('fij'),t('hor'),Math.max(0,t('aho')),t('inv')],backgroundColor:[cv('--c-fij'),cv('--c-hor'),cv('--c-aho'),cv('--c-inv')],borderColor:cv('--surface'),borderWidth:2}]},options:{...b,cutout:t4==='doughnut'?'64%':0,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.label+': '+fmt(c.parsed)}}}}});
   /* Cascada: a dónde fue el ingreso del año (barras flotantes) */
   if(document.getElementById('r6')){
     const steps=[['Ingreso',t('ing'),'--muted'],['Fijos',-t('fij'),'--c-fij'],['Hormiga',-t('hor'),'--c-hor'],['Inversión',-t('inv'),'--c-inv'],['Ahorro',-t('aho'),'--c-aho']];
@@ -670,7 +714,7 @@ function drawResumen(){
   }
   /* Capital acumulado: ahorro + inversión acumulados mes a mes */
   if(document.getElementById('r7')){
-    let acc=0,started=false;const cap=D.map(x=>{if(x.on)started=true;if(!started)return null;acc+=x.aho+x.inv;return Math.round(acc*100)/100;});
+    let acc=0,started=false;const cap=D.map(x=>{if(x.on)started=true;if(!started)return null;acc+=x.inv;return Math.round((x.sAho+acc)*100)/100;});
     mkChart('r7',{type:ctype('r7','line'),data:{labels:ABR,datasets:[{label:'Capital acumulado',data:cap,borderColor:cv('--c-aho'),backgroundColor:cv('--c-aho'),borderWidth:2.5,tension:.25,pointRadius:3,maxBarThickness:22,borderRadius:4,spanGaps:true,fill:false}]},options:{...b,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:tipMoney},scales:axes()}});
   }
 }
@@ -682,20 +726,28 @@ const del=(s,i)=>`<button type="button" class="x" data-del="${s}" data-i="${i}" 
 const TPL={ing:'1fr 58px 90px 44px',gas:'1fr 88px 112px 58px 44px',aho:'1fr 90px 58px 44px',bnk:'1fr 100px 44px'};
 const EDITABLE=['ing','fij','hor','aho','inv'];
 const act=(s,i)=>`<div class="rwx">${EDITABLE.indexOf(s)>=0?`<button type="button" class="x ed-row" data-edit="${s}" data-i="${i}" aria-label="Editar fila" title="Editar">✎</button>`:''}<button type="button" class="x" data-del="${s}" data-i="${i}" aria-label="Quitar fila">×</button></div>`;
-const HEAD={ing:['Concepto','Fecha','Monto',''],gas:['Concepto','Monto','Categoría','Fecha',''],aho:['Banco','Monto','Fecha',''],bnk:['Concepto','Monto','']};
+const HEAD={ing:['Concepto','Fecha','Monto',''],gas:['Concepto','Monto','Categoría','Fecha',''],aho:['Cuenta','Saldo','Fecha',''],bnk:['Concepto','Monto','']};
+const mInp=(s,i,r,ph)=>{const v=inp(s,i,'m',r.m,'number',ph||'0.00');return (r.cur&&r.cur!==curOf(s))?`<span class="mwrap"><b class="curb" aria-hidden="true">${r.cur}</b>${v}</span>`:v;};
 function rowsHtml(m,s,t){return m[s].map((r,i)=>{
   let c='';
-  if(t==='ing')c=inp(s,i,'c',r.c,'text','Concepto')+inp(s,i,'f',r.f,'text','Fecha')+inp(s,i,'m',r.m,'number','0.00');
-  else if(t==='gas')c=inp(s,i,'c',r.c,'text','Concepto')+inp(s,i,'m',r.m,'number','0.00')+catSel(s,i,r.k)+inp(s,i,'f',r.f,'text','Fecha');
-  else if(t==='aho')c=inp(s,i,'c',r.c,'text','Banco')+inp(s,i,'m',r.m,'number','0.00')+inp(s,i,'f',r.f,'text','Fecha');
-  else c=inp(s,i,'c',r.c,'text','Concepto')+inp(s,i,'m',r.m,'number','0.00');
+  if(t==='ing')c=inp(s,i,'c',r.c,'text','Concepto')+inp(s,i,'f',r.f,'text','Fecha')+mInp(s,i,r);
+  else if(t==='gas')c=inp(s,i,'c',r.c,'text','Concepto')+mInp(s,i,r)+catSel(s,i,r.k)+inp(s,i,'f',r.f,'text','Fecha');
+  else if(t==='aho')c=inp(s,i,'c',r.c,'text','Cuenta')+mInp(s,i,r)+inp(s,i,'f',r.f,'text','Fecha');
+  else c=inp(s,i,'c',r.c,'text','Concepto')+mInp(s,i,r);
   return `<div class="rw${t==='bnk'?'':' r'+t}" style="grid-template-columns:${TPL[t]}">${c}${act(s,i)}</div>`;}).join('');}
 function sec(m,s,title,hue,t,cls,solid){
-  return `<section class="card bcard ${cls||''}" data-cid="${s}" style="--h:var(--${hue})"><div class="sh${solid?' solid':''}"><i></i><span class="ttl">${title}</span></div><div class="tb"><div class="rw lb${t==='bnk'?'':' r'+t}" style="grid-template-columns:${TPL[t]}">${HEAD[t].map(h=>`<span>${h}</span>`).join('')}</div>${rowsHtml(m,s,t)}</div><button type="button" class="b add" data-add="${s}">+ Agregar fila</button><div class="tot"><span>Total</span><span id="t-${s}">S/ 0.00</span></div></section>`;
+  return `<section class="card bcard ${cls||''}" data-cid="${s}" style="--h:var(--${hue})"><div class="sh${solid?' solid':''}"><i></i><span class="ttl">${title}</span></div><div class="tb"><div class="rw lb${t==='bnk'?'':' r'+t}" style="grid-template-columns:${TPL[t]}">${HEAD[t].map(h=>`<span>${h}</span>`).join('')}</div>${rowsHtml(m,s,t)}</div>${s==='aho'?ahoExtra(m):''}<button type="button" class="b add" data-add="${s}">+ Agregar ${s==='aho'?'cuenta':'fila'}</button>${s==='aho'?'<button type="button" class="b add" data-act="mover">Mover dinero</button>':''}<div class="tot"><span>${s==='aho'&&ahoMode(year)==='saldo'?'Saldo total':'Total'}</span><span id="t-${s}">S/ 0.00</span></div></section>`;
+}
+function ahoExtra(m){
+  const p=ahoPos(m),mv=(m.mov||[]);
+  const note=(p&&ahoMode(p[0])==='saldo'&&!ahoHas(m))?(()=>{const src=ahoSrcMonth(p[0],p[1]);return src?`<div class="ms ahonote">Sin cambios este mes: se usa tu saldo anterior (${fmt(ahoBal(p[0],p[1])||0)}). Escribe tus saldos o usa «Mover dinero».</div>`:'';})():'';
+  const fl=`<div class="ms ahoflow" id="aho-flow"></div>`;
+  const list=mv.length?`<div class="movl"><div class="ms">Movimientos entre cuentas</div>${mv.map(x=>`<div class="movi"><span>${esc(x.f||'')}</span><span>${esc(x.de)} → ${esc(x.a)}</span><b>${esc(x.cur||'S/')} ${num2(x.m)}</b></div>`).join('')}</div>`:'';
+  return note+fl+list;
 }
 function cardSec(i,k){
   const m=S[year][i],name=BANKN[k],open=+((m.copen||{})[k])||0,debt=cardEnding(year,i,k),lim=+(cfg.credito||{})[k]||0,av=lim-debt;
-  const rows=(m[k]||[]).map((r,j)=>`<div class="rw" style="grid-template-columns:${TPL.bnk}">${inp(k,j,'c',r.c,'text','Concepto')}${inp(k,j,'m',r.m,'number','Monto')}${del(k,j)}</div>`).join('');
+  const rows=(m[k]||[]).map((r,j)=>`<div class="rw" style="grid-template-columns:${TPL.bnk}">${inp(k,j,'c',r.c,'text','Concepto')}${mInp(k,j,r,'Monto')}${del(k,j)}</div>`).join('');
   return `<section class="card bcard" data-cid="${k}" style="--h:var(--h-${k})"><div class="sh solid"><i></i><span class="ttl">${name}</span><span class="cbadge">Crédito</span></div><div class="cb">
     <div class="cardtop"><div><div class="ms">Debes</div><b class="carddebt" id="cd-${k}" style="color:${debt>0?'var(--bad)':'var(--ok)'}">${fmtC(k,debt)}</b></div><div style="text-align:right"><div class="ms">Disponible</div><b class="cardav" id="ca-${k}">${fmtC(k,av)}</b></div></div>
     <div class="meter cardmeter" aria-hidden="true"><div id="cm-${k}" style="width:${lim>0?Math.min(100,Math.max(0,debt/lim*100)):0}%;background:var(--h-${k})"></div></div>
@@ -728,7 +780,7 @@ function viewMes(i){
     <aside class="liq" aria-label="Liquidez"><div class="hero-l">Liquidez disponible</div><div class="liq-v" id="t-liq">${fmtC('liq',sum(m.liq))}</div><div class="liq-rows">${rowsHtml(m,'liq','bnk')}</div><button type="button" class="b add" data-add="liq">+ Agregar</button></aside>
   </section>
   ${m.tot?'<div class="banner">Este mes trae solo los totales de tu hoja. Lo que registres se suma a esos totales.</div>':''}
-  <div class="board" id="board"><div class="kpis bcard bare" data-cid="mk">${kp('Ingreso total','kI',fmt(D.ing))}${kp('Total gastado','kG',fmt(D.gas))}${kp('Total invertido','kV',fmt(D.inv))}${kp('Total ahorrado','kA',fmt(D.aho))}${kp('Restante','kR',fmt(D.res))}</div>
+  <div class="board" id="board"><div class="kpis bcard bare" data-cid="mk">${kp('Ingreso total','kI',fmt(D.ing))}${kp('Total gastado','kG',fmt(D.gas))}${kp('Total invertido','kV',fmt(D.inv))}${kp('Ahorro del mes','kA',fmt(D.aho))}${kp('Restante','kR',fmt(D.res))}</div>
   <div class="g3">
     <section class="card bcard" data-cid="mc1"><div class="cb"><h2 class="ttl">Distribución del mes</h2><div class="cap">Cómo se repartió tu ingreso.</div><div id="w1" class="cw s"><canvas id="mc1" role="img" aria-label="Distribución del mes"></canvas></div><div class="empty" id="e1" hidden>Sin movimientos todavía en ${MES[i].toLowerCase()}.</div><div class="lg" id="lg1"></div></div></section>
     <section class="card bcard" data-cid="mc2"><div class="cb"><h2 class="ttl">Contra el mes anterior</h2><div class="cap">Fijos, hormiga, ahorros e inversión.</div><div id="w2" class="cw s"><canvas id="mc2" role="img" aria-label="Comparación con el mes anterior"></canvas></div><div class="empty" id="e2" hidden>Sin movimientos todavía en ${MES[i].toLowerCase()}.</div><div class="lg" id="lg2"></div></div></section>
@@ -754,7 +806,7 @@ function drawMonthCharts(anim){
   const m=S[year][view],D=dv(m),prev=view>0?dv(S[year][view-1]):null;
   const vis=(w,e,on)=>{const a=document.getElementById(w),b=document.getElementById(e);if(a)a.hidden=!on;if(b)b.hidden=on;};
   const cb=cardEnding(year,view,'bbva'),cc=cardEnding(year,view,'bcp'),co=cardEnding(year,view,'oh');
-  const bankOn=(cb+cc+co+D.aho+D.inv)>0;
+  const bankOn=(cb+cc+co+D.sAho+D.inv)>0;
   vis('w1','e1',D.on);vis('w2','e2',D.on);vis('w3','e3',bankOn);
   const b=base(anim);
   const lg1=document.getElementById('lg1'),lg2=document.getElementById('lg2');
@@ -771,7 +823,7 @@ function drawMonthCharts(anim){
   }else{if(lg1)lg1.innerHTML='';if(lg2)lg2.innerHTML='';}
   if(bankOn){
     const t3=ctype('mc3','bar'),dn=t3==='doughnut',bc=[cv('--h-bbva'),cv('--h-bcp'),cv('--h-oh'),cv('--h-aho'),cv('--h-inv')];
-    mkChart('mc3',{type:t3,data:{labels:['BBVA','BCP','oh!','Ahorros','Inversiones'],datasets:[{label:'Saldo',data:[cb,cc,co,D.aho,D.inv],backgroundColor:bc,borderColor:dn?cv('--surface'):bc,borderWidth:dn?2:0,borderRadius:dn?0:4,maxBarThickness:34}]},options:{...b,cutout:dn?'60%':undefined,plugins:{legend:{display:dn,position:'bottom',labels:{color:cv('--muted'),boxWidth:10,font:{size:11}}},tooltip:{callbacks:{label:c=>' '+(dn?c.label+': ':'')+fmt(dn?c.parsed:c.parsed.y)}}},scales:dn?{}:axes()}});
+    mkChart('mc3',{type:t3,data:{labels:['BBVA','BCP','oh!','Ahorros','Inversiones'],datasets:[{label:'Saldo',data:[cb,cc,co,D.sAho,D.inv],backgroundColor:bc,borderColor:dn?cv('--surface'):bc,borderWidth:dn?2:0,borderRadius:dn?0:4,maxBarThickness:34}]},options:{...b,cutout:dn?'60%':undefined,plugins:{legend:{display:dn,position:'bottom',labels:{color:cv('--muted'),boxWidth:10,font:{size:11}}},tooltip:{callbacks:{label:c=>' '+(dn?c.label+': ':'')+fmt(dn?c.parsed:c.parsed.y)}}},scales:dn?{}:axes()}});
   }
   drawHeatmap();
 }
@@ -792,7 +844,8 @@ function refreshMonth(anim){
   set('tcm-st',tcmInfo(m));
   set('kI',fmt(D.ing));set('kG',fmt(D.gas));set('kV',fmt(D.inv));set('kA',fmt(D.aho));set('kR',fmt(D.res));
   const r=document.getElementById('kR');if(r)r.classList.toggle('neg',D.res<0);
-  ['ing','liq','fij','hor','aho','inv'].forEach(s=>{const v=sum(m[s]);set('t-'+s,fmtC(s,v)+(curOf(s)!=='S/'?' ≈ '+fmt(v*rate(s,m)):''));});
+  ['ing','liq','fij','hor','aho','inv'].forEach(s=>{const v=sumIn(m,s);const fx={};(m[s]||[]).forEach(r=>{if(r.cur&&r.cur!==curOf(s)&&+r.m)fx[r.cur]=(fx[r.cur]||0)+(+r.m);});const inc=Object.keys(fx).map(c=>c+' '+num2(fx[c])).join(' y ');set('t-'+s,fmtC(s,v)+(curOf(s)!=='S/'?' ≈ '+fmt(solesOf(m,s)):'')+(inc?' · incluye '+inc:''));});
+  {const p=ahoPos(m),fe=document.getElementById('aho-flow');if(fe&&p){const fl=ahoFlow(m);fe.textContent=ahoMode(p[0])==='saldo'?('Este mes tu ahorro '+(fl>0?'creció '+fmt(fl):fl<0?'bajó '+fmt(-fl):'no cambió')+' frente al mes anterior.'):'';}}
   ['bbva','bcp','oh'].forEach(k=>{const debt=cardEnding(year,view,k),lim=+(cfg.credito||{})[k]||0,cd=document.getElementById('cd-'+k);set('cd-'+k,fmtC(k,debt));set('ca-'+k,fmtC(k,lim-debt));const cm=document.getElementById('cm-'+k);if(cm)cm.style.width=(lim>0?Math.min(100,Math.max(0,debt/lim*100)):0)+'%';if(cd)cd.style.color=debt>0?'var(--bad)':'var(--ok)';});
   const pm=PM();if(!m.q)m.q=[50,30,20];
   pm.rows.forEach((r,j)=>{
@@ -834,6 +887,7 @@ function addRow(yr,mi,sec,r){
   arr.push(r);return{yr,mi,sec,r,rep:false};
 }
 function undoRow(u){
+  if(u&&u.fn){u.fn();save();render();return;}
   const m=S[u.yr][u.mi],arr=m[u.sec],k=arr.indexOf(u.r);if(k<0)return;
   if(u.r.src)revDed(m,u.r);
   if(u.rep)arr[k]=row();else arr.splice(k,1);
@@ -842,12 +896,14 @@ function undoRow(u){
 }
 function quickAdd(text){
   const p=parseMsg(text);if(!p)return{err:'Falta el monto. Prueba con: almuerzo 25 yape'};
+  if(p.sec==='aho'&&ahoMode(year)==='saldo')return{err:'Para ahorrar usa «Mover dinero» en el botón +: así se suma al saldo de tu cuenta.'};
   const nm=p.name||'Sin descripción',u=addRow(year,view,p.sec,row(nm,p.amt,todayStr()));
   return{ok:nm+' · '+fmt(p.amt)+' en '+NAMES[p.sec],u};
 }
 
 /* ---------- Formulario de registro (botón +) ---------- */
-const TIPOS=[['hor','Hormiga','--c-hor'],['fij','Gasto fijo','--c-fij'],['compra','Compra tarjeta','--h-bcp'],['pago','Pago tarjeta','--h-oh'],['ing','Ingreso','--c-ing'],['aho','Ahorro','--c-aho'],['inv','Inversión','--c-inv']];
+const TIPOS=[['hor','Hormiga','--c-hor'],['fij','Gasto fijo','--c-fij'],['compra','Compra tarjeta','--h-bcp'],['pago','Pago tarjeta','--h-oh'],['ing','Ingreso','--c-ing'],['mov','Mover dinero','--c-aho'],['inv','Inversión','--c-inv']];
+const TIPO_AHO=['aho','Ahorro','--c-aho'];
 const BANCOS=[['bbva','BBVA','--h-bbva'],['bcp','BCP','--h-bcp'],['oh','oh!','--h-oh']];
 const SECN={hor:'Gastos hormiga',fij:'Gastos fijos',ing:'Ingresos',aho:'Ahorros',inv:'Inversiones',bbva:'BBVA',bcp:'BCP',oh:'oh!'};
 const BANKN={bbva:'BBVA',bcp:'BCP',oh:'oh!'};
@@ -864,17 +920,18 @@ function srcList(none){
   return out;
 }
 function liqRef(m,src){return (src&&src.slice(0,4)==='liq:')?m.liq[+src.slice(4)]:null;}
-function dedAmt(m,r,sec){return Math.round((+r.m||0)*rate(sec,m)/rate('liq',m)*100)/100;}
+function dedAmt(m,r,sec){return Math.round((+r.m||0)*rateC(rowCur(sec,r),m)/rate('liq',m)*100)/100;}
 function applyDed(m,r,sec){const l=liqRef(m,r.src);if(!l)return'';const a=dedAmt(m,r,sec);l.m=Math.round(((+l.m||0)-a)*100)/100;r._d=a;return ' · descontado de '+l.c+(l.m<0?' (quedó en negativo)':'');}
 function revDed(m,r){const l=liqRef(m,r.src);if(l&&r._d!=null)l.m=Math.round(((+l.m||0)+r._d)*100)/100;delete r._d;}
 function reconcile(m,r,sec){if(!r.src)return;revDed(m,r);applyDed(m,r,sec);}
-function paymentsTo(m,k){let d=0;(m.fij||[]).forEach(r=>{if(r.card===k)d+=(+r.m||0);});return d;}
-function cardDebt(m,k){return Math.round((sum(m[k]||[])-paymentsTo(m,k))*100)/100;}
+function paymentsTo(m,k){let d=0;(m.fij||[]).forEach(r=>{if(r.card===k)d+=(+r.m||0)*rateC(rowCur('fij',r),m)/rate(k,m);});return d;}
+function cardDebt(m,k){return Math.round((sumIn(m,k)-paymentsTo(m,k))*100)/100;}
 function cardEnding(y,i,k){const m=S[y]&&S[y][i];if(!m)return 0;const open=+((m.copen||{})[k])||0;return Math.round((open+cardDebt(m,k))*100)/100;}
 function delMov(m,sec,i){const a=m[sec];if(!a||!a[i])return;const r=a[i];if(r.src)revDed(m,r);a.splice(i,1);if(!a.length)a.push(sec==='eur'?{a:0,b:0,d:0,s:0,p:0}:row());}
 let ent=null,lastUndo=null,toastT=0,pf=null,sheetFrom=null;
-const tsec=()=>ent.t==='compra'?ent.card:ent.t==='pago'?'fij':ent.t;
+const tsec=()=>ent.t==='compra'?ent.card:ent.t==='pago'?'fij':ent.t==='mov'?'aho':ent.t;
 const lastType=()=>{try{const t=localStorage.getItem(KEY+'-tipo')||'hor';return TIPOS.some(x=>x[0]===t)?t:'hor';}catch(e){return 'hor';}};
+const entCur=()=>ent.t==='mov'?(ent.from&&ent.from.slice(0,4)==='aho:'?(((S[ent.yr][+ent.mo].aho||[]).find(r=>(r.c||'').trim()===ent.from.slice(4))||{}).cur||curOf('aho')):curOf('liq')):(ent.cur||curOf(tsec()));
 const chipH=(items,sel,attr,sm)=>items.map(i=>`<button type="button" class="cp${sm?' sm':''}" role="radio" aria-checked="${i[0]===sel}" data-${attr}="${esc(i[0])}" style="--cc:var(${i[2]||'--accent'})">${esc(i[1])}</button>`).join('');
 function topConcepts(sec){
   const n={};
@@ -890,20 +947,23 @@ function toast(msg,u){
 function syncSheet(){
   const g=id=>document.getElementById(id);if(!g('sheet'))return;
   const t=ent.t,gasto=t==='hor'||t==='fij',compra=t==='compra',pago=t==='pago',card=compra||pago,sec=tsec();
-  g('stype').innerHTML=chipH(TIPOS,t,'t');
+  g('stype').innerHTML=chipH(t==='aho'?TIPOS.concat([TIPO_AHO]):TIPOS,t,'t');
+  const mov=t==='mov',mw=g('smovw');if(mw){mw.hidden=!mov;if(mov){g('sfrom').innerHTML=chipH(moveAccts(ent.yr,+ent.mo,false),ent.from,'from',true);g('sto').innerHTML=chipH(moveAccts(ent.yr,+ent.mo,true),ent.to,'to',true);}}
+  const sdl=g('sdlbl');if(sdl)sdl.firstChild.textContent=mov?(ent.to==='aho:+'?'Nombre de la cuenta nueva':'Nota (opcional)'):'Concepto';
   g('sbank').hidden=!card;g('sbank').innerHTML=chipH(BANCOS,ent.card,'b');
   g('ssug').innerHTML=(gasto||compra)?topConcepts(compra?ent.card:sec).map(c=>`<button type="button" class="cp sm" data-sg="${esc(c)}">${esc(c)}</button>`).join(''):'';
   g('scatw').hidden=!gasto;g('scat').innerHTML=chipH(cfg.cats.map(c=>[c,c]),ent.cat,'sc',true);
-  const aho=t==='aho',sgw=g('sgoalw');if(sgw){sgw.hidden=!(aho&&(cfg.metas||[]).length);g('sgoal').innerHTML=aho?chipH((cfg.metas||[]).map(x=>[x.n,x.n]),ent.g,'meta',true):'';}
+  const aho=t==='aho'||(t==='mov'&&ent.to&&ent.to.slice(0,4)==='aho:'),sgw=g('sgoalw');if(sgw){sgw.hidden=!(aho&&(cfg.metas||[]).length);g('sgoal').innerHTML=aho?chipH((cfg.metas||[]).map(x=>[x.n,x.n]),ent.g,'meta',true):'';}
   const srcOn=gasto||pago;
   g('ssrcw').hidden=!srcOn;
   const sl=g('ssrclbl');if(sl)sl.textContent=pago?'¿Con qué pagas la tarjeta?':'¿De dónde sale este gasto?';
   g('ssrc').innerHTML=srcOn?chipH(srcList(gasto),ent.src,'src',true):'';
-  g('scur').textContent=curOf(sec);
+  g('scur').textContent=entCur();g('scur').disabled=t==='mov';g('scur').title=t==='mov'?'La moneda es la de la cuenta de origen':'Toca para cambiar la moneda';
   let dest;
   if(compra)dest='Compra en '+BANKN[ent.card]+' · sube tu deuda, no es gasto';
   else if(pago)dest='Pago de '+BANKN[ent.card]+' · cuenta como gasto del mes';
-  else dest='Se guardará en '+SECN[sec];
+  else if(t==='mov')dest='No es gasto ni ingreso: solo cambia dónde está tu dinero';
+  else dest='Se guardará en '+SECN[sec]+(entCur()!==curOf(sec)?' · en '+entCur()+', convertido con la tasa del mes':'');
   g('sdest').textContent=dest+' · '+MES[+ent.mo]+' '+ent.yr+(S[ent.yr][+ent.mo].tot?' (mes con solo totales)':'');
   g('sdest').classList.remove('err');
 }
@@ -916,33 +976,44 @@ function saveSheet(more){
   const t=ent.t,gasto=t==='hor'||t==='fij',compra=t==='compra',pago=t==='pago';
   const err=t2=>{g('sdest').textContent=t2;g('sdest').classList.add('err');};
   if(!(amt>0)){err('Escribe el monto para guardar.');g('sa').focus();return;}
+  if(t==='mov'&&(!ent.from||!ent.to)){err('Elige desde y hacia qué cuenta mueves el dinero.');return;}
+  if(t==='mov'&&ent.from===ent.to){err('Elige dos cuentas distintas.');return;}
   if(gasto&&!ent.src){err('Elige de dónde sale el gasto (o «No descontar»).');g('ssrcw').scrollIntoView({block:'nearest'});return;}
   if((compra||pago)&&!ent.card){err('Elige la tarjeta.');return;}
   if(pago&&(!ent.src||ent.src==='none')){err('Elige con qué pagas la tarjeta.');g('ssrcw').scrollIntoView({block:'nearest'});return;}
   const m=S[ent.yr][+ent.mo],mo=+ent.mo,desc=g('sd').value.trim(),day=Math.max(1,Math.min(31,+g('sday').value||ent.day)),fch=day+'-'+ABR[mo].toLowerCase();
   const editing=!!ent.edit;if(editing)delMov(S[ent.edit.yr][ent.edit.mo],ent.edit.s,ent.edit.i);
   const hBefore=dv(m).hor;let u,msg;
-  if(compra){
-    u=addRow(ent.yr,mo,ent.card,row(desc||'Compra',amt,fch,''));
+  const withCur=o=>{const c=ent.cur;if(c&&c!==curOf(o.sec))o.r.cur=c;return o;};
+  if(t==='mov'){
+    const snap=JSON.stringify({liq:m.liq,aho:m.aho,mov:m.mov||[],az:!!m.az});
+    msg=doMove(ent.yr,mo,ent.from,ent.to,amt,desc,fch,ent.g);
+    u={fn:()=>{const o=JSON.parse(snap);m.liq=o.liq;m.aho=o.aho;m.mov=o.mov;if(o.az)m.az=1;else delete m.az;}};
+  }else if(compra){
+    u=withCur(addRow(ent.yr,mo,ent.card,row(desc||'Compra',amt,fch,'')));
     msg='Compra en '+BANKN[ent.card]+' · '+curOf(ent.card)+' '+num2(amt)+' · deuda '+fmtC(ent.card,cardDebt(m,ent.card));
   }else if(pago){
-    u=addRow(ent.yr,mo,'fij',row('Pago '+BANKN[ent.card],amt,fch,'Pago tarjeta',ent.src,ent.card));
+    u=withCur(addRow(ent.yr,mo,'fij',row('Pago '+BANKN[ent.card],amt,fch,'Pago tarjeta',ent.src,ent.card)));
     const dd=applyDed(m,u.r,'fij');
     msg='Pago de '+BANKN[ent.card]+' · '+curOf('fij')+' '+num2(amt)+dd+' · deuda '+fmtC(ent.card,cardDebt(m,ent.card));
   }else{
-    const sec=t;u=addRow(ent.yr,mo,sec,row(desc||'Sin descripción',amt,fch,gasto?ent.cat:(t==='aho'?(ent.g||''):''),gasto?ent.src:''));
+    const sec=t;u=withCur(addRow(ent.yr,mo,sec,row(desc||'Sin descripción',amt,fch,gasto?ent.cat:(t==='aho'?(ent.g||''):''),gasto?ent.src:'')));
+    if(t==='aho'&&ahoMode(ent.yr)==='saldo')delete m.az;
     const dd=gasto?applyDed(m,u.r,sec):'';
-    msg='Guardado en '+SECN[sec]+' · '+curOf(sec)+' '+num2(amt)+dd;
+    msg='Guardado en '+SECN[sec]+' · '+entCur()+' '+num2(amt)+dd;
   }
   try{localStorage.setItem(KEY+'-tipo',t);}catch(e){}
   save();
   msg+=(mo!==view||ent.yr!==year?' · '+MES[mo]:'')+hormAlert(hBefore,dv(m).hor,t==='hor'?'hor':'');
-  if(more&&!editing){g('sa').value='';g('sd').value='';g('smsg').value='';ent.cat='';ent.src='';ent.g='';syncSheet();g('sa').focus();}else closeSheet();
+  if(more&&!editing){g('sa').value='';g('sd').value='';g('smsg').value='';ent.cat='';ent.src='';ent.g='';ent.from='';ent.to='';syncSheet();g('sa').focus();}else closeSheet();
   render();toast(editing?('Movimiento actualizado · '+msg):msg,editing?null:u);
 }
 function sheetClick(e){
   const b=e.target.closest('button');if(!b)return;const d=b.dataset;
   if(d.t){ent.t=d.t;ent.cat='';syncSheet();}
+  else if(b.id==='scur'){const i=CURS.indexOf(entCur());ent.cur=CURS[(i+1)%CURS.length];syncSheet();}
+  else if(d.from!==undefined){ent.from=d.from;syncSheet();}
+  else if(d.to!==undefined){ent.to=d.to;syncSheet();}
   else if(d.b){ent.card=d.b;syncSheet();}
   else if(d.sg!==undefined){document.getElementById('sd').value=d.sg;}
   else if(d.src!==undefined){ent.src=d.src;syncSheet();}
@@ -955,24 +1026,26 @@ function sheetClick(e){
 }
 function sheetInput(e){
   const t=e.target,g=id=>document.getElementById(id);
-  if(t.id==='smsg'){const p=parseMsg(t.value);if(p){g('sa').value=String(p.amt);g('sd').value=p.name;ent.t=p.sec;const w=(t.value.toLowerCase().match(/\b(yape|plin|efectivo)\b/)||[])[1];if(w&&(p.sec==='hor'||p.sec==='fij')){const li=srcList().find(x=>x[0].slice(0,4)==='liq:'&&x[1].toLowerCase().indexOf(w)===0);if(li)ent.src=li[0];}syncSheet();}}
-  else if(t.id==='smo'){ent.mo=+t.value;ent.src='';syncSheet();}
-  else if(t.id==='syr'){ent.yr=t.value;ent.src='';syncSheet();}
+  if(t.id==='smsg'){const p=parseMsg(t.value);if(p){g('sa').value=String(p.amt);g('sd').value=p.name;ent.t=(p.sec==='aho'&&ahoMode(ent.yr)==='saldo')?'mov':p.sec;const w=(t.value.toLowerCase().match(/\b(yape|plin|efectivo)\b/)||[])[1];if(w&&(p.sec==='hor'||p.sec==='fij')){const li=srcList().find(x=>x[0].slice(0,4)==='liq:'&&x[1].toLowerCase().indexOf(w)===0);if(li)ent.src=li[0];}syncSheet();}}
+  else if(t.id==='smo'){ent.mo=+t.value;ent.src='';ent.from='';ent.to='';syncSheet();}
+  else if(t.id==='syr'){ent.yr=t.value;ent.src='';ent.from='';ent.to='';syncSheet();}
+  else if(t.id==='sd'&&ent.t==='mov'){}
   else if(t.id==='sday')ent.day=+t.value||1;
 }
 function openSheet(){
   closeSheet();closePanel();sheetFrom=document.activeElement;
   const mi=(view==='resumen'||view==='capturar')?(year===String(now.getFullYear())?now.getMonth():0):view;
-  ent={t:lastType(),card:'bbva',cat:'',src:'',g:'',mo:mi,yr:year,day:now.getDate()};
+  ent={t:lastType(),card:'bbva',cat:'',src:'',g:'',from:'',to:'',cur:'',mo:mi,yr:year,day:now.getDate()};
   const bg=document.createElement('div');bg.id='sheetbg';bg.className='sheetbg';
   const sh=document.createElement('div');sh.id='sheet';sh.className='sheet';
   sh.setAttribute('role','dialog');sh.setAttribute('aria-modal','true');sh.setAttribute('aria-label','Nuevo movimiento');
   sh.innerHTML=`<div class="sh-h"><b>Nuevo movimiento</b><button type="button" data-s="close" aria-label="Cerrar">×</button></div>
   <label class="sr" for="smsg">Escribe rápido</label><input id="smsg" type="text" placeholder="Escribe rápido: almuerzo 25 yape" autocomplete="off">
-  <div class="amt"><span id="scur">S/</span><input id="sa" type="text" inputmode="decimal" placeholder="0.00" aria-label="Monto" autocomplete="off"></div>
+  <div class="amt"><button type="button" id="scur" class="curbtn" aria-label="Moneda">S/</button><input id="sa" type="text" inputmode="decimal" placeholder="0.00" aria-label="Monto" autocomplete="off"></div>
   <div class="grp" role="radiogroup" aria-label="Tipo de movimiento" id="stype"></div>
   <div class="grp" role="radiogroup" aria-label="Tarjeta" id="sbank" hidden></div>
-  <label class="fld">Concepto<input id="sd" type="text" placeholder="¿En qué fue?" autocomplete="off"></label>
+  <div id="smovw" hidden><div class="ms" style="margin-bottom:6px">Desde</div><div class="grp" role="radiogroup" aria-label="Desde" id="sfrom"></div><div class="ms" style="margin:10px 0 6px">Hacia</div><div class="grp" role="radiogroup" aria-label="Hacia" id="sto"></div></div>
+  <label class="fld" id="sdlbl">Concepto<input id="sd" type="text" placeholder="¿En qué fue?" autocomplete="off"></label>
   <div class="grp" id="ssug"></div>
   <div id="scatw" hidden><div class="ms" style="margin-bottom:6px">Categoría (opcional)</div><div class="grp" role="radiogroup" aria-label="Categoría" id="scat"></div></div>
   <div id="sgoalw" hidden><div class="ms" style="margin-bottom:6px">Meta (opcional)</div><div class="grp" role="radiogroup" aria-label="Meta de ahorro" id="sgoal"></div></div>
@@ -995,7 +1068,7 @@ function openEdit(s,i,mo){
   let t=s,card='';
   if(s==='fij'&&r.card){t='pago';card=r.card;}
   else if(s==='bbva'||s==='bcp'||s==='oh'){t='compra';card=s;}
-  ent.t=t;if(card)ent.card=card;ent.cat=(s==='fij'||s==='hor')?(r.k||''):'';ent.g=(s==='aho')?(r.k||''):'';ent.src=r.src||'';ent.mo=mi;ent.yr=year;ent.day=parseInt(r.f)||ent.day;ent.edit={yr:year,mo:mi,s:s,i:i};
+  ent.t=t;if(card)ent.card=card;ent.cat=(s==='fij'||s==='hor')?(r.k||''):'';ent.g=(s==='aho')?(r.k||''):'';ent.src=r.src||'';ent.cur=r.cur||'';ent.mo=mi;ent.yr=year;ent.day=parseInt(r.f)||ent.day;ent.edit={yr:year,mo:mi,s:s,i:i};
   const g=id=>document.getElementById(id);
   g('sa').value=(+r.m)||'';if(t!=='pago')g('sd').value=r.c||'';
   g('smo').value=mi;g('syr').value=year;g('sday').value=ent.day;
@@ -1147,12 +1220,13 @@ function toRows(){
     SECKEYS.forEach(k=>{
       const arr=m[k]||[];
       if(k==='liq'&&arr.length===4&&arr.every((r,j)=>r.c===DEFLIQ[j]&&!(+r.m)))return;
-      arr.forEach(r=>{if(!r.c&&!(+r.m))return;out.push(base.concat([APART[k],txt(r.c),+r.m||0,txt(r.k),txt(r.f),'','','','','',txt(r.src||''),txt(r.card||'')]));});
+      arr.forEach(r=>{if(!r.c&&!(+r.m))return;out.push(base.concat([APART[k],txt(r.c),+r.m||0,txt(r.k),txt(r.f),txt(r.cur||''),'','','','',txt(r.src||''),txt(r.card||'')]));});
     });
     (m.eur||[]).forEach(r=>{if(!(r.a||r.b||r.d||r.s||r.p))return;out.push(base.concat(['Apuntes','',0,'','',+r.a||0,+r.b||0,+r.d||0,+r.s||0,+r.p||0,'','']));});
     const dflt=JSON.stringify([50,30,20]);
-    if(out.length>n0||m.tot||m.nota||JSON.stringify(m.p)!==dflt||JSON.stringify(m.q||[50,30,20])!==dflt)
-      out.push(base.concat(['_Mes',JSON.stringify({p:m.p,q:m.q||[50,30,20],nota:m.nota||'',tot:!!m.tot}),0,'','','','','','','','','']));
+    if(out.length>n0||m.tot||m.nota||m.az||JSON.stringify(m.p)!==dflt||JSON.stringify(m.q||[50,30,20])!==dflt)
+      out.push(base.concat(['_Mes',JSON.stringify(Object.assign({p:m.p,q:m.q||[50,30,20],nota:m.nota||'',tot:!!m.tot},m.az?{az:1}:{})),0,'','','','','','','','','']));
+    if(m.mov&&m.mov.length)out.push(base.concat(['_Mov',JSON.stringify(m.mov),0,'','','','','','','','','']));
     if(m.copen&&Object.keys(m.copen).some(k=>+m.copen[k]))out.push(base.concat(['_Card',JSON.stringify(m.copen),0,'','','','','','','','','']));
     if(m.tc&&(+m.tc['$']||+m.tc['€']))out.push(base.concat(['_TC',JSON.stringify(m.tc),0,'','','','','','','','','']));
   }));
@@ -1165,12 +1239,13 @@ function fromRows(rows){
     if(!/^\d{4}$/.test(y)||!(mi>=0&&mi<12))return;
     if(!years[y])years[y]=Array.from({length:12},mk);
     const m=years[y][mi],ap=String(r[3]||'').trim();
-    if(ap==='_Mes'){try{const j=JSON.parse(r[4]);if(j.p)m.p=j.p;if(j.q)m.q=j.q;m.nota=j.nota||'';m.tot=!!j.tot;}catch(e){}return;}
+    if(ap==='_Mes'){try{const j=JSON.parse(r[4]);if(j.p)m.p=j.p;if(j.q)m.q=j.q;m.nota=j.nota||'';m.tot=!!j.tot;if(j.az)m.az=1;}catch(e){}return;}
     if(ap==='_Card'){try{m.copen=JSON.parse(r[4]);}catch(e){}return;}
     if(ap==='_TC'){try{m.tc=JSON.parse(r[4]);}catch(e){}return;}
+    if(ap==='_Mov'){try{m.mov=JSON.parse(r[4]);}catch(e){}return;}
     if(ap==='Apuntes'){m.eur.push({a:num(r[8]),b:num(r[9]),d:num(r[10]),s:num(r[11]),p:num(r[12])});return;}
     const k=APART_INV[ap];
-    if(k)m[k].push(row(r[4]||'',num(r[5]),r[7]||'',r[6]||'',r[13]||'',r[14]||''));
+    if(k){const o=row(r[4]||'',num(r[5]),r[7]||'',r[6]||'',r[13]||'',r[14]||''),c=String(r[8]||'').trim();if(CURS.indexOf(c)>0)o.cur=c;m[k].push(o);}
   });
   Object.keys(years).forEach(y=>years[y].forEach(m=>{
     SECKEYS.forEach(k=>{if(!m[k].length)m[k]=(k==='liq')?LIQ():[row()];});
@@ -1392,10 +1467,42 @@ function doPrev(){
   let n=0;
   if(emptyArr(m.fij)){const rows=pm.fij.filter(r=>(r.c||'').trim()&&+r.m);if(rows.length){m.fij=rows.map(r=>row(r.c,r.m,'',r.k));n+=rows.length;}}
   if(m.liq.every(r=>!(+r.m))){const rows=pm.liq.filter(r=>(r.c||'').trim());if(rows.some(r=>+r.m)){m.liq=rows.map(r=>row(r.c,r.m));n+=rows.length;}}
+  if(ahoMode(year)==='saldo'&&!ahoHas(m)){const pv=view>0?[year,view-1]:[String(+year-1),11],src=S[pv[0]]?ahoSrcMonth(pv[0],pv[1]):null;if(src){m.aho=copyAho(src);n+=m.aho.length;}}
   const prevY=view>0?year:String(+year-1),prevI=view>0?view-1:11;let nc=0;
   ['bbva','bcp','oh'].forEach(k=>{if(m.copen&&m.copen[k]!=null)return;if((m[k]||[]).some(r=>+r.m))return;const pe=cardEnding(prevY,prevI,k);if(pe){if(!m.copen)m.copen={};m.copen[k]=pe;nc++;}});
   if(!n&&!nc){const had=!emptyArr(m.fij)||m.liq.some(r=>+r.m);toast(had?'Este mes ya tiene gastos fijos o liquidez, no copié nada para no duplicar.':'El mes anterior no tiene gastos fijos ni liquidez para copiar.');return;}
   save();render();toast('Traído del mes anterior: '+n+' filas'+(nc?' y saldo de '+nc+(nc===1?' tarjeta':' tarjetas'):''));
+}
+function copyAho(src){return (src.aho||[]).filter(r=>(r.c||'').trim()||+r.m).map(r=>{const o=row(r.c,r.m,'',r.k);if(r.cur)o.cur=r.cur;return o;});}
+/* ---------- Mover dinero entre cuentas ---------- */
+function moveAccts(y,i,to){
+  const m=S[y][i],out=[];
+  (m.liq||[]).forEach((r,j)=>{if((r.c||'').trim())out.push(['liq:'+j,r.c.trim()+' · '+curOf('liq')+' '+num2(+r.m||0),'--h-liq']);});
+  const sm=ahoMode(y)==='saldo'?(ahoHas(m)?m:ahoSrcMonth(y,i)):m,seen={};
+  ((sm&&sm.aho)||[]).forEach(r=>{const c=(r.c||'').trim();if(!c||seen[c.toLowerCase()])return;seen[c.toLowerCase()]=1;out.push(['aho:'+c,c+(ahoMode(y)==='saldo'?' · '+rowCur('aho',r)+' '+num2(+r.m||0):''),'--c-aho']);});
+  if(to)out.push(['aho:+','+ Nueva cuenta de ahorro','--c-aho']);
+  return out;
+}
+function acctName(m,id){return id.slice(0,4)==='liq:'?((m.liq[+id.slice(4)]||{}).c||'Liquidez'):id.slice(4);}
+function doMove(y,i,from,to,amt,desc,fch,goal){
+  const m=S[y][i],saldo=ahoMode(y)==='saldo';
+  if(saldo&&!ahoHas(m)&&(from.slice(0,4)==='aho:'||to.slice(0,4)==='aho:')){const pv=i>0?[y,i-1]:[String(+y-1),11],src=S[pv[0]]?ahoSrcMonth(pv[0],pv[1]):null;if(src)m.aho=copyAho(src);}
+  const findAho=n=>(m.aho||[]).find(r=>(r.c||'').trim().toLowerCase()===n.toLowerCase());
+  const newName=(desc||'').trim()||'Nueva cuenta';
+  const toId=to==='aho:+'?'aho:'+newName:to;
+  const fromCur=from.slice(0,4)==='liq:'?curOf('liq'):((findAho(from.slice(4))||{}).cur||curOf('aho'));
+  const soles=amt*rateC(fromCur,m);let neg='';
+  const leg=(id,sign)=>{
+    if(id.slice(0,4)==='liq:'){const l=m.liq[+id.slice(4)];if(!l)return;l.m=Math.round(((+l.m||0)+sign*soles/rate('liq',m))*100)/100;if(l.m<0)neg=' ('+l.c+' quedó en negativo)';return;}
+    const n=id.slice(4);
+    if(!saldo){addRow(y,i,'aho',row((sign>0?'Depósito a ':'Retiro de ')+n,Math.round(sign*soles/rate('aho',m)*100)/100,fch,sign>0?(goal||''):''));return;}
+    let r=findAho(n);if(!r){r=row(n,0,fch,goal||'');addRow(y,i,'aho',r);}
+    r.m=Math.round(((+r.m||0)+sign*soles/rateC(rowCur('aho',r),m))*100)/100;if(sign>0&&goal)r.k=goal;r.f=fch;if(r.m<0)neg=' ('+n+' quedó en negativo)';
+  };
+  leg(from,-1);leg(toId,1);
+  if(saldo){if(!(m.aho||[]).some(r=>+r.m))m.az=1;else delete m.az;}
+  (m.mov=m.mov||[]).push({de:acctName(m,from),a:acctName(m,toId),m:amt,cur:fromCur,f:fch,c:(to==='aho:+'?'':(desc||''))});
+  return 'Moviste '+fromCur+' '+num2(amt)+' de '+acctName(m,from)+' a '+acctName(m,toId)+neg;
 }
 function doRec(){
   const rec=cfg.rec||[];
@@ -1508,9 +1615,9 @@ app.addEventListener('input',e=>{
   if(d.copen!==undefined){if(!m.copen)m.copen={};m.copen[d.copen]=parseFloat(t.value)||0;save();refreshMonth(false);return;}
   if(d.nota){m.nota=t.value;save();return;}
   if(d.p!==undefined){const k=PM().k;if(!m.q)m.q=[50,30,20];m[k][+d.p]=parseFloat(t.value)||0;save();refreshMonth(false);return;}
-  if(d.s){const r=m[d.s][+d.i];const wasM=d.k==='m';r[d.k]=(d.s==='eur'||d.k==='m')?(parseFloat(t.value)||0):t.value;if(wasM&&r.src)reconcile(m,r,d.s);save();refreshMonth(false);}
+  if(d.s){const r=m[d.s][+d.i];const wasM=d.k==='m';r[d.k]=(d.s==='eur'||d.k==='m')?(parseFloat(t.value)||0):t.value;if(wasM&&r.src)reconcile(m,r,d.s);if(d.s==='aho'&&wasM){if((m.aho||[]).some(x=>+x.m))delete m.az;else m.az=1;}save();refreshMonth(false);}
 });
-app.addEventListener('change',e=>{if(e.target.id==='bk-file'){const f=e.target.files&&e.target.files[0];if(f){const r=new FileReader();r.onload=()=>restoreFrom(String(r.result));r.onerror=()=>bkMsg('No pude leer el archivo.',true);r.readAsText(f);}e.target.value='';return;}if(e.target.dataset.cfgt){cfg[e.target.dataset.cfgt]=e.target.value;save();render();return;}if(e.target.dataset.gs==='auto'){sync.auto=e.target.checked;persistSync();if(sync.auto&&sync.dirty&&sync.ready)queueSync();return;}if(e.target.dataset.gs==='id'){e.target.value=sync.id;return;}if(e.target.dataset.fx==='auto'){cfg.tcAuto=e.target.checked;save();if(cfg.tcAuto)fxUpdate(true);return;}if(e.target.dataset.tcm){return;}if(e.target.dataset.cfg||e.target.dataset.tc)render();});
+app.addEventListener('change',e=>{const ah=e.target.dataset&&e.target.dataset.ahm;if(ah){cfg.ahoModo=Object.assign({},cfg.ahoModo,{[year]:ah});save();render();toast(ah==='saldo'?'Ahorros de '+year+': saldo de cada cuenta':'Ahorros de '+year+': lo que depositas cada mes');return;}if(e.target.dataset&&e.target.dataset.ahini){const v=e.target.value.trim();cfg.ahoIni=Object.assign({},cfg.ahoIni);if(v==='')delete cfg.ahoIni[year];else cfg.ahoIni[year]=parseFloat(v)||0;save();render();return;}if(e.target.id==='bk-file'){const f=e.target.files&&e.target.files[0];if(f){const r=new FileReader();r.onload=()=>restoreFrom(String(r.result));r.onerror=()=>bkMsg('No pude leer el archivo.',true);r.readAsText(f);}e.target.value='';return;}if(e.target.dataset.cfgt){cfg[e.target.dataset.cfgt]=e.target.value;save();render();return;}if(e.target.dataset.gs==='auto'){sync.auto=e.target.checked;persistSync();if(sync.auto&&sync.dirty&&sync.ready)queueSync();return;}if(e.target.dataset.gs==='id'){e.target.value=sync.id;return;}if(e.target.dataset.fx==='auto'){cfg.tcAuto=e.target.checked;save();if(cfg.tcAuto)fxUpdate(true);return;}if(e.target.dataset.tcm){return;}if(e.target.dataset.cfg||e.target.dataset.tc)render();});
 app.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;const d=b.dataset;
   if(d.act==='new'){openSheet();return;}
@@ -1518,6 +1625,7 @@ app.addEventListener('click',e=>{
   if(d.edit!==undefined){openEdit(d.edit,+d.i);return;}
   if(d.capedit!==undefined){const a=d.capedit.split(':');openEdit(a[0],+a[1]);return;}
   if(d.capdel!==undefined){const a=d.capdel.split(':'),mi=(year===String(now.getFullYear()))?now.getMonth():0;delMov(S[year][mi],a[0],+a[1]);save();render();toast('Movimiento borrado');return;}
+  if(d.act==='mover'){openSheet();ent.t='mov';syncSheet();return;}
   if(d.act==='prev'){doPrev();return;}
   if(d.act==='rec'){doRec();return;}
   if(d.act==='cuad'){openCuadre();return;}
