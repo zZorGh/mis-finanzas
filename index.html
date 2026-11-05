@@ -593,7 +593,7 @@ function viewResumen(){
   </section>
   <div class="board" id="board"><div class="kpis bcard bare" data-cid="rk">${kp('Gastado en el año',fmt(gas),'Fijos más hormiga')}${kp('Ahorrado',fmt(aho),'Suma de los meses')}${kp('Invertido',fmt(inv),'Suma de los meses')}${kp('Mejor mes de ahorro',bi>=0?MES[bi]:'Sin datos',bi>=0?pct(bp)+' del ingreso':'')}</div>
   <div class="g2">
-    ${chartCard('Ingreso, gastado y ahorrado','El ingreso de cada mes incluye el saldo que pasó del anterior.','r1',lg([['Ingreso','var(--c-ing)'],['Gastado','var(--c-gas)'],['Ahorrado','var(--c-aho)']]))}
+    ${chartCard('Ingreso, gastado y ahorrado','Ingreso, gasto y ahorro de cada mes. El saldo que sobra de un mes no se suma al siguiente.','r1',lg([['Ingreso','var(--c-ing)'],['Gastado','var(--c-gas)'],['Ahorrado','var(--c-aho)']]))}
     ${chartCard('Ahorro sobre el ingreso','La línea punteada es tu meta de '+cfg.meta+'%.','r2')}
   </div>
   <div class="g2">
