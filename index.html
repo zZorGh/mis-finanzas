@@ -509,6 +509,13 @@ button,[role=button],.tab,.chip{-webkit-user-select:none;user-select:none;-webki
 .kv{overflow:hidden;text-overflow:clip}
 .cap-wrap{grid-template-columns:minmax(0,1fr)}.cap-top>*{min-width:0}
 .hero-top>*{min-width:0}.ctl{min-width:0;flex-wrap:wrap;justify-content:flex-end}@media (max-width:380px){.hrow{gap:8px}.ctl{gap:6px}.ctl button,.ctl select{padding:0 6px}.brand .logo{display:none}}.hero-main{grid-template-columns:minmax(0,1fr)}.hero-main>*{min-width:0}@media (max-width:899px){.hero.with-liq{grid-template-columns:minmax(0,1fr)}}
+
+/* Diálogo de reportes */
+.rp-l{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.02em;margin-top:2px}
+.rp-r{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2)}
+.rp-r select{height:40px;width:100%}
+.rp-s{border:1px solid var(--line);background:var(--surface-2);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.5}
+.sheet .grp .cp.sm{height:36px;padding:0 12px;font-size:13px}
 </style>
 
 <header id="hdr"></header>
@@ -704,6 +711,7 @@ function viewResumen(){
     <div class="hbar" aria-hidden="true"><span style="width:${Math.min(100,prog*100)}%;background:var(--c-aho)"></span></div>
     <div class="hleg"><span>Fondo de emergencia: ${Math.round(prog*100)}% de ${fmt(meta)}</span></div>
     <div class="hint">${any?nOn+(nOn===1?' mes':' meses')+' con datos'+(recentCount(7)?' · '+recentCount(7)+(recentCount(7)===1?' movimiento':' movimientos')+' en los últimos 7 días':'')+'. Toca una barra o una tarjeta para abrir el mes.':'Año sin movimientos todavía.'}</div>
+    ${any?'<div class="acts"><button type="button" data-act="rep">Descargar reporte (PDF o Excel)</button></div>':''}
   </section>
   <div class="board" id="board"><div class="kpis bcard bare" data-cid="rk">${kp('Gastado en el año',fmt(gas),'Fijos más hormiga')}${kp('Ahorro neto del año',(aho>0?'+':'')+fmt(aho),aho<0?'Sacaste más de lo que guardaste':'Lo que creció tu ahorro')}${kp('Invertido',fmt(inv),'Suma de los meses')}${kp('Mejor mes de ahorro',bi>=0?MES[bi]:'Sin datos',bi>=0?pct(bp)+' del ingreso':'')}</div>
   <div class="g2">
@@ -748,19 +756,23 @@ function viewResumen(){
       <div class="chips">${(cfg.rec||[]).map((r,i)=>`<span class="chip">${esc(r.c)} · ${num2(r.m)}${r.k?' · '+esc(r.k):''}${r.src&&r.src!=='none'?' · '+esc(DEFLIQ[+r.src.slice(4)]||''):''} · día ${r.f}<button type="button" data-recdel="${i}" aria-label="Quitar ${esc(r.c)}">×</button></span>`).join('')||'<span class="ms">Todavía no hay recurrentes.</span>'}</div>
       <div class="qa"><select id="rc-s" aria-label="Tipo"><option value="fij">Gasto fijo</option><option value="hor">Hormiga</option></select><input id="rc-c" type="text" placeholder="Concepto, por ejemplo Internet" aria-label="Concepto"><input id="rc-m" type="number" step="0.01" placeholder="Monto" aria-label="Monto" style="width:100px"><select id="rc-k" aria-label="Categoría"><option value="">Categoría</option>${cfg.cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select><select id="rc-src" aria-label="De dónde sale"><option value="none">No descontar</option>${DEFLIQ.map((n,i)=>`<option value="liq:${i}">${esc(n)}</option>`).join('')}</select><input id="rc-d" type="number" min="1" max="31" value="1" aria-label="Día del mes" style="width:70px"><button class="b" id="rc-add" type="button">Agregar</button></div>
     </div>
+    <div class="gs"><h3>Reportes</h3><div class="ms">Un estado de cuenta ordenado, en PDF para enviar o imprimir, o en Excel para revisar las cifras. Lo entiende cualquier persona, empresa o banco.</div><div class="qa"><button class="b p" type="button" data-act="rep">Descargar reporte</button></div></div>
     <div class="gs"><h3>Respaldo</h3>
       <div class="qa"><button class="b" id="bk-json" type="button">Descargar respaldo (JSON)</button><button class="b" id="bk-csv" type="button">Descargar movimientos (CSV)</button><button class="b" id="bk-load" type="button">Restaurar desde respaldo</button><input id="bk-file" type="file" accept=".json,application/json" hidden></div>
       <div class="ms" id="bk-msg" role="status"></div>
       <div class="ms">«Restaurar» reemplaza todo lo que ves aquí por el contenido del archivo.</div>
     </div>
-    <div class="ms">Sin conexión, los cambios quedan solo en este navegador.</div>
-    <div class="gs"><h3>${IS_SB?'Tu cuenta':IS_GAS?'Tu hoja de Google':'Google Sheets'}</h3>
-      ${IS_SB?('<div class="ms">'+(sbUser?'Conectado como '+esc(sbUser.email||'tu cuenta')+'. ':'')+'Tus datos se guardan en tu base de datos privada.</div><div class="qa"><button class="b" id="sb-logout" type="button">Cerrar sesión</button></div>'):IS_GAS?'<div class="ms">Conectado a tu hoja de Google (app web). No necesitas el ID aquí.</div>':'<label class="fld" for="gs-id">ID o enlace de tu hoja<input id="gs-id" type="text" data-gs="id" value="'+esc(sync.id)+'" autocomplete="off"></label>'}
-      <label class="chk"><input type="checkbox" id="gs-auto" data-gs="auto"${sync.auto?' checked':''}> Guardar automáticamente${IS_SB?'':' en la hoja'}</label>
-      <div class="qa"><button class="b" id="gs-load" type="button">${IS_SB?'Recargar mis datos':'Cargar desde la hoja'}</button><button class="b" id="gs-push" type="button">${IS_SB?'Guardar todo ahora':'Subir todo a la hoja'}</button></div>
+    
+    ${IS_SB?`<div class="gs"><h3>Tu cuenta</h3>
+      <div class="ms">${sbUser?'Conectado como '+esc(sbUser.email||'tu cuenta')+'. ':''}Tus datos se guardan en tu base de datos privada, protegida con tu inicio de sesión. Solo tú puedes verlos.</div>
+      <div class="qa"><button class="b" id="sb-logout" type="button">Cerrar sesión</button></div>
+      <label class="chk"><input type="checkbox" id="gs-auto" data-gs="auto"${sync.auto?' checked':''}> Guardar automáticamente</label>
+      <div class="qa"><button class="b" id="gs-load" type="button">Recargar mis datos</button><button class="b" id="gs-push" type="button">Guardar todo ahora</button></div>
       <div class="ms" id="gs-msg" role="status">${esc(sync.msg||'')}</div>
-      <div class="ms">${IS_SB?'Tus datos están en tu base de datos privada; solo tú los ves. «Recargar» trae lo guardado; «Guardar» sube lo que ves aquí.':'Los datos se guardan en las pestañas Registro y Config de esa hoja. «Cargar» reemplaza lo que ves aquí; «Subir» reemplaza lo que hay en la hoja.'}</div>
-    </div>
+      <div class="ms">«Recargar» trae lo guardado en tu cuenta; «Guardar» sube lo que ves aquí. Si no hay señal, tus cambios esperan en este dispositivo y se suben solos después.</div>
+    </div>`:`<div class="gs"><h3>Dónde se guardan tus datos</h3>
+      <div class="ms">Esta vista es una demostración: lo que registres queda solo en este navegador. En la app publicada tus datos se guardan en tu cuenta privada, protegida con inicio de sesión, y puedes entrar desde cualquier dispositivo.</div>
+    </div>`}
   </div></section></div>`;
 }
 function drawResumen(){
@@ -863,10 +875,10 @@ function viewMes(i){
     <div class="hero-top"><div><div class="hero-k">${year}</div><h1>${MES[i]}</h1><div class="pills" style="margin-top:6px">${i===today?'<span class="pill">Mes actual</span>':''}<span class="pill" id="pillh" hidden>Hormiga sobre ${fmt(cfg.alerta)}</span></div></div><div class="pills">${prev}${next}</div></div>
     <div><div class="hero-l">Te queda este mes</div><div class="hero-v" id="hR">${fmt(D.res)}</div></div>
     <div class="hbar" id="hbar" aria-hidden="true"></div><div class="hleg" id="hleg"></div>
-    <div class="acts"><button type="button" data-act="prev">Traer del mes anterior</button><button type="button" data-act="rec">Cargar recurrentes</button><button type="button" data-act="cuad">Cuadrar cuentas</button></div></div>
+    <div class="acts"><button type="button" data-act="prev">Traer del mes anterior</button><button type="button" data-act="rec">Cargar recurrentes</button><button type="button" data-act="cuad">Cuadrar cuentas</button><button type="button" data-act="rep">Descargar reporte</button></div></div>
     <aside class="liq" aria-label="Liquidez"><div class="hero-l">Liquidez disponible</div><div class="liq-v" id="t-liq">${fmtC('liq',sum(m.liq))}</div><div class="liq-rows">${rowsHtml(m,'liq','bnk')}</div><button type="button" class="b add" data-add="liq">+ Agregar</button></aside>
   </section>
-  ${m.tot?'<div class="banner">Este mes trae solo los totales de tu hoja. Lo que registres se suma a esos totales.</div>':''}
+  ${m.tot?'<div class="banner">Este mes trae solo totales de tu registro anterior. Lo que registres se suma a esos totales.</div>':''}
   <div class="board" id="board"><div class="kpis bcard bare" data-cid="mk">${kp('Ingreso total','kI',fmt(D.ing))}${kp('Total gastado','kG',fmt(D.gas))}${kp('Total invertido','kV',fmt(D.inv))}${kp('Ahorro del mes','kA',fmt(D.aho))}${kp('Restante','kR',fmt(D.res))}</div>
   <div class="g3">
     <section class="card bcard" data-cid="mc1"><div class="cb"><h2 class="ttl">Distribución del mes</h2><div class="cap">Cómo se repartió tu ingreso.</div><div id="w1" class="cw s"><canvas id="mc1" role="img" aria-label="Distribución del mes"></canvas></div><div class="empty" id="e1" hidden>Sin movimientos todavía en ${MES[i].toLowerCase()}.</div><div class="lg" id="lg1"></div></div></section>
@@ -1304,14 +1316,9 @@ const txt=v=>{const t=String(v==null?'':v);return(/^[=+\-@]/.test(t)||/^\d{1,2}[
 const num=v=>{const t=String(v==null?'':v).trim();if(!t)return 0;const n=(/,\d{1,2}$/.test(t)&&t.indexOf('.')<0)?t.replace(',','.'):t.replace(/,/g,'');return parseFloat(n.replace(/[^0-9.\-]/g,''))||0;};
 const sheetId=v=>{const m=String(v).match(/\/d\/([a-zA-Z0-9_-]+)/);return m?m[1]:String(v).trim();};
 function errMsg(e){
-  const c=e&&e.code;
-  if(c==='not_in_manifest'||c==='approval_required'||c==='consent_required')return 'Permite que esta página use tu conector de Google Sheets y vuelve a intentar.';
-  if(c==='needs_reauth')return 'Tu conexión con Google Sheets caducó. Reconéctala en Ajustes, Conectores de claude.ai.';
-  if(c==='server_not_connected'||c==='selection_required'||c==='server_not_found')return 'Conecta Google Sheets en Ajustes, Conectores de claude.ai.';
-  if(c==='blocked_by_policy')return 'Tu organización bloquea este conector.';
-  if(c==='tool_error')return 'Google Sheets respondió con un error: '+String(e.message||'').slice(0,160);
-  if(c==='server_unavailable'||c==='upstream_error')return 'Google Sheets no respondió. Intenta de nuevo en un momento.';
-  return 'No se pudo conectar con Google Sheets ('+(c||'error')+').';
+  const m=String((e&&e.message)||'');
+  if(/fetch|network|Failed to|NetworkError|timeout/i.test(m)||!navigator.onLine)return 'Sin conexión. Tus cambios quedan guardados en este dispositivo y se subirán a tu cuenta cuando vuelva la señal.';
+  return 'No se pudo guardar en tu cuenta'+(m?': '+m.slice(0,160):'.')+' Tus cambios siguen en este dispositivo.';
 }
 async function gs(tool,input){
   const r=await mcp.callTool(SRV,tool,input,{cache:false});
@@ -1385,10 +1392,10 @@ function applyRemote(rows,conf){
   if(!S[year])year=YEARS[YEARS.length-1];
   localSave();localLay();
 }
-const chipText=()=>({idle:'Conectar hoja',loading:'Cargando…',saving:'Guardando…',saved:'Guardado '+new Date(sync.at).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'}),dirty:'Sin guardar',error:'Reintentar',conflict:'Conflicto'})[sync.state]||'Hoja';
+const chipText=()=>({idle:'Conectar',loading:'Cargando…',saving:'Guardando…',saved:'Guardado '+new Date(sync.at).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'}),dirty:'Sin guardar',error:'Reintentar',conflict:'Conflicto'})[sync.state]||'Hoja';
 function updateChip(){
   const c=document.getElementById('syn');
-  if(c){c.hidden=!backend;c.textContent=chipText();c.dataset.s=sync.state;c.title=sync.msg||'Google Sheets';c.setAttribute('aria-label','Hoja de Google: '+chipText());}
+  if(c){c.hidden=!backend;c.textContent=chipText();c.dataset.s=sync.state;c.title=sync.msg||'Tu cuenta';c.setAttribute('aria-label','Guardado en tu cuenta: '+chipText());}
   const m=document.getElementById('gs-msg');if(m)m.textContent=sync.msg||'';
 }
 function queueSync(){
@@ -1449,38 +1456,31 @@ async function pushNow(force){
   if(sync.busy){sync.again=true;return;}
   sync.busy=true;sync.state='saving';updateChip();
   try{
-    if(!force){const remote=await backend.stamp();if(remote&&remote!==sync.stamp){sync.state='conflict';sync.msg='Tu hoja cambió desde otro dispositivo. Usa «Cargar desde la hoja» para traer esos cambios o «Subir todo a la hoja» para sobrescribirla.';return;}}
+    if(!force){const remote=await backend.stamp();if(remote&&remote!==sync.stamp){sync.state='conflict';sync.msg='Tus datos cambiaron desde otro dispositivo. Usa «Recargar mis datos» para traer esos cambios o «Guardar todo ahora» para conservar los de aquí.';return;}}
     const rev=sync.rev||0;const rows=toRows();
     if(rows.length>2900)throw{code:'tool_error',message:'La pestaña Registro está llena (más de 2900 filas).'};
     const stamp='v'+Date.now();
     await backend.write(rows,[['cfg',JSON.stringify(cfg)],['layout',JSON.stringify(LAY)],['guardado',stamp]]);
     sync.stamp=stamp;sync.ready=true;sync.connected=true;const pend=(sync.rev||0)!==rev;sync.dirty=pend;persistSync();
-    if(pend){sync.again=true;}else{sync.state='saved';sync.at=Date.now();sync.msg='Guardado en tu hoja ('+rows.length+' movimientos).';}
+    if(pend){sync.again=true;}else{sync.state='saved';sync.at=Date.now();sync.msg='Guardado en tu cuenta ('+rows.length+' movimientos).';}
   }catch(e){sync.state='error';sync.msg=errMsg(e);}
   finally{sync.busy=false;updateChip();if(sync.again){sync.again=false;queueSync();}}
 }
 async function loadFromSheet(auto){
-  if(auto&&sync.dirty&&backend){sync.ready=true;sync.msg='Subiendo cambios que quedaron pendientes…';await pushNow(false);if(sync.state==='conflict'){sync.msg='Tienes cambios en este dispositivo que no se subieron y tu hoja también cambió en otro. Tus datos de aquí se conservan: usa «Subir todo a la hoja» para guardar estos o «Cargar desde la hoja» para traer los otros.';updateChip();}fxAuto();return;}
-  if(!backend){sync.msg='Esta vista no puede conectarse a Google Sheets.';updateChip();return;}
+  if(auto&&sync.dirty&&backend){sync.ready=true;sync.msg='Subiendo cambios que quedaron pendientes…';await pushNow(false);if(sync.state==='conflict'){sync.msg='Tienes cambios en este dispositivo que no se subieron y tu cuenta también cambió desde otro. Tus datos de aquí se conservan: usa «Guardar todo ahora» para guardar estos o «Recargar mis datos» para traer los otros.';updateChip();}fxAuto();return;}
+  if(!backend){sync.msg='Esta vista guarda tus datos solo en este navegador.';updateChip();return;}
   if(backend.name==='mcp'&&!sync.id){sync.state='error';sync.msg='Escribe el ID de tu hoja.';updateChip();return;}
   clearTimeout(sync.timer);sync.state='loading';updateChip();
   try{
     const d=await backend.read();const rows=d.reg||[];
-    if(!rows.length){sync.ready=true;sync.msg='La hoja estaba vacía: subiendo tus datos…';await pushNow(true);toast('Tus datos se subieron a la hoja (pestaña Registro)');return;}
+    if(!rows.length){sync.ready=true;sync.msg='Tu cuenta estaba vacía: guardando tus datos…';await pushNow(true);toast('Tus datos se guardaron en tu cuenta');return;}
     applyRemote(rows,d.conf||[]);
     sync.ready=true;sync.connected=true;sync.dirty=false;persistSync();
-    sync.state='saved';sync.at=Date.now();sync.msg='Datos cargados desde tu hoja ('+rows.length+' movimientos).';
-    render();toast('Datos cargados desde tu hoja');fxAuto();
+    sync.state='saved';sync.at=Date.now();sync.msg='Datos cargados desde tu cuenta ('+rows.length+' movimientos).';
+    render();toast('Datos cargados desde tu cuenta');fxAuto();
   }catch(e){sync.state='error';sync.msg=errMsg(e);updateChip();}
 }
-function initSync(){
-  if(IS_GAS){backend=gasBackend;sync.connected=true;updateChip();loadFromSheet(true);return;}
-  if(!(window.claude&&window.claude.use)){if(IS_SB)initSupabase();return;}
-  window.claude.use('mcp').then(m=>{
-    mcp=m||null;backend=mcp?mcpBackend:null;updateChip();
-    if(backend&&sync.connected&&sync.id)loadFromSheet(true);
-  }).catch(()=>{});
-}
+function initSync(){if(IS_SB)initSupabase();}
 
 /* ---------- Tipo de cambio: SUNAT guardado por mes ---------- */
 const FX_SRC=[
@@ -1720,6 +1720,230 @@ function restoreFrom(text){
   if(!S[year])year=YEARS[YEARS.length-1];
   save();saveLay();render();toast('Respaldo restaurado');
 }
+/* ---------- Reportes descargables (Excel y PDF) con formato de estado de cuenta ---------- */
+const RLIB={xlsx:['https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js'],pdf:['https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js','https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js']};
+const jsP={};
+function loadJs(u){return jsP[u]||(jsP[u]=new Promise((res,rej)=>{const s=document.createElement('script');s.src=u;s.async=false;s.onload=()=>res();s.onerror=()=>{delete jsP[u];s.remove();rej(new Error('No pude cargar lo necesario para crear el reporte. Revisa tu conexión e intenta otra vez.'));};document.head.appendChild(s);}));}
+async function needLib(k){for(const u of RLIB[k])await loadJs(u);}
+const ISO={'S/':'PEN','$':'USD','€':'EUR'};
+const r2=v=>Math.round((+v||0)*100)/100;
+const n2=v=>{v=r2(v);return (v<0?'-':'')+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});};
+const mkey=(y,i)=>(+y)*12+i;
+const perOf=(y,i)=>MES[i]+' '+y;
+const dmy=d=>d?String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear():'';
+const CARDK=['bbva','bcp','oh'];
+function repMonths(a,b){const out=[];YEARS.slice().sort().forEach(y=>{for(let i=0;i<12;i++){const k=mkey(y,i);if(k>=a&&k<=b&&S[y]&&S[y][i])out.push({y,i,m:S[y][i]});}});return out;}
+function trimEmpty(ms){let s=0,e=ms.length-1;while(s<=e&&!dv(ms[s].m).on)s++;while(e>=s&&!dv(ms[e].m).on)e--;return ms.slice(s,e+1);}
+const dayDate=(y,i,f)=>{const d=parseInt(f,10);if(!(d>=1))return null;const last=new Date(+y,i+1,0).getDate();return new Date(+y,i,Math.min(d,last));};
+const usedRow=r=>r&&(((r.c||'').trim())||+r.m);
+/* Reúne todo lo que va en el reporte para los meses de a hasta b (claves año*12+mes). */
+function repData(a,b){
+  const ms=trimEmpty(repMonths(a,b));
+  if(!ms.length)return null;
+  const first=ms[0],last=ms[ms.length-1];
+  const mens=[],mov=[],fx=new Map(),T={ing:0,fij:0,hor:0,gas:0,aho:0,inv:0,res:0};
+  ms.forEach(({y,i,m})=>{
+    const d=dv(m);mens.push({y,i,per:perOf(y,i),ing:d.ing,fij:d.fij,hor:d.hor,gas:d.gas,aho:d.aho,inv:d.inv,res:d.res});
+    Object.keys(T).forEach(k=>{T[k]+=d[k];});
+    const per=perOf(y,i),liqN=r=>{const l=liqRef(m,r.src);return l?(l.c||'').trim():'';};
+    const push=(sec,r,tipo,sent,concepto,cuenta,catg,sign)=>{
+      const cur=rowCur(sec,r),tc=rateC(cur,m),amt=+r.m||0;
+      if(cur!=='S/')fx.set(cur+'|'+per,{cur,per,tc});
+      const sol=r2(amt*tc),o={sec,fecha:dayDate(y,i,r.f),y,i,dia:parseInt(r.f,10)||99,per,tipo,sent,concepto:(concepto||'').trim(),cat:catg||'',cuenta:cuenta||'',cur,amt,tc,sol,firm:sign?r2(sign*sol):sol};mov.push(o);return o;
+    };
+    (m.ing||[]).forEach(r=>{if(usedRow(r))push('ing',r,'Ingreso','Entrada',r.c,liqN(r),r.k,1);});
+    (m.fij||[]).forEach(r=>{if(usedRow(r))push('fij',r,r.card?'Pago de tarjeta '+SECN[r.card]:'Gasto fijo','Salida',r.c,liqN(r),r.card?'Pago de tarjetas':(r.k||'Sin categoría'),-1);});
+    (m.hor||[]).forEach(r=>{if(usedRow(r))push('hor',r,'Gasto variable','Salida',r.c,liqN(r),r.k||'Sin categoría',-1);});
+    (m.inv||[]).forEach(r=>{if(usedRow(r))push('inv',r,'Inversión','Salida',r.c,liqN(r),r.k,-1);});
+    (m.aho||[]).forEach(r=>{if(!usedRow(r))return;const k=ahoKind(r);
+      const tipo={dep:'Depósito a ahorro',ret:'Retiro de ahorro',aj:'Ajuste de saldo de ahorro',tr:'Traspaso entre cuentas de ahorro'}[k];
+      const sent={dep:'Hacia ahorro',ret:'Desde ahorro',aj:'Ajuste',tr:'Interno'}[k];
+      push('aho',r,tipo,sent,r.k?'Meta: '+r.k:'',ahoName(r),'',(k==='dep'||k==='ret')?-1:0).ak=k;});
+    CARDK.forEach(ck=>(m[ck]||[]).forEach(r=>{if(usedRow(r))push(ck,r,'Compra con tarjeta '+SECN[ck],'Cargo a tarjeta',r.c,'Tarjeta '+SECN[ck],r.k||'Sin categoría',-1);}));
+  });
+  mov.sort((p,q)=>mkey(p.y,p.i)-mkey(q.y,q.i)||p.dia-q.dia);
+  Object.keys(T).forEach(k=>{T[k]=r2(T[k]);});
+  /* Gastos por categoría (gastos fijos + variables, igual que «Total gastado») */
+  const cm=new Map();mov.filter(x=>x.sec==='fij'||x.sec==='hor').forEach(x=>{const k=x.cat||'Sin categoría';cm.set(k,(cm.get(k)||0)+x.sol);});
+  const cat=[...cm.entries()].map(([c,v])=>({c,v:r2(v)})).filter(x=>Math.abs(x.v)>=.005).sort((p,q)=>q.v-p.v);
+  /* Ahorros por cuenta: saldo inicial + movimientos del período = saldo final */
+  const pk=mkey(first.y,first.i)-1,py=String(Math.floor(pk/12)),pi=((pk%12)+12)%12;
+  const ini=new Map(),fin=new Map();
+  (S[py]?ahoAccts(py,pi):[]).forEach(a=>ini.set(a.c.toLowerCase(),a));
+  ahoAccts(last.y,last.i).forEach(a=>fin.set(a.c.toLowerCase(),a));
+  const am=new Map(),acc=k=>{if(!am.has(k))am.set(k,{dep:0,ret:0,aj:0,tr:0});return am.get(k);};
+  mov.filter(x=>x.sec==='aho').forEach(x=>{const a=acc(x.cuenta.toLowerCase()),k=x.ak;
+    if(k==='dep')a.dep+=x.sol;else if(k==='ret')a.ret+=-x.sol;else a[k]+=x.sol;});
+  const names=new Map();[...ini.values(),...fin.values()].forEach(a=>names.set(a.c.toLowerCase(),a.c));
+  mov.filter(x=>x.sec==='aho').forEach(x=>{if(!names.has(x.cuenta.toLowerCase()))names.set(x.cuenta.toLowerCase(),x.cuenta);});
+  const ahorros=[...names.entries()].map(([k,c])=>{const a=am.get(k)||{dep:0,ret:0,aj:0,tr:0},i0=(ini.get(k)||{v:0}).v,f0=(fin.get(k)||{v:0}).v,tz=tasaOf(c);
+    return {c,ini:r2(i0),dep:r2(a.dep),ret:r2(a.ret),aj:r2(a.aj),tr:r2(a.tr),fin:r2(f0),tasa:tz?tz.t+' '+(+tz.v).toFixed(2)+'%':'',gana:r2(ahoGana(f0,tz,360))};})
+    .filter(a=>[a.ini,a.dep,a.ret,a.aj,a.tr,a.fin].some(v=>Math.abs(v)>=.005)).sort((p,q)=>q.fin-p.fin);
+  /* Tarjetas de crédito */
+  const tarjetas=CARDK.map(ck=>{let cons=0,pag=0;ms.forEach(({m})=>{cons+=sumIn(m,ck);pag+=paymentsTo(m,ck);});const deuda=cardEnding(last.y,last.i,ck),cur=curOf(ck);
+    return {k:ck,n:SECN[ck],cur,cons:r2(cons),pag:r2(pag),deuda:r2(deuda),deudaS:r2(deuda*rateC(cur,last.m))};}).filter(t=>t.cons||t.pag||t.deuda);
+  const lc=curOf('liq'),liq=(last.m.liq||[]).filter(r=>(r.c||'').trim()).map(r=>({c:r.c.trim(),cur:lc,v:r2(r.m),s:r2((+r.m||0)*rateC(lc,last.m))}));
+  const label=first===last?perOf(first.y,first.i):perOf(first.y,first.i)+' – '+perOf(last.y,last.i);
+  return {first,last,label,mens,mov,T,cat,ahorros,tarjetas,liq,fx:[...fx.values()],
+    ahoTot:r2(ahorros.reduce((s,a)=>s+a.fin,0)),deudaTot:r2(tarjetas.reduce((s,t)=>s+t.deudaS,0)),liqTot:r2(liq.reduce((s,l)=>s+l.s,0)),
+    tasa:T.ing>0?(T.aho+T.inv)/T.ing:null};
+}
+function repWho(){return {nombre:(cfg.titular||'').trim(),correo:(typeof sbUser!=='undefined'&&sbUser&&sbUser.email)||''};}
+const RNOTE='Documento elaborado por el titular a partir de sus propios registros en Plantilla Personal de Finanzas. No es un documento emitido por una entidad financiera.';
+function repResumen(R){return [
+  ['Ingresos totales',R.T.ing],['Gastos fijos',R.T.fij],['Gastos variables',R.T.hor],['Total de gastos',R.T.gas],
+  ['Ahorro neto del período',R.T.aho],['Inversión',R.T.inv],['Resultado del período (ingresos − gastos − ahorro − inversión)',R.T.res],
+  ['Saldo total en cuentas de ahorro al cierre',R.ahoTot],['Deuda total en tarjetas de crédito al cierre',R.deudaTot],['Liquidez disponible al cierre',R.liqTot]];}
+function fxNote(R){if(!R.fx.length)return '';const by=new Map();R.fx.forEach(x=>{const k=x.cur+' '+(+x.tc).toFixed(3);by.set(k,(by.get(k)||[]).concat(x.per));});
+  return 'Montos en otra moneda convertidos a soles con el tipo de cambio de cada mes: '+[...by.entries()].map(([k,ps])=>(ISO[k.split(' ')[0]]||k.split(' ')[0])+' '+k.split(' ')[1]+' ('+ps.join(', ')+')').join('; ')+'.';}
+
+/* ----- Excel ----- */
+async function buildXlsx(R,o){
+  await needLib('xlsx');
+  const wb=new ExcelJS.Workbook();wb.creator='Plantilla Personal de Finanzas';wb.created=new Date();wb.calcProperties.fullCalcOnLoad=true;
+  const G='FF0B7A62',W='FFFFFFFF',MON='#,##0.00;[Red]-#,##0.00',who=repWho(),hoy=new Date();
+  const hdr=(ws,cols)=>{ws.columns=cols.map(c=>({header:c[0],key:c[1],width:c[2]}));const h=ws.getRow(1);h.font={bold:true,color:{argb:W}};h.fill={type:'pattern',pattern:'solid',fgColor:{argb:G}};h.alignment={vertical:'middle',wrapText:true};h.height=30;ws.views=[{state:'frozen',ySplit:1}];};
+  const fmtCols=(ws,keys,f)=>keys.forEach(k=>{ws.getColumn(k).numFmt=f||MON;});
+  const total=(ws,label,keys,n,vals)=>{const r=ws.addRow({});r.getCell(1).value=label;keys.forEach(k=>{const L=ws.getColumn(k).letter;r.getCell(k).value=n?{formula:'SUM('+L+'2:'+L+(n+1)+')',result:vals[k]}:0;});r.font={bold:true};r.eachCell(c=>{c.border={top:{style:'thin'}};});};
+  const setup=(ws,land)=>{ws.pageSetup={paperSize:9,orientation:land?'landscape':'portrait',fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:.4,right:.4,top:.5,bottom:.5,header:.3,footer:.3}};ws.headerFooter={oddFooter:'&L'+who.nombre.replace(/&/g,'&&')+'&CPágina &P de &N&R'+R.label};};
+  /* Resumen */
+  const s=wb.addWorksheet('Resumen');s.columns=[{width:58},{width:22}];
+  s.addRow(['Estado de cuenta personal']).font={bold:true,size:16,color:{argb:G}};
+  [['Titular',who.nombre||'(sin nombre)'],who.correo?['Correo',who.correo]:null,['Período',R.label],['Moneda de reporte','Soles peruanos (PEN)'],['Fecha de emisión',dmy(hoy)]].filter(Boolean).forEach(r=>{const x=s.addRow(r);x.getCell(1).font={bold:true};});
+  s.addRow([]);const hr=s.addRow(['Concepto','Monto (S/)']);hr.font={bold:true,color:{argb:W}};hr.eachCell(c=>{c.fill={type:'pattern',pattern:'solid',fgColor:{argb:G}};});
+  repResumen(R).forEach(([l,v])=>{const x=s.addRow([l,v]);x.getCell(2).numFmt=MON;});
+  if(R.tasa!=null){const x=s.addRow(['Tasa de ahorro e inversión (% del ingreso)',R.tasa]);x.getCell(2).numFmt='0.0%';}
+  s.addRow([]);[ 'Cómo leer este reporte:','• «Mensual» resume cada mes; «Movimientos» trae el detalle con fecha, categoría y cuenta.','• Gastos = gastos fijos (incluye pagos de tarjeta) + gastos variables. Las compras con tarjeta se muestran aparte porque se pagan después.','• En «Movimientos», «Monto (S/)» es negativo si es un cargo y positivo si es un abono.','• Ahorro neto = depósitos menos retiros de las cuentas de ahorro (los ajustes de saldo no cuentan como ahorro).',fxNote(R),RNOTE].filter(Boolean).forEach(t=>{const x=s.addRow([t]);x.getCell(1).alignment={wrapText:true};s.mergeCells(x.number,1,x.number,2);x.height=t.length>95?30:16;});
+  setup(s,false);
+  /* Mensual */
+  const me=wb.addWorksheet('Mensual');hdr(me,[['Mes','per',18],['Ingresos','ing',14],['Gastos fijos','fij',14],['Gastos variables','hor',15],['Total gastos','gas',14],['Ahorro neto','aho',14],['Inversión','inv',13],['Resultado','res',14]]);
+  R.mens.forEach(x=>me.addRow(x));fmtCols(me,['ing','fij','hor','gas','aho','inv','res']);total(me,'Total',['ing','fij','hor','gas','aho','inv','res'],R.mens.length,R.T);setup(me,true);
+  /* Categorías */
+  const ca=wb.addWorksheet('Gastos por categoría');hdr(ca,[['Categoría','c',30],['Monto (S/)','v',16],['% del gasto','p',12]]);
+  R.cat.forEach(x=>ca.addRow({c:x.c,v:x.v,p:R.T.gas?x.v/R.T.gas:0}));fmtCols(ca,['v']);fmtCols(ca,['p'],'0.0%');total(ca,'Total',['v'],R.cat.length,{v:R.cat.reduce((a,x)=>a+x.v,0)});setup(ca,false);
+  /* Ahorros */
+  const ah=wb.addWorksheet('Ahorros');hdr(ah,[['Cuenta','c',30],['Saldo inicial','ini',14],['Depósitos','dep',13],['Retiros','ret',13],['Ajustes','aj',12],['Traspasos','tr',12],['Saldo final','fin',14],['Tasa','tasa',14],['Ganancia estimada 12 meses','gana',16]]);
+  R.ahorros.forEach(x=>ah.addRow(x));fmtCols(ah,['ini','dep','ret','aj','tr','fin','gana']);
+  const sv={};['ini','dep','ret','aj','tr','fin','gana'].forEach(k=>{sv[k]=R.ahorros.reduce((a,x)=>a+x[k],0);});total(ah,'Total',['ini','dep','ret','aj','tr','fin','gana'],R.ahorros.length,sv);setup(ah,true);
+  /* Tarjetas */
+  const ta=wb.addWorksheet('Tarjetas');hdr(ta,[['Tarjeta','n',16],['Moneda','cur',10],['Consumos del período','cons',18],['Pagos del período','pag',16],['Deuda al cierre','deuda',16],['Deuda al cierre (S/)','deudaS',18]]);
+  R.tarjetas.forEach(x=>ta.addRow({...x,cur:ISO[x.cur]||x.cur}));fmtCols(ta,['cons','pag','deuda','deudaS']);setup(ta,false);
+  /* Liquidez */
+  const li=wb.addWorksheet('Liquidez al cierre');hdr(li,[['Cuenta','c',26],['Moneda','cur',10],['Saldo','v',14],['Saldo (S/)','s',14]]);
+  R.liq.forEach(x=>li.addRow({...x,cur:ISO[x.cur]||x.cur}));fmtCols(li,['v','s']);total(li,'Total',['s'],R.liq.length,{s:R.liqTot});setup(li,false);
+  /* Movimientos */
+  if(o.det){const mv=wb.addWorksheet('Movimientos');hdr(mv,[['Fecha','fecha',12],['Mes','per',16],['Tipo','tipo',26],['Sentido','sent',13],['Concepto','concepto',34],['Categoría','cat',18],['Cuenta o medio','cuenta',20],['Moneda','cur',9],['Monto original','amt',14],['Tipo de cambio','tc',11],['Monto (S/)','sol',14]]);
+    R.mov.forEach(x=>mv.addRow({...x,sol:x.firm,cur:ISO[x.cur]||x.cur,tc:x.cur==='S/'?1:x.tc}));fmtCols(mv,['amt','sol']);fmtCols(mv,['tc'],'0.000');mv.getColumn('fecha').numFmt='dd/mm/yyyy';
+    mv.autoFilter={from:{row:1,column:1},to:{row:1,column:11}};setup(mv,true);}
+  const buf=await wb.xlsx.writeBuffer();
+  return new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+
+/* ----- PDF ----- */
+const pdfTxt=s=>String(s==null?'':s).replace(/[−‒]/g,'-').replace(/[^\x20-\x7E\xA0-\xFF–—‘’“”•…€]/g,'').trim();
+async function buildPdf(R,o){
+  await needLib('pdf');
+  const {jsPDF}=window.jspdf,doc=new jsPDF({unit:'mm',format:'a4',compress:true}),W=210,H=297,M=14,who=repWho();
+  const G=[11,122,98],INK=[20,32,27],MUT=[92,107,101],LINE=[214,222,218],BAD=[180,35,24];
+  doc.setProperties({title:'Estado de cuenta personal – '+R.label,author:who.nombre||'Titular',creator:'Plantilla Personal de Finanzas'});
+  doc.setFillColor(...G);doc.rect(0,0,W,30,'F');doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold');doc.setFontSize(17);doc.text('Estado de cuenta personal',M,13);
+  doc.setFont('helvetica','normal');doc.setFontSize(10);doc.text(pdfTxt('Período: '+R.label),M,21);
+  doc.text('Emitido: '+dmy(new Date()),W-M,13,{align:'right'});doc.text('Moneda: soles (PEN)',W-M,21,{align:'right'});
+  let y=39;doc.setTextColor(...INK);doc.setFontSize(10);
+  doc.setFont('helvetica','bold');doc.text('Titular:',M,y);doc.setFont('helvetica','normal');doc.text(pdfTxt(who.nombre||'(sin nombre)'),M+16,y);
+  if(who.correo){doc.setFont('helvetica','bold');doc.text('Correo:',110,y);doc.setFont('helvetica','normal');doc.text(pdfTxt(who.correo),126,y);}
+  /* Tarjetas de resumen */
+  y+=6;const K=[['Ingresos',R.T.ing],['Gastos',R.T.gas],['Ahorro neto',R.T.aho],['Inversión',R.T.inv],['Resultado',R.T.res]],bw=(W-2*M-4*3)/5;
+  K.forEach(([l,v],j)=>{const x=M+j*(bw+3);doc.setDrawColor(...LINE);doc.setFillColor(246,249,248);doc.roundedRect(x,y,bw,17,2,2,'FD');
+    doc.setFontSize(7.5);doc.setTextColor(...MUT);doc.text(l.toUpperCase(),x+3,y+5.5);doc.setFontSize(10.5);doc.setFont('helvetica','bold');doc.setTextColor(...(v<0?BAD:INK));doc.text('S/ '+n2(v),x+3,y+12.5);doc.setFont('helvetica','normal');});
+  y+=24;
+  let sn=0;const AT=(title,head,body,foot,cs,extra)=>{
+    if(y>H-40){doc.addPage();y=18;}title=(++sn)+'. '+title;
+    doc.setFont('helvetica','bold');doc.setFontSize(11.5);doc.setTextColor(...G);doc.text(pdfTxt(title),M,y);y+=2.5;
+    doc.autoTable(Object.assign({startY:y,head:[head.map(pdfTxt)],body:body.map(r=>r.map(c=>typeof c==='string'?pdfTxt(c):c)),foot:foot?[foot.map(c=>typeof c==='string'?pdfTxt(c):c)]:undefined,
+      theme:'striped',margin:{left:M,right:M,top:16,bottom:18},styles:{font:'helvetica',fontSize:8.5,cellPadding:1.8,textColor:INK,lineColor:LINE,overflow:'linebreak'},
+      headStyles:{fillColor:G,textColor:255,fontStyle:'bold'},footStyles:{fillColor:[230,238,235],textColor:INK,fontStyle:'bold'},alternateRowStyles:{fillColor:[247,250,249]},
+      columnStyles:cs||{},showFoot:'lastPage',
+      didParseCell:h=>{const cso=(cs||{})[h.column.index];if(cso&&cso.halign&&(h.section==='head'||h.section==='foot'))h.cell.styles.halign=cso.halign;if((h.section==='body'||h.section==='foot')&&typeof h.cell.raw==='string'&&/^-\d/.test(h.cell.raw.replace(/^S\/ /,'')))h.cell.styles.textColor=BAD;}},extra||{}));
+    y=doc.lastAutoTable.finalY+9;};
+  const R5={1:{halign:'right'},2:{halign:'right'},3:{halign:'right'},4:{halign:'right'},5:{halign:'right'},6:{halign:'right'},7:{halign:'right'},8:{halign:'right'}};
+  AT('Resumen del período',['Concepto','Monto (S/)'],repResumen(R).map(([l,v])=>[l.replace('−','-'),n2(v)]).concat(R.tasa!=null?[['Tasa de ahorro e inversión (% del ingreso)',(R.tasa*100).toFixed(1)+'%']]:[]),null,{1:{halign:'right',cellWidth:40}});
+  AT('Resumen mensual',['Mes','Ingresos','Gastos fijos','Gastos variables','Total gastos','Ahorro neto','Inversión','Resultado'],R.mens.map(x=>[x.per,n2(x.ing),n2(x.fij),n2(x.hor),n2(x.gas),n2(x.aho),n2(x.inv),n2(x.res)]),
+    ['Total',n2(R.T.ing),n2(R.T.fij),n2(R.T.hor),n2(R.T.gas),n2(R.T.aho),n2(R.T.inv),n2(R.T.res)],R5,{styles:{fontSize:8,cellPadding:1.6,font:'helvetica',textColor:INK,lineColor:LINE}});
+  if(R.cat.length)AT('Gastos por categoría',['Categoría','Monto (S/)','% del gasto'],R.cat.map(x=>[x.c,n2(x.v),R.T.gas?(x.v/R.T.gas*100).toFixed(1)+'%':'']),['Total',n2(R.cat.reduce((a,x)=>a+x.v,0)),R.T.gas?'100.0%':''],{1:{halign:'right'},2:{halign:'right'}});
+  if(R.ahorros.length)AT('Cuentas de ahorro',['Cuenta','Saldo inicial','Depósitos','Retiros','Ajustes','Traspasos','Saldo final','Tasa'],R.ahorros.map(x=>[x.c,n2(x.ini),n2(x.dep),n2(x.ret),n2(x.aj),n2(x.tr),n2(x.fin),x.tasa]),
+    ['Total',n2(R.ahorros.reduce((a,x)=>a+x.ini,0)),n2(R.ahorros.reduce((a,x)=>a+x.dep,0)),n2(R.ahorros.reduce((a,x)=>a+x.ret,0)),n2(R.ahorros.reduce((a,x)=>a+x.aj,0)),n2(R.ahorros.reduce((a,x)=>a+x.tr,0)),n2(R.ahoTot),''],R5,{styles:{fontSize:8,cellPadding:1.6,font:'helvetica',textColor:INK,lineColor:LINE}});
+  if(R.tarjetas.length)AT('Tarjetas de crédito',['Tarjeta','Moneda','Consumos','Pagos','Deuda al cierre','Deuda en S/'],R.tarjetas.map(x=>[x.n,ISO[x.cur]||x.cur,n2(x.cons),n2(x.pag),n2(x.deuda),n2(x.deudaS)]),['Total','','','','',n2(R.deudaTot)],{2:{halign:'right'},3:{halign:'right'},4:{halign:'right'},5:{halign:'right'}});
+  if(R.liq.length)AT('Liquidez disponible al cierre de '+perOf(R.last.y,R.last.i),['Cuenta','Moneda','Saldo','Saldo en S/'],R.liq.map(x=>[x.c,ISO[x.cur]||x.cur,n2(x.v),n2(x.s)]),['Total','','',n2(R.liqTot)],{2:{halign:'right'},3:{halign:'right'}});
+  if(o.det&&R.mov.length)AT('Detalle de movimientos',['Fecha','Tipo','Concepto','Categoría','Cuenta o medio','Mon.','Monto orig.','Monto S/'],
+    R.mov.map(x=>[x.fecha?dmy(x.fecha):x.per,x.tipo,x.concepto,x.cat,x.cuenta,ISO[x.cur]||x.cur,n2(x.amt),n2(x.firm)]),null,
+    {0:{cellWidth:19},1:{cellWidth:30},5:{cellWidth:10},6:{halign:'right',cellWidth:19},7:{halign:'right',cellWidth:19}},{styles:{fontSize:7.3,cellPadding:1.4,font:'helvetica',textColor:INK,lineColor:LINE,overflow:'linebreak'}});
+  /* Notas */
+  const notes=['Gastos = gastos fijos (incluye pagos de tarjeta) + gastos variables. Las compras con tarjeta figuran en el detalle como «Cargo a tarjeta» y se cuentan como gasto cuando se pagan.',
+    'En el detalle, «Monto S/» es negativo cuando es un cargo (gastos, compras con tarjeta, inversión, depósitos a ahorro) y positivo cuando es un abono (ingresos, retiros de ahorro).',fxNote(R)].filter(Boolean);
+  if(y>H-45){doc.addPage();y=18;}
+  doc.setFont('helvetica','bold');doc.setFontSize(9.5);doc.setTextColor(...INK);doc.text('Notas',M,y);y+=4.5;doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...MUT);
+  notes.forEach(t=>{const ls=doc.splitTextToSize(pdfTxt('• '+t),W-2*M);if(y+ls.length*3.6>H-20){doc.addPage();y=18;}doc.text(ls,M,y);y+=ls.length*3.6+1.2;});
+  const n=doc.getNumberOfPages();
+  for(let p=1;p<=n;p++){doc.setPage(p);doc.setDrawColor(...LINE);doc.line(M,H-14,W-M,H-14);doc.setFontSize(7);doc.setTextColor(...MUT);
+    doc.text(doc.splitTextToSize(pdfTxt(RNOTE),150),M,H-10);doc.text('Página '+p+' de '+n,W-M,H-10,{align:'right'});
+    if(p>1){doc.setFontSize(8);doc.text(pdfTxt('Estado de cuenta personal · '+(who.nombre?who.nombre+' · ':'')+R.label),M,9);}}
+  return doc.output('blob');
+}
+
+/* ----- Diálogo «Descargar reporte» ----- */
+async function dlBlob(name,blob){
+  if(dl){await dl.save({filename:name,data:blob});return;}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);
+}
+function openReport(){
+  closeSheet();if(typeof closePanel==='function')closePanel();sheetFrom=document.activeElement;
+  const ys=YEARS.slice().sort(),opts=[];ys.forEach(y=>{for(let i=0;i<12;i++)opts.push([mkey(y,i),ABR[i]+' '+y]);});
+  const withData=opts.filter(([k])=>{const y=String(Math.floor(k/12)),i=k%12;return S[y]&&S[y][i]&&dv(S[y][i]).on;}).map(x=>x[0]);
+  const lastK=withData.length?withData[withData.length-1]:mkey(year,typeof view==='number'?view:now.getMonth());
+  const curK=typeof view==='number'?mkey(year,view):lastK;
+  const P={mes:[curK,curK],m3:[lastK-2,lastK],m6:[lastK-5,lastK],anio:[mkey(year,0),mkey(year,11)],ant:[mkey(+year-1,0),mkey(+year-1,11)]};
+  const st={p:typeof view==='number'?'mes':'anio',f:'pdf',a:0,b:0,det:true};
+  const setP=p=>{st.p=p;if(P[p]){st.a=P[p][0];st.b=P[p][1];}};setP(st.p);
+  const bg=document.createElement('div');bg.id='sheetbg';bg.className='sheetbg';
+  const sh=document.createElement('div');sh.id='sheet';sh.className='sheet';sh.setAttribute('role','dialog');sh.setAttribute('aria-modal','true');sh.setAttribute('aria-label','Descargar reporte');
+  const sel=(id,v)=>`<select id="${id}" class="f" aria-label="${id==='rp-a'?'Desde':'Hasta'}">${opts.map(([k,l])=>`<option value="${k}"${k===v?' selected':''}>${l}</option>`).join('')}</select>`;
+  const draw=()=>{
+    const R=repData(st.a,st.b);
+    sh.innerHTML=`<div class="sh-h"><b>Descargar reporte</b><button type="button" data-s="close" aria-label="Cerrar">×</button></div>
+    <div class="ms">Un estado de cuenta ordenado con tu resumen, ingresos, gastos por categoría, ahorros, tarjetas y el detalle de cada movimiento.</div>
+    <div class="rp-l">Período</div>
+    <div class="grp" role="radiogroup" aria-label="Período" id="rp-p">${chipH([['mes',typeof view==='number'?'Este mes':'Último mes'],['m3','Últimos 3 meses'],['m6','Últimos 6 meses'],['anio','Año '+year],['ant','Año '+(+year-1)],['rango','Elegir meses']],st.p,'rp',true)}</div>
+    ${st.p==='rango'?`<div class="rp-r"><label class="fld">Desde${sel('rp-a',st.a)}</label><label class="fld">Hasta${sel('rp-b',st.b)}</label></div>`:''}
+    <div class="rp-l">Formato</div>
+    <div class="grp" role="radiogroup" aria-label="Formato" id="rp-f">${chipH([['pdf','PDF · para enviar o imprimir'],['xlsx','Excel · para revisar las cifras']],st.f,'rf',true)}</div>
+    <label class="fld">Nombre del titular (aparece en el reporte)<input type="text" id="rp-n" value="${esc(cfg.titular||'')}" placeholder="Tu nombre completo" autocomplete="name"></label>
+    <label class="chk"><input type="checkbox" id="rp-d"${st.det?' checked':''}> Incluir el detalle de cada movimiento</label>
+    <div class="rp-s" id="rp-s" role="status">${R?`<b>${esc(R.label)}</b> · ${R.mens.length} ${R.mens.length===1?'mes':'meses'} · ${R.mov.length} movimientos<br>Ingresos ${fmt(R.T.ing)} · Gastos ${fmt(R.T.gas)} · Resultado ${fmt(R.T.res)}`:'No hay movimientos en ese período. Elige otro.'}</div>
+    <div class="sdest" id="rp-m" role="status"></div>
+    <div class="sact"><button class="b" type="button" data-s="close">Cerrar</button><button class="b p" type="button" data-s="rep"${R?'':' disabled'}>Descargar ${st.f==='pdf'?'PDF':'Excel'}</button></div>`;
+  };
+  draw();document.body.append(bg,sh);
+  bg.addEventListener('click',closeSheet);
+  sh.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet();});
+  sh.addEventListener('change',e=>{const t=e.target;if(t.id==='rp-a'||t.id==='rp-b'){st[t.id==='rp-a'?'a':'b']=+t.value;if(st.a>st.b){const x=st.a;st.a=st.b;st.b=x;}draw();}else if(t.id==='rp-d'){st.det=t.checked;}});
+  sh.addEventListener('input',e=>{if(e.target.id==='rp-n'){cfg.titular=e.target.value;save();}});
+  sh.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.s==='close'){closeSheet();return;}
+    if(b.dataset.rp){if(b.dataset.rp==='rango'&&st.p!=='rango'){st.p='rango';}else setP(b.dataset.rp);draw();return;}
+    if(b.dataset.rf){st.f=b.dataset.rf;draw();return;}
+    if(b.dataset.s==='rep'){const R=repData(st.a,st.b);if(!R)return;const msg=document.getElementById('rp-m');
+      b.disabled=true;const t0=b.textContent;b.textContent='Preparando…';msg.textContent='';
+      try{const blob=st.f==='pdf'?await buildPdf(R,st):await buildXlsx(R,st);
+        const f0=R.first,f1=R.last,tag=f0.y+'-'+String(f0.i+1).padStart(2,'0')+(f0===f1?'':'_a_'+f1.y+'-'+String(f1.i+1).padStart(2,'0'));
+        const name='estado-de-cuenta_'+tag+'.'+(st.f==='pdf'?'pdf':'xlsx');
+        await dlBlob(name,blob);msg.textContent='Listo: '+name;toast('Reporte listo: '+name);}
+      catch(err){msg.textContent=err&&err.code==='user_declined'?'Cancelaste la descarga.':((err&&err.message)||'No pude crear el reporte.');msg.style.color='var(--bad)';}
+      finally{b.disabled=false;b.textContent=t0;}}
+  });
+}
+
 function initDl(){if(window.claude&&window.claude.use)window.claude.use('downloads').then(d=>{dl=d||null;}).catch(()=>{});}
 
 function viewCapturar(){
@@ -1798,7 +2022,7 @@ app.addEventListener('click',e=>{
   if(d.act==='adep'||d.act==='aret'||d.act==='aadj'||d.act==='anew'){openSheet();ent.t='aho';ent.ax=d.act==='aret'?'ret':d.act==='adep'?'dep':'aj';ent.from=d.acct?'aho:'+d.acct:(d.act==='anew'?'aho:+':'');syncSheet();const sa=document.getElementById('sa');if(sa)sa.focus();return;}
   if(d.act==='prev'){doPrev();return;}
   if(d.act==='rec'){doRec();return;}
-  if(d.act==='cuad'){openCuadre();return;}
+  if(d.act==='rep'){openReport();return;}if(d.act==='cuad'){openCuadre();return;}
   if(d.recdel!==undefined){cfg.rec.splice(+d.recdel,1);save();render();return;}
   if(b.id==='rc-add'){const g=id=>document.getElementById(id),c=g('rc-c').value.trim(),m=parseFloat(String(g('rc-m').value).replace(',','.'));
     if(!c||!(m>0)){toast('Escribe el concepto y el monto del recurrente.');return;}
