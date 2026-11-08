@@ -462,6 +462,7 @@ h1{letter-spacing:-.03em}
 .authbox .err{min-height:16px}
 .authbox .err.err{color:var(--bad)}
 .nmg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:6px 0 10px}.onbox{max-height:calc(100dvh - 32px);overflow:auto}.onbox .b.p{margin-top:6px}
+.pw{position:relative;display:block}.pw input{width:100%;box-sizing:border-box;padding-right:48px}.pwb{position:absolute;right:2px;top:50%;transform:translateY(-50%);width:44px;height:44px;border:none;background:none;color:var(--muted);cursor:pointer;border-radius:8px;display:grid;place-items:center;padding:0}.pwb:hover{color:var(--ink)}
 .lnk{background:none;border:none;color:var(--accent);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline;min-height:44px;padding:0 8px}
 .danger{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:10px 12px}.danger summary{cursor:pointer;font-weight:600;color:var(--bad);min-height:28px;display:flex;align-items:center}.danger[open]{border-color:var(--bad)}.danger .fld,.danger .b{margin-top:10px}.b.dng{border-color:var(--bad);color:var(--bad)}.b.dng:disabled{opacity:.5;cursor:not-allowed}
 
@@ -851,7 +852,8 @@ function viewResumen(){
     <div class="qa"><input type="text" id="nc" placeholder="Nueva categoría, por ejemplo Mascotas" aria-label="Nueva categoría"><button class="b" id="addcat" type="button">Agregar categoría</button><button class="b" id="reset" type="button">Restablecer ejemplo</button></div>
     <div class="ms" style="margin-top:14px">Metas de ahorro</div>
     <div class="chips">${(cfg.metas||[]).map((gm,i)=>`<span class="chip">${esc(gm.n)}${+gm.o?' · '+num2(gm.o):''}<button type="button" data-metadel="${i}" aria-label="Quitar ${esc(gm.n)}">×</button></span>`).join('')||'<span class="ms">Sin metas aún. Crea una y asígnale ahorros al registrar.</span>'}</div>
-    <div class="qa"><input type="text" id="mn" placeholder="Nombre, p. ej. Fondo de emergencia" aria-label="Nombre de la meta"><input type="number" id="mobj" placeholder="Objetivo S/" aria-label="Objetivo de la meta" style="width:130px"><button class="b" id="addmeta" type="button">Agregar meta</button></div>
+    <div class="qa"><input type="text" id="mn" placeholder="Nombre, p. ej. Fondo de emergencia" aria-label="Nombre de la meta"><input type="number" id="mobj" placeholder="Objetivo S/" aria-label="Objetivo de la meta" style="width:130px"><button class="b" id="addmeta" type="button">Guardar meta</button></div>
+    ${(()=>{const a=avgGasto();return a>0?`<div class="ms" style="margin-top:6px">Tus gastos promedian S/ ${num2(a)} al mes (últimos meses completos). Un fondo de emergencia suele cubrir de 3 a 6 meses.</div><div class="qa"><button class="b" type="button" data-metasug="1">1 mes · S/ ${num2(Math.round(a))}</button><button class="b" type="button" data-metasug="3">3 meses · S/ ${num2(Math.round(a*3))}</button><button class="b" type="button" data-metasug="6">6 meses · S/ ${num2(Math.round(a*6))}</button></div>`:'';})()}
     <div class="gs"><h3>Gastos recurrentes</h3>
       <div class="ms">Se cargan con «Cargar recurrentes» dentro de cada mes y no se duplican si ya existen.</div>
       <div class="chips">${(cfg.rec||[]).map((r,i)=>`<span class="chip">${esc(r.c)} · ${num2(r.m)}${r.k?' · '+esc(r.k):''}${r.src&&r.src!=='none'?' · '+esc(LIQN()[+r.src.slice(4)]||''):''} · día ${r.f}<button type="button" data-recdel="${i}" aria-label="Quitar ${esc(r.c)}">×</button></span>`).join('')||'<span class="ms">Todavía no hay recurrentes.</span>'}</div>
@@ -1638,6 +1640,13 @@ function initSupabase(){
 }
 
 let recovering=false;
+const EYE='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYEOFF='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.9 17.9A10.8 10.8 0 0 1 12 19c-6.4 0-10-7-10-7a18.5 18.5 0 0 1 5.1-5.9M9.9 5.2A9.7 9.7 0 0 1 12 5c6.4 0 10 7 10 7a18.6 18.6 0 0 1-2.2 3.2M1 1l22 22"/><path d="M14.1 14.1a3 3 0 1 1-4.2-4.2"/></svg>';
+function pwEye(id){const i=document.getElementById(id);if(!i||i.parentNode.classList.contains('pw'))return;
+  const w=document.createElement('span');w.className='pw';i.parentNode.insertBefore(w,i);w.appendChild(i);
+  const b=document.createElement('button');b.type='button';b.className='pwb';b.setAttribute('aria-label','Mostrar contraseña');b.setAttribute('aria-pressed','false');b.innerHTML=EYE;w.appendChild(b);
+  b.addEventListener('click',()=>{const show=i.type==='password';i.type=show?'text':'password';b.setAttribute('aria-pressed',String(show));b.setAttribute('aria-label',show?'Ocultar contraseña':'Mostrar contraseña');b.innerHTML=show?EYEOFF:EYE;i.focus();});}
+
 const sbErr=m=>{m=String(m||'');
   if(/invalid login credentials/i.test(m))return 'Correo o contraseña incorrectos.';
   if(/email not confirmed/i.test(m))return 'Falta confirmar tu correo. Revisa tu bandeja y vuelve a entrar.';
@@ -1664,7 +1673,7 @@ function showRecover(){
     <label class="fld">Repítela<input type="password" id="rc-p2" autocomplete="new-password" minlength="8" required></label>
     <div class="ms err" id="rc-msg" role="status"></div>
     <button class="b p" type="submit" id="rc-go">Guardar contraseña</button></form>`;
-  document.body.appendChild(bg);
+  document.body.appendChild(bg);pwEye('rc-p1');pwEye('rc-p2');
   const g=id=>document.getElementById(id);
   g('rcbox').addEventListener('submit',async e=>{e.preventDefault();
     const p1=g('rc-p1').value,p2=g('rc-p2').value,msg=g('rc-msg');msg.className='ms err';
@@ -1710,7 +1719,7 @@ function showAuth(){
     <div class="ms err" id="au-msg" role="status"></div>
     <button class="b p" type="submit" id="au-in">Entrar</button>
     <button class="b" type="button" id="au-up">Crear cuenta</button><button class="lnk" type="button" id="au-fp">¿Olvidaste tu contraseña?</button></form>`;
-  document.body.appendChild(bg);
+  document.body.appendChild(bg);pwEye('au-pass');
   const g=id=>document.getElementById(id);
   g('authbox').addEventListener('submit',e=>{e.preventDefault();sbAuth('signin',g('au-email').value.trim(),g('au-pass').value,g('au-msg'),g('au-in'));});
   g('au-up').addEventListener('click',()=>{const em=g('au-email').value.trim(),pw=g('au-pass').value;if(!em||pw.length<8){g('au-msg').textContent='Escribe tu correo y una contraseña de 8 caracteres o más.';return;}sbAuth('signup',em,pw,g('au-msg'),g('au-up'));});
@@ -2020,6 +2029,10 @@ function repMonths(a,b){const out=[];YEARS.slice().sort().forEach(y=>{for(let i=
 function trimEmpty(ms){let s=0,e=ms.length-1;while(s<=e&&!dv(ms[s].m).on)s++;while(e>=s&&!dv(ms[e].m).on)e--;return ms.slice(s,e+1);}
 const dayDate=(y,i,f)=>{const d=parseInt(f,10);if(!(d>=1))return null;const last=new Date(+y,i+1,0).getDate();return new Date(+y,i,Math.min(d,last));};
 const usedRow=r=>r&&(((r.c||'').trim())||+r.m);
+function avgGasto(){const now=new Date(),cy=now.getFullYear(),ci=now.getMonth(),arr=[];
+  YEARS.forEach(y=>(S[y]||[]).forEach((m,i)=>{if(+y>cy||(+y===cy&&i>=ci))return;const g=dv(m).gas;if(g>0)arr.push({k:+y*12+i,g});}));
+  arr.sort((a,b)=>a.k-b.k);const l=arr.slice(-6);return l.length?l.reduce((a,x)=>a+x.g,0)/l.length:0;}
+
 /* Reúne todo lo que va en el reporte para los meses de a hasta b (claves año*12+mes). */
 function repData(a,b){
   const ms=trimEmpty(repMonths(a,b));
@@ -2382,6 +2395,7 @@ app.addEventListener('click',e=>{
   if(b.id==='bk-csv'){saveFile('mis-finanzas-movimientos-'+BK()+'.csv','\ufeff'+[REGHEAD].concat(toRows()).map(r=>r.map(csvCell).join(',')).join('\n'));return;}
   if(b.id==='bk-load'){document.getElementById('bk-file').click();return;}
   if(b.id==='nm-save'){const g=id=>document.getElementById(id);applyNames([0,1,2,3].map(j=>g('nm-l'+j).value),[0,1,2].map(j=>g('nm-b'+j).value));save();render();toast('Nombres guardados.');return;}
+  if(b.dataset&&b.dataset.metasug){const a=avgGasto(),g=id=>document.getElementById(id);if(!g('mn').value.trim())g('mn').value=(cfg.metas&&cfg.metas[0])?cfg.metas[0].n:'Fondo de emergencia';g('mobj').value=Math.round(a*(+b.dataset.metasug));g('mobj').focus();return;}
   if(b.id==='sb-logout'){sbLogout();return;}
   if(b.id==='del-go'){sbDelete(b);return;}
   if(b.id==='fx-now'||b.id==='tcm-sunat'){fxUpdate(true);return;}
@@ -2396,7 +2410,7 @@ app.addEventListener('click',e=>{
   else if(d.del&&view!=='resumen'){delMov(S[year][view],d.del,+d.i);save();render();}
   else if(d.cat!==undefined){cfg.cats.splice(+d.cat,1);save();render();}
   else if(b.id==='addcat'){const v=document.getElementById('nc').value.trim();if(v&&cfg.cats.indexOf(v)<0){cfg.cats.push(v);save();}render();}
-  else if(b.id==='addmeta'){const n=document.getElementById('mn').value.trim(),o=parseFloat(document.getElementById('mobj').value)||0;if(!n){toast('Escribe el nombre de la meta.');return;}cfg.metas=cfg.metas||[];if(cfg.metas.some(x=>x.n.toLowerCase()===n.toLowerCase())){toast('Ya existe esa meta.');return;}cfg.metas.push({n,o});save();render();}
+  else if(b.id==='addmeta'){const n=document.getElementById('mn').value.trim(),o=parseFloat(document.getElementById('mobj').value)||0;if(!n){toast('Escribe el nombre de la meta.');return;}cfg.metas=cfg.metas||[];const ex=cfg.metas.find(x=>x.n.toLowerCase()===n.toLowerCase());if(ex){if(o>0){ex.o=o;save();render();toast('Objetivo actualizado.');}else toast('Ya existe esa meta. Escribe un objetivo para actualizarla.');return;}cfg.metas.push({n,o});save();render();}
   else if(d.metadel!==undefined){cfg.metas.splice(+d.metadel,1);save();render();return;}
   else if(b.id==='reset'){S=build();cfg=CFG0();save();render();}
 });
