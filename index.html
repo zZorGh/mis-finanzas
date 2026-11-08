@@ -461,6 +461,7 @@ h1{letter-spacing:-.03em}
 .authbox .b{height:44px}
 .authbox .err{min-height:16px}
 .authbox .err.err{color:var(--bad)}
+.nmg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:6px 0 10px}.onbox{max-height:calc(100dvh - 32px);overflow:auto}.onbox .b.p{margin-top:6px}
 .lnk{background:none;border:none;color:var(--accent);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline;min-height:44px;padding:0 8px}
 .danger{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:10px 12px}.danger summary{cursor:pointer;font-weight:600;color:var(--bad);min-height:28px;display:flex;align-items:center}.danger[open]{border-color:var(--bad)}.danger .fld,.danger .b{margin-top:10px}.b.dng{border-color:var(--bad);color:var(--bad)}.b.dng:disabled{opacity:.5;cursor:not-allowed}
 
@@ -636,7 +637,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const row=(c,m,f,k,src,card)=>{const o={c:c||'',m:m||0,f:f||'',k:k||''};if(src&&src!=='none')o.src=src;if(card)o.card=card;return o;};
-function LIQ(){return [row('Yape'),row('Plin'),row('Efectivo billetes'),row('Efectivo monedas')];}
+function LIQ(n){n=n||['Yape','Plin','Efectivo billetes','Efectivo monedas'];return n.map(x=>row(x));}
 const blank=()=>({liq:LIQ(),ing:[row()],fij:[row()],hor:[row()],bbva:[row()],bcp:[row()],oh:[row()],aho:[row()],inv:[row()],eur:[{a:0,b:0,d:0,s:0,p:0}],p:[50,30,20],q:[50,30,20],nota:'',tot:false});
 const normCat=k=>k||'';
 const CFG0=()=>({alerta:500,meta:20,meses:3,pmode:'c',pv:2,tc:{'€':4.1,'$':3.4},eurCols:['Anterior','Actual','Debe','Saldo'],rec:[],fondoMes:'',tcDate:'',credito:{bbva:0,bcp:0,oh:0},metas:[],cats:['Necesidad','Deseo','Alquiler','Servicios','Menú','Transporte','Estudios','Salud','Ocio']});
@@ -841,6 +842,10 @@ function viewResumen(){
     <div class="ms" style="margin-bottom:12px">Cada mes guarda su propia tasa y los meses anteriores no cambian. Los valores de respaldo de arriba se usan solo en meses sin tasa propia. SUNAT publica solo el dólar (usamos el precio de venta); el euro sale del mercado y es referencial. <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener">Rates By Exchange Rate API</a></div>
     <div class="ms">Ahorros</div>
     <div class="ms" style="margin-bottom:12px">Tu saldo se calcula solo: cada depósito suma y cada retiro resta, cuenta por cuenta. Si lo que ves no coincide con tu banco, usa «Ajustar saldo» en la tarjeta Ahorros y escribe el saldo real.</div>
+    <div class="ms">Tus cuentas y tarjetas</div>
+    <div class="ms" style="margin-bottom:8px">Pon los nombres que usas tú. Cambiarlos no borra tus datos.</div>
+    <div class="nmg">${LIQN().map((n,j)=>`<label class="fld">Cuenta ${j+1}<input type="text" id="nm-l${j}" value="${esc(n)}" maxlength="28" autocomplete="off"></label>`).join('')}${['bbva','bcp','oh'].map((k,j)=>`<label class="fld">Tarjeta ${j+1}<input type="text" id="nm-b${j}" value="${esc(BANKN[k])}" maxlength="28" autocomplete="off"></label>`).join('')}</div>
+    <div class="qa"><button class="b" id="nm-save" type="button">Guardar nombres</button></div>
     <div class="ms">Categorías de gastos</div>
     <div class="chips">${cfg.cats.map((c,i)=>`<span class="chip">${esc(c)}<button type="button" data-cat="${i}" aria-label="Quitar ${esc(c)}">×</button></span>`).join('')}</div>
     <div class="qa"><input type="text" id="nc" placeholder="Nueva categoría, por ejemplo Mascotas" aria-label="Nueva categoría"><button class="b" id="addcat" type="button">Agregar categoría</button><button class="b" id="reset" type="button">Restablecer ejemplo</button></div>
@@ -849,7 +854,7 @@ function viewResumen(){
     <div class="qa"><input type="text" id="mn" placeholder="Nombre, p. ej. Fondo de emergencia" aria-label="Nombre de la meta"><input type="number" id="mobj" placeholder="Objetivo S/" aria-label="Objetivo de la meta" style="width:130px"><button class="b" id="addmeta" type="button">Agregar meta</button></div>
     <div class="gs"><h3>Gastos recurrentes</h3>
       <div class="ms">Se cargan con «Cargar recurrentes» dentro de cada mes y no se duplican si ya existen.</div>
-      <div class="chips">${(cfg.rec||[]).map((r,i)=>`<span class="chip">${esc(r.c)} · ${num2(r.m)}${r.k?' · '+esc(r.k):''}${r.src&&r.src!=='none'?' · '+esc(DEFLIQ[+r.src.slice(4)]||''):''} · día ${r.f}<button type="button" data-recdel="${i}" aria-label="Quitar ${esc(r.c)}">×</button></span>`).join('')||'<span class="ms">Todavía no hay recurrentes.</span>'}</div>
+      <div class="chips">${(cfg.rec||[]).map((r,i)=>`<span class="chip">${esc(r.c)} · ${num2(r.m)}${r.k?' · '+esc(r.k):''}${r.src&&r.src!=='none'?' · '+esc(LIQN()[+r.src.slice(4)]||''):''} · día ${r.f}<button type="button" data-recdel="${i}" aria-label="Quitar ${esc(r.c)}">×</button></span>`).join('')||'<span class="ms">Todavía no hay recurrentes.</span>'}</div>
       <div class="qa"><select id="rc-s" aria-label="Tipo"><option value="fij">Gasto fijo</option><option value="hor">Hormiga</option></select><input id="rc-c" type="text" placeholder="Concepto, por ejemplo Internet" aria-label="Concepto"><input id="rc-m" type="number" step="0.01" placeholder="Monto" aria-label="Monto" style="width:100px"><select id="rc-k" aria-label="Categoría"><option value="">Categoría</option>${cfg.cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select><select id="rc-src" aria-label="De dónde sale"><option value="none">No descontar</option>${DEFLIQ.map((n,i)=>`<option value="liq:${i}">${esc(n)}</option>`).join('')}</select><input id="rc-d" type="number" min="1" max="31" value="1" aria-label="Día del mes" style="width:70px"><button class="b" id="rc-add" type="button">Agregar</button></div>
     </div>
     <div class="gs"><h3>Reportes</h3><div class="ms">Un estado de cuenta ordenado, en PDF para enviar o imprimir, o en Excel para revisar las cifras. Lo entiende cualquier persona, empresa o banco.</div><div class="qa"><button class="b p" type="button" data-act="rep">Descargar reporte</button></div></div>
@@ -1476,6 +1481,40 @@ const APART_INV={};Object.keys(APART).forEach(k=>{APART_INV[APART[k]]=k;});
 const SECKEYS=Object.keys(APART);
 const REGHEAD=['año','mes','mes_nombre','apartado','concepto','monto','categoría','fecha','a','b','d','s','p','fuente','tarjeta'];
 const DEFLIQ=['Yape','Plin','Efectivo billetes','Efectivo monedas'];
+const LIQN=()=>(cfg.liqNames&&cfg.liqNames.length===4)?cfg.liqNames:DEFLIQ;
+const BANK0={bbva:'BBVA',bcp:'BCP',oh:'oh!'};
+function applyBanks(){['bbva','bcp','oh'].forEach((k,i)=>{const n=String((cfg.bancos||{})[k]||'').trim()||BANK0[k];BANKN[k]=n;SECN[k]=n;BANCOS[i][1]=n;});}
+applyBanks();
+function applyNames(liq,cards){
+  const cl=(v,fb)=>{v=String(v||'').trim().replace(/\s+/g,' ').slice(0,28);return v||fb;};
+  const old=LIQN().slice();
+  const nl=liq.map((v,j)=>cl(v,old[j]));
+  const nb={};['bbva','bcp','oh'].forEach((k,i)=>{nb[k]=cl(cards[i],BANKN[k]);});
+  cfg.liqNames=nl;cfg.bancos=nb;
+  Object.keys(S).forEach(y=>S[y].forEach(m=>{const l=m.liq||[];nl.forEach((n,j)=>{if(l[j])l[j].c=n;});}));
+  applyBanks();
+}
+function showOnboard(){
+  if(document.getElementById('onbg'))return;
+  const bg=document.createElement('div');bg.id='onbg';bg.className='authbg';
+  const li=DEFLIQ.map((n,j)=>`<label class="fld">Cuenta ${j+1}<input type="text" id="ob-l${j}" value="${esc(n)}" maxlength="28" autocomplete="off"></label>`).join('');
+  const ca=['Ej. Interbank','Ej. Falabella','Otra tarjeta'].map((p,j)=>`<label class="fld">Tarjeta ${j+1}<input type="text" id="ob-b${j}" placeholder="${p}" maxlength="28" autocomplete="off"></label>`).join('');
+  bg.innerHTML=`<form class="authbox onbox" id="onbox" novalidate><div class="authlogo" aria-hidden="true">S/</div><h2>Armemos tu app a tu medida</h2><p class="ms">Dinos cómo se llaman tus cuentas y tarjetas. Puedes cambiarlo cuando quieras en Personalizar.</p>
+    <div class="ms"><b>¿Dónde tienes tu dinero hoy?</b></div><div class="nmg">${li}</div>
+    <div class="ms"><b>¿Qué tarjetas de crédito usas?</b> (opcional)</div><div class="nmg">${ca}</div>
+    <button class="b p" type="submit" id="ob-go">Empezar</button><button class="lnk" type="button" id="ob-skip">Omitir por ahora</button></form>`;
+  document.body.appendChild(bg);
+  const g=id=>document.getElementById(id);
+  const done=useInputs=>{
+    const liq=[0,1,2,3].map(j=>useInputs?g('ob-l'+j).value:DEFLIQ[j]);
+    const cards=[0,1,2].map(j=>(useInputs?g('ob-b'+j).value:'')||('Tarjeta '+(j+1)));
+    applyNames(liq,cards);cfg.onb=1;save();bg.remove();render();
+  };
+  g('onbox').addEventListener('submit',e=>{e.preventDefault();done(true);});
+  g('ob-skip').addEventListener('click',()=>done(false));
+  g('ob-l0').focus();
+}
+
 let mcp=null,backend=null;const IS_GAS=(typeof google!=='undefined')&&!!(google.script&&google.script.run);
 const SB_URL='https://lmjhlghwthydpeismulb.supabase.co',SB_KEY='sb_publishable_Chi2CqOxqdL_15IggSgUZA_09aZ4XEf';
 const IS_SB=!IS_GAS&&!(window.claude&&window.claude.use)&&!!SB_URL&&typeof supabase!=='undefined';
@@ -1560,6 +1599,8 @@ function applyRemote(rows,conf){
       if(r[0]==='guardado')sync.stamp=r[1]||'';
     }catch(e){}
   });
+  if(cfg.liqNames&&cfg.liqNames.length===4)Object.keys(S).forEach(y=>S[y].forEach(m=>{const l=m.liq||[];if(l.length===4&&l.every((r,j)=>r.c===DEFLIQ[j]&&!(+r.m)))m.liq=LIQ(cfg.liqNames);}));
+  applyBanks();
   if(!S[year])year=YEARS[YEARS.length-1];
   localSave();localLay();
 }
@@ -1650,7 +1691,7 @@ async function sbDelete(btn){
   }catch(e){msg.textContent='No se pudo conectar. Revisa tu internet.';btn.disabled=false;}
 }
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='del-txt'){const b=document.getElementById('del-go');if(b)b.disabled=e.target.value.trim().toUpperCase()!=='ELIMINAR';}});
-function sbReady(session){sbUser=session.user;backend=supabaseBackend;sync.connected=true;hideAuth();updateChip();loadFromSheet(true);}
+function sbReady(session){sbUser=session.user;backend=supabaseBackend;sync.connected=true;hideAuth();updateChip();Promise.resolve(loadFromSheet(true)).then(()=>{try{if(!cfg.onb&&toRows().length===0)showOnboard();}catch(e){}});}
 async function sbAuth(mode,email,pass,msgEl,btn){
   if(!sb)return;msgEl.className='ms err';msgEl.textContent='';if(btn)btn.disabled=true;
   try{
@@ -2340,6 +2381,7 @@ app.addEventListener('click',e=>{
   if(d.hist){if(d.hist==='ask')histAsk=d.hid;else if(d.hist==='no')histAsk=null;else if(d.hist==='mas')histOpen=!histOpen;else if(d.hist==='si'){histRestore(d.hid,b);return;}const h=document.getElementById('hist');if(h&&HC)h.innerHTML=histHtml(HC.l);return;}
   if(b.id==='bk-csv'){saveFile('mis-finanzas-movimientos-'+BK()+'.csv','\ufeff'+[REGHEAD].concat(toRows()).map(r=>r.map(csvCell).join(',')).join('\n'));return;}
   if(b.id==='bk-load'){document.getElementById('bk-file').click();return;}
+  if(b.id==='nm-save'){const g=id=>document.getElementById(id);applyNames([0,1,2,3].map(j=>g('nm-l'+j).value),[0,1,2].map(j=>g('nm-b'+j).value));save();render();toast('Nombres guardados.');return;}
   if(b.id==='sb-logout'){sbLogout();return;}
   if(b.id==='del-go'){sbDelete(b);return;}
   if(b.id==='fx-now'||b.id==='tcm-sunat'){fxUpdate(true);return;}
