@@ -1,0 +1,485 @@
+<title>Cuadra</title>
+<meta charset="utf-8">
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Registra tus gastos en segundos, controla Yape, Plin y efectivo, sigue tus ahorros con su TREA y descarga un estado de cuenta en PDF o Excel.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: banda oscura de entrada con el teléfono, luego secciones claras en una columna de 1120px; el billete de cuadre (calculadora) es el gesto propio de la marca. */
+:root{
+  --bg:#EEF2F0;--surface:#FFFFFF;--surface-2:#F4F7F5;--ink:#14201B;--muted:#56645D;--line:#D8DFDB;
+  --accent:#0B7A62;--accent-ink:#FFFFFF;--accent-soft:#D6ECE5;--deep:#0E1A16;--deep-2:#0C3A30;--on-deep:#E6F2ED;--on-deep-muted:#A9CFC2;
+  --hormiga:#C2570C;--hormiga-soft:#FBE7D6;--good:#1C6B3C;
+  --fd:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;--fb:'Figtree','Segoe UI',system-ui,sans-serif;--fm:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  --r:18px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1512;--surface:#17211D;--surface-2:#1E2A25;--ink:#E7EEEA;--muted:#9AAAA2;--line:#2C3B35;
+  --accent:#3CC9A6;--accent-ink:#06251D;--accent-soft:#1B3A31;--deep:#08100D;--deep-2:#0B2C24;--on-deep:#E6F2ED;--on-deep-muted:#9CC4B6;
+  --hormiga:#F29A55;--hormiga-soft:#3A2414;--good:#5FD08F;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1512;--surface:#17211D;--surface-2:#1E2A25;--ink:#E7EEEA;--muted:#9AAAA2;--line:#2C3B35;
+  --accent:#3CC9A6;--accent-ink:#06251D;--accent-soft:#1B3A31;--deep:#08100D;--deep-2:#0B2C24;--on-deep:#E6F2ED;--on-deep-muted:#9CC4B6;
+  --hormiga:#F29A55;--hormiga-soft:#3A2414;--good:#5FD08F;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(72px + env(safe-area-inset-top,0px))}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--fb);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--deep)}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+h1,h2,h3{font-family:var(--fd);line-height:1.08;letter-spacing:-.015em;margin:0;text-wrap:balance}
+p{margin:0}
+.w{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.num{font-family:var(--fm);font-variant-numeric:tabular-nums}
+.kicker{font:600 12px var(--fm);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 20px;border-radius:12px;font:600 15px var(--fb);text-decoration:none;border:1.5px solid transparent;cursor:pointer;touch-action:manipulation;transition:transform .12s ease,filter .15s ease,background .15s ease}
+.btn:active{transform:scale(.97)}
+.btn-p{background:var(--accent);color:var(--accent-ink)}
+.btn-g{background:transparent;color:inherit;border-color:currentColor}
+@media (hover:hover) and (pointer:fine){.btn:hover{filter:brightness(1.06)}}
+
+/* Navegación */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--deep) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--on-deep);border-bottom:1px solid rgba(255,255,255,.08)}
+.nav .w{display:flex;align-items:center;gap:20px;min-height:64px;padding-block:8px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;font:700 21px var(--fd);letter-spacing:-.02em}
+.mark{width:32px;height:32px;border-radius:9px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:600 13px var(--fm)}
+.links{display:flex;gap:18px;margin-left:auto}
+.links a{color:var(--on-deep-muted);text-decoration:none;font-weight:500;font-size:15px}
+@media (hover:hover){.links a:hover{color:var(--on-deep)}}
+.nav .acts{display:flex;gap:8px}
+.nav .btn{min-height:40px;padding:0 14px;font-size:14px}
+.nav .btn-g{border-color:rgba(255,255,255,.35)}
+@media (max-width:860px){.links{display:none}.nav .acts{margin-left:auto}}
+@media (max-width:420px){.nav .btn-g{display:none}}
+
+/* Entrada */
+.hero{background:radial-gradient(900px 420px at 85% 0%,rgba(60,201,166,.22),transparent 60%),linear-gradient(160deg,var(--deep) 0%,var(--deep-2) 70%,#0B5C4B 140%);color:var(--on-deep);overflow:hidden}
+.hero .w{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:clamp(28px,5vw,64px);align-items:center;padding-block:clamp(44px,7vw,88px) 0}
+.hero .kicker{color:#8FE0C9}
+.hero h1{font-size:clamp(40px,6.6vw,74px);font-weight:800;margin:14px 0 18px;max-width:13ch}
+.hero h1 em{font-style:normal;color:#8FE0C9}
+.hero .lead{font-size:clamp(17px,2vw,20px);color:#CFE3DB;max-width:52ch}
+.hero .cta{display:flex;flex-wrap:wrap;gap:10px;margin:28px 0 22px}
+.hero .btn-g{color:#fff;border-color:rgba(255,255,255,.4)}
+.facts{display:flex;flex-wrap:wrap;gap:8px 18px;padding:0;margin:0 0 clamp(36px,6vw,72px);list-style:none;font:500 13px var(--fm);color:var(--on-deep-muted)}
+.facts li::before{content:"";display:inline-block;width:1em;height:1em;margin-right:.4em;vertical-align:-.15em;background:#8FE0C9;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat}
+.phone{width:min(300px,78vw);margin:0 auto;border-radius:38px;padding:10px;background:#0A0F0D;box-shadow:0 30px 80px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.08)}
+.phone img{display:block;width:100%;height:auto;border-radius:30px;aspect-ratio:390/844;object-fit:cover;object-position:top}
+.hero .phone{align-self:end;transform:translateY(32px);margin-bottom:-2px}
+@media (max-width:820px){.hero .w{grid-template-columns:1fr}.hero .phone{width:min(270px,72vw)}}
+
+/* Secciones */
+section{padding-block:clamp(64px,9vw,112px)}
+.sh{max-width:680px;margin-bottom:clamp(28px,4vw,44px)}
+.sh h2{font-size:clamp(30px,4.4vw,46px);margin:10px 0 14px}
+.sh p{color:var(--muted);font-size:18px}
+
+/* Calculadora hormiga: el «voucher» */
+.calc-wrap{padding-top:clamp(72px,9vw,120px)}
+.calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.calc-in{padding:clamp(22px,4vw,40px);display:grid;gap:18px;align-content:start}
+.calc-in h2{font-size:clamp(26px,3.4vw,36px)}
+.calc-in p{color:var(--muted)}
+.f{display:grid;gap:6px;font-weight:600;font-size:14px}
+.f .row{display:flex;align-items:center;gap:10px}
+.f input[type=range]{flex:1;accent-color:var(--hormiga);min-width:0}
+.f output{min-width:84px;text-align:right;font:600 18px var(--fm)}
+.chipset{display:flex;flex-wrap:wrap;gap:6px}
+.chipset button{font:500 14px var(--fb);padding:7px 12px;border-radius:99px;border:1.5px solid var(--line);background:var(--surface-2);color:var(--ink);cursor:pointer;touch-action:manipulation}
+.chipset button[aria-pressed=true]{border-color:var(--hormiga);background:var(--hormiga-soft)}
+.ticket{background:var(--hormiga-soft);padding:clamp(22px,4vw,40px);display:grid;gap:4px;align-content:center;position:relative;font-family:var(--fm)}
+.ticket::before{content:"";position:absolute;left:-1px;top:0;bottom:0;width:2px;background:repeating-linear-gradient(to bottom,var(--line) 0 8px,transparent 8px 16px)}
+.ticket .tl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ticket .tr{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px dashed color-mix(in srgb,var(--hormiga) 45%,transparent);font-size:15px}
+.ticket .tr b{font-weight:600}
+.ticket .big{font:800 clamp(38px,5.4vw,58px)/1.05 var(--fd);color:var(--hormiga);letter-spacing:-.02em;margin:8px 0 4px}
+.ticket .note{font:15px/1.5 var(--fb);color:var(--ink);margin-top:10px}
+.ticket .note b{color:var(--good)}
+@media (max-width:760px){.calc{grid-template-columns:1fr}.ticket::before{left:0;right:0;top:-1px;bottom:auto;width:auto;height:2px;background:repeating-linear-gradient(to right,var(--line) 0 8px,transparent 8px 16px)}}
+
+/* Funciones */
+.feat{display:grid;gap:clamp(48px,7vw,88px)}
+.fr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,5vw,72px);align-items:center}
+.fr:nth-child(even) .ft{order:2}
+.ft h3{font-size:clamp(24px,3vw,32px);margin:8px 0 12px}
+.ft p{color:var(--muted);font-size:17px;max-width:46ch}
+.ft ul{margin:16px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+.ft li{padding-left:24px;position:relative}
+.ft li::before{content:"";position:absolute;left:2px;top:.62em;width:10px;height:10px;border-radius:3px;background:var(--accent)}
+.fr .phone{width:min(280px,74vw)}
+@media (max-width:820px){.fr{grid-template-columns:1fr}.fr:nth-child(even) .ft{order:0}}
+
+/* Seguridad */
+.safe{background:var(--surface);border-block:1px solid var(--line)}
+.sg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.sc{background:var(--surface-2);border-radius:14px;padding:20px;min-width:0}
+.sc .ic{width:38px;height:38px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;margin-bottom:12px}
+.sc h3{font-size:18px;margin-bottom:6px}
+.sc p{font-size:15px;color:var(--muted)}
+@media (max-width:900px){.sg{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.sg{grid-template-columns:1fr}}
+
+/* Precios */
+.toggle{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:4px;margin-bottom:22px}
+.toggle button{font:600 14px var(--fb);border:0;background:none;color:var(--muted);padding:8px 16px;border-radius:99px;cursor:pointer;touch-action:manipulation}
+.toggle button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+.toggle small{font:600 11px var(--fm);margin-left:6px;opacity:.85}
+.plans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:clamp(22px,3.5vw,32px);display:grid;gap:16px;align-content:start;min-width:0}
+.plan.pro{border:2px solid var(--accent);position:relative}
+.plan .tag{position:absolute;top:-13px;left:24px;background:var(--accent);color:var(--accent-ink);font:600 12px var(--fm);padding:4px 10px;border-radius:99px;letter-spacing:.04em}
+.plan h3{font-size:22px}
+.price{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.price b{font:800 46px/1 var(--fd);letter-spacing:-.02em}
+.price span{color:var(--muted);font-size:15px}
+.plan .eq{font:500 13px var(--fm);color:var(--muted);min-height:1.4em}
+.plan ul{margin:0;padding:0;list-style:none;display:grid;gap:9px;font-size:15.5px}
+.plan li{padding-left:26px;position:relative}
+.plan li::before{content:"";position:absolute;left:2px;top:.3em;width:16px;height:16px;background:var(--accent);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat}
+.plan li.soon::before{background:var(--muted);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E") center/contain no-repeat}
+.plan li.soon{color:var(--muted)}
+.plan li.soon em{font:500 11px var(--fm);font-style:normal;background:var(--surface-2);border:1px solid var(--line);padding:1px 6px;border-radius:6px;margin-left:4px}
+.plan .btn{width:100%}
+.beta{margin-top:18px;display:flex;gap:12px;align-items:flex-start;background:var(--accent-soft);border-radius:14px;padding:16px 18px;font-size:15.5px}
+.beta b{font-family:var(--fd)}
+@media (max-width:720px){.plans{grid-template-columns:1fr}}
+
+/* Tutoriales */
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:26px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+@media (min-width:900px){.tabs{flex-wrap:wrap;overflow:visible}}
+.tabs button{flex:none;font:600 14.5px var(--fb);padding:10px 16px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;touch-action:manipulation;white-space:nowrap}
+.tabs button .tn{font:600 12px var(--fm);color:var(--muted);margin-right:6px}
+.tabs button[aria-selected=true]{border-color:var(--accent);background:var(--accent-soft)}
+.tut{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:clamp(24px,5vw,64px);align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:clamp(22px,4vw,44px)}
+.tut h3{font-size:clamp(24px,3vw,30px);margin-bottom:8px}
+.tut .dur{font:500 13px var(--fm);color:var(--muted)}
+.tut ol{counter-reset:s;list-style:none;margin:22px 0 0;padding:0;display:grid;gap:14px}
+.tut ol li{counter-increment:s;display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;align-items:start}
+.tut ol li::before{content:counter(s);width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:600 14px var(--fm);margin-top:1px}
+.tut kbd{font:500 13px var(--fm);background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 6px}
+.tip{margin-top:20px;padding:12px 14px;border-left:3px solid var(--hormiga);background:var(--hormiga-soft);border-radius:0 10px 10px 0;font-size:15px}
+.tut .phone{width:min(270px,72vw)}
+@media (max-width:820px){.tut{grid-template-columns:1fr}}
+
+/* Preguntas */
+.faq{display:grid;gap:10px;max-width:820px}
+.faq details{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px 20px}
+.faq summary{cursor:pointer;list-style:none;font:600 17px var(--fb);padding:14px 28px 14px 0;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:0;top:10px;font:500 22px var(--fm);color:var(--accent)}
+.faq details[open] summary::after{content:"–"}
+.faq details p{color:var(--muted);padding:0 0 16px;max-width:66ch}
+
+/* Lista de espera */
+.join{background:linear-gradient(160deg,var(--deep) 0%,var(--deep-2) 100%);color:var(--on-deep)}
+.join .w{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,5vw,64px);align-items:center}
+.join h2{font-size:clamp(30px,4.4vw,46px);margin:10px 0 14px}
+.join .kicker{color:#8FE0C9}
+.join p{color:#CFE3DB;font-size:18px}
+.form{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:var(--r);padding:clamp(20px,3.5vw,30px);display:grid;gap:14px}
+.form label{display:grid;gap:6px;font-weight:600;font-size:14px;color:var(--on-deep)}
+.form input,.form select{height:48px;border-radius:10px;border:1px solid rgba(255,255,255,.22);background:rgba(0,0,0,.25);color:#fff;padding:0 14px;font:16px var(--fb);width:100%}
+.form select option{color:#14201B}
+.form .btn{width:100%}
+.form .fine{font-size:13px;color:var(--on-deep-muted)}
+.form .ok{background:rgba(60,201,166,.16);border:1px solid rgba(60,201,166,.5);border-radius:10px;padding:12px 14px;font-size:15px}
+.form .err{color:#FFB4A8;font-size:14px}
+@media (max-width:820px){.join .w{grid-template-columns:1fr}}
+
+footer{padding-block:36px 44px;color:var(--muted);font-size:14px}
+footer .w{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between;align-items:center}
+footer nav{display:flex;flex-wrap:wrap;gap:8px 20px}
+footer a{color:var(--muted)}
+.demo-flag{font:600 11px var(--fm);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:6px;padding:2px 6px}
+img{max-width:100%}
+</style>
+
+<header class="nav">
+  <div class="w">
+    <a class="brand" href="#inicio" aria-label="Cuadra, inicio"><span class="mark" aria-hidden="true">S/</span>Cuadra</a>
+    <nav class="links" aria-label="Secciones">
+      <a href="#funciones">Funciones</a><a href="#precios">Precios</a><a href="#tutoriales">Tutoriales</a><a href="#preguntas">Preguntas</a>
+    </nav>
+    <div class="acts">
+      <a class="btn btn-g" href="https://zzorgh.github.io/mis-finanzas/" target="_blank" rel="noopener">Entrar</a>
+      <a class="btn btn-p" href="#beta">Unirme a la beta</a>
+    </div>
+  </div>
+</header>
+
+<main id="inicio">
+<div class="hero">
+  <div class="w">
+    <div>
+      <div class="kicker">Finanzas personales en soles</div>
+      <h1>Tus cuentas, <em>cuadradas</em> al céntimo.</h1>
+      <p class="lead">Anota un gasto en segundos, mira cuánto tienes de verdad en Yape, Plin y efectivo, sigue tus ahorros con su TREA y descarga un estado de cuenta que entiende cualquier banco.</p>
+      <div class="cta">
+        <a class="btn btn-p" href="#beta">Unirme a la beta gratis</a>
+        <a class="btn btn-g" href="#tutoriales">Ver cómo funciona</a>
+      </div>
+      <ul class="facts">
+        <li>Yape, Plin y efectivo</li><li>Soles y dólares</li><li>Funciona sin señal</li><li>Reportes PDF y Excel</li>
+      </ul>
+    </div>
+    <div class="phone"><img src="img/resumen.jpg" width="390" height="844" alt="Pantalla de resumen del año: saldo ahorrado, fondo de emergencia y gasto anual"></div>
+  </div>
+</div>
+
+<div class="w calc-wrap">
+  <div class="calc" id="calculadora">
+    <div class="calc-in">
+      <div class="kicker" style="color:var(--hormiga)">Calculadora de gasto hormiga</div>
+      <h2>¿Cuánto se te va en «solo un café»?</h2>
+      <p>Mueve los valores. Los gastos chicos casi nunca se anotan, y al año suman más de lo que parece.</p>
+      <div class="f">
+        <span id="lb-q">¿En qué?</span>
+        <div class="chipset" role="group" aria-labelledby="lb-q">
+          <button type="button" data-p="6" aria-pressed="true">Café</button><button type="button" data-p="3.5" aria-pressed="false">Golosina</button><button type="button" data-p="14" aria-pressed="false">Delivery chico</button><button type="button" data-p="9" aria-pressed="false">Taxi corto</button>
+        </div>
+      </div>
+      <label class="f" for="c-m">Cuánto cuesta cada vez
+        <span class="row"><input type="range" id="c-m" min="1" max="40" step="0.5" value="6"><output id="o-m" class="num" for="c-m">S/ 6.00</output></span>
+      </label>
+      <label class="f" for="c-v">Veces por semana
+        <span class="row"><input type="range" id="c-v" min="1" max="14" step="1" value="5"><output id="o-v" class="num" for="c-v">5</output></span>
+      </label>
+    </div>
+    <div class="ticket" aria-live="polite">
+      <div class="tl">Tu boleta de gasto hormiga</div>
+      <div class="tr"><span>Al mes</span><b id="t-mes">S/ 130.00</b></div>
+      <div class="tr"><span>Al año</span><b id="t-ano">S/ 1,560.00</b></div>
+      <div class="big" id="t-big">S/ 1,560</div>
+      <div class="tl">se van en un año</div>
+      <p class="note">Si en vez de eso lo depositaras cada mes en una cuenta con <b>5.5% TREA</b>, en un año tendrías <b id="t-aho">S/ 1,595.93</b>.</p>
+    </div>
+  </div>
+</div>
+
+<section id="funciones">
+  <div class="w">
+    <div class="sh">
+      <div class="kicker">Funciones</div>
+      <h2>Hecha para cómo se paga en Perú</h2>
+      <p>No necesitas conectar tu banco. Tú anotas, la app ordena y cuadra.</p>
+    </div>
+    <div class="feat">
+      <div class="fr">
+        <div class="ft">
+          <div class="kicker">Registro en segundos</div>
+          <h3>Anota mientras pagas</h3>
+          <p>Toca <kbd>+</kbd>, escribe el monto y elige de dónde salió. Se descuenta solo de Yape, Plin o tu efectivo.</p>
+          <ul><li>Escribe «almuerzo 25 yape» y listo</li><li>Gastos hormiga separados de los fijos</li><li>Gastos en dólares con el tipo de cambio del mes</li></ul>
+        </div>
+        <div class="phone"><img src="img/registrar.jpg" width="390" height="844" alt="Formulario para registrar un gasto hormiga de 12.50 soles pagado con Yape" loading="lazy"></div>
+      </div>
+      <div class="fr">
+        <div class="ft">
+          <div class="kicker">Tu mes de un vistazo</div>
+          <h3>Sabes cuánto te queda, no cuánto crees</h3>
+          <p>Cada mes muestra lo que entró, lo que salió, lo que ahorraste y lo que te queda, con tu liquidez real al lado.</p>
+          <ul><li>Alerta cuando los gastos hormiga pasan tu límite</li><li>Tarjetas de crédito como deuda real, no como gasto doble</li><li>Cuadra tus cuentas con el saldo de tu app del banco</li></ul>
+        </div>
+        <div class="phone"><img src="img/mes.jpg" width="390" height="844" alt="Vista del mes de noviembre con lo que queda, barra de gastos y liquidez disponible" loading="lazy"></div>
+      </div>
+      <div class="fr">
+        <div class="ft">
+          <div class="kicker">Ahorros con TREA</div>
+          <h3>Mira cuánto ganan tus ahorros</h3>
+          <p>Lleva cada cuenta de ahorro por separado, escribe su TREA o TEA y ve cuánto ganarías al mes y al año.</p>
+          <ul><li>Depósitos, retiros y traspasos entre cuentas</li><li>Metas de ahorro con su avance</li><li>Fondo de emergencia según tus gastos fijos</li></ul>
+        </div>
+        <div class="phone"><img src="img/ahorros.jpg" width="390" height="844" alt="Cuentas de ahorro con saldo y ganancia estimada según su TREA" loading="lazy"></div>
+      </div>
+      <div class="fr">
+        <div class="ft">
+          <div class="kicker">Reportes</div>
+          <h3>Un estado de cuenta que entiende cualquiera</h3>
+          <p>Descarga en PDF o Excel tu resumen, gastos por categoría, ahorros, tarjetas y el detalle de cada movimiento, del mes o del año.</p>
+          <ul><li>PDF listo para enviar o imprimir</li><li>Excel con totales y filtros para revisar las cifras</li><li>Elige el período que necesites</li></ul>
+        </div>
+        <div class="phone"><img src="img/reporte.jpg" width="390" height="844" alt="Ventana para descargar el reporte en PDF o Excel eligiendo el período" loading="lazy"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="safe" aria-labelledby="h-safe">
+  <div class="w">
+    <div class="sh">
+      <div class="kicker">Tus datos</div>
+      <h2 id="h-safe">Tus datos son tuyos y están protegidos</h2>
+    </div>
+    <div class="sg">
+      <div class="sc"><div class="ic" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><h3>Privados</h3><p>Se guardan en una base de datos con inicio de sesión. Solo tú puedes verlos.</p></div>
+      <div class="sc"><div class="ic" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg></div><h3>Historial de 30 días</h3><p>Cada día se guarda una versión. Si algo sale mal, vuelves atrás con un toque.</p></div>
+      <div class="sc"><div class="ic" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8.8a15 15 0 0 1 20 0"/><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r="1"/></svg></div><h3>Sin señal, sin problema</h3><p>Lo que registras queda en tu celular y se sube solo cuando vuelve la conexión.</p></div>
+      <div class="sc"><div class="ic" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></div><h3>Te los llevas cuando quieras</h3><p>Descarga una copia completa o tus reportes en cualquier momento.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="precios">
+  <div class="w">
+    <div class="sh">
+      <div class="kicker">Precios</div>
+      <h2>Empieza gratis. Paga solo si te sirve.</h2>
+      <p>El plan gratis alcanza para llevar tus cuentas todos los días. Premium suma los reportes y la tranquilidad del historial.</p>
+    </div>
+    <div class="toggle" role="group" aria-label="Forma de pago">
+      <button type="button" id="pm" aria-pressed="false">Mensual</button><button type="button" id="pa" aria-pressed="true">Anual <small>−33%</small></button>
+    </div>
+    <div class="plans">
+      <article class="plan">
+        <h3>Gratis</h3>
+        <div class="price"><b class="num">S/ 0</b><span>para siempre</span></div>
+        <div class="eq">&nbsp;</div>
+        <ul>
+          <li>Registro ilimitado de gastos e ingresos</li><li>Yape, Plin, efectivo y tarjetas de crédito</li><li>Cuentas de ahorro con TREA o TEA</li><li>Resumen del mes y del año</li><li>Entra desde el celular o la computadora</li>
+        </ul>
+        <a class="btn btn-g" href="#beta" style="color:var(--accent)">Empezar gratis</a>
+      </article>
+      <article class="plan pro">
+        <span class="tag">Recomendado</span>
+        <h3>Premium</h3>
+        <div class="price"><b class="num" id="pp">S/ 79</b><span id="pu">al año</span></div>
+        <div class="eq num" id="pe">Equivale a S/ 6.58 al mes</div>
+        <ul>
+          <li>Todo lo del plan gratis</li><li>Reportes en PDF y Excel, del mes o del año</li><li>Historial de 30 días para volver atrás</li><li>Varios años de datos</li>
+          <li class="soon">Importar tu estado de cuenta del banco <em>Próximamente</em></li><li class="soon">Recordatorios de pago de tarjetas <em>Próximamente</em></li>
+        </ul>
+        <a class="btn btn-p" href="#beta">Probar Premium en la beta</a>
+      </article>
+    </div>
+    <div class="beta"><svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><p><b>Durante la beta, Premium es gratis.</b> Te avisaremos antes de que empiece a cobrarse, y siempre podrás quedarte en el plan gratis sin perder tus datos.</p></div>
+  </div>
+</section>
+
+<section id="tutoriales" style="padding-top:0">
+  <div class="w">
+    <div class="sh">
+      <div class="kicker">Tutoriales</div>
+      <h2>Aprende en un minuto</h2>
+      <p>Guías cortas con capturas reales de la app, hechas con datos de ejemplo.</p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Tutoriales">
+      <button type="button" role="tab" id="tb-gasto" aria-controls="tp" aria-selected="true" data-t="gasto"><span class="tn">1</span>Registrar un gasto</button>
+      <button type="button" role="tab" id="tb-tarjeta" aria-controls="tp" aria-selected="false" data-t="tarjeta"><span class="tn">2</span>Tarjetas de crédito</button>
+      <button type="button" role="tab" id="tb-ahorro" aria-controls="tp" aria-selected="false" data-t="ahorro"><span class="tn">3</span>Ahorros con TREA</button>
+      <button type="button" role="tab" id="tb-cuadrar" aria-controls="tp" aria-selected="false" data-t="cuadrar"><span class="tn">4</span>Cuadrar cuentas</button>
+      <button type="button" role="tab" id="tb-reporte" aria-controls="tp" aria-selected="false" data-t="reporte"><span class="tn">5</span>Descargar un reporte</button>
+      <button type="button" role="tab" id="tb-historial" aria-controls="tp" aria-selected="false" data-t="historial"><span class="tn">6</span>Volver a una versión</button>
+    </div>
+    <div class="tut" id="tp" role="tabpanel" aria-labelledby="tb-gasto">
+      <div>
+        <h3 id="tt">Registrar un gasto</h3>
+        <div class="dur" id="td">Toma 10 segundos</div>
+        <ol id="ts">
+          <li><span>Toca el botón <kbd>+</kbd> de abajo a la derecha.</span></li>
+          <li><span>Elige el tipo: <b>Hormiga</b> para gastos chicos del día, <b>Gasto fijo</b> para alquiler, servicios o estudios.</span></li>
+          <li><span>Escribe el monto y qué fue, por ejemplo «Menú del día».</span></li>
+          <li><span>En «¿De dónde sale este gasto?» elige Yape, Plin o efectivo. Se descuenta solo.</span></li>
+          <li><span>Toca <b>Guardar</b>. Si te equivocaste, toca <b>Deshacer</b> en el aviso.</span></li>
+        </ol>
+        <p class="tip" id="tx">Atajo: en «Escribe rápido» pon <kbd>almuerzo 25 yape</kbd> y la app llena todo por ti.</p>
+      </div>
+      <div class="phone"><img id="ti" src="img/registrar.jpg" width="390" height="844" alt="Formulario para registrar un gasto" loading="lazy"></div>
+    </div>
+  </div>
+</section>
+
+<section id="preguntas" style="padding-top:0">
+  <div class="w">
+    <div class="sh">
+      <div class="kicker">Preguntas frecuentes</div>
+      <h2>Lo que nos suelen preguntar</h2>
+    </div>
+    <div class="faq">
+      <details><summary>¿Tengo que conectar mi cuenta del banco?</summary><p>No. Tú registras tus movimientos y la app los ordena. Nadie entra a tu banca por internet ni te pedimos tus claves.</p></details>
+      <details><summary>¿Mis datos están seguros?</summary><p>Se guardan en una base de datos privada protegida con tu inicio de sesión, y solo tú puedes verlos. Además, cada día se guarda una versión durante 30 días y puedes descargar una copia completa cuando quieras.</p></details>
+      <details><summary>¿Funciona sin internet?</summary><p>Sí. Lo que registras sin señal queda guardado en tu celular y se sube a tu cuenta cuando vuelve la conexión.</p></details>
+      <details><summary>¿Me sirve el reporte para presentarlo en un banco?</summary><p>El reporte ordena tus ingresos, gastos, ahorros y deudas como un estado de cuenta, y cualquier persona lo entiende. Como lo armas con tus propios registros, no reemplaza los documentos oficiales que pide un banco, como tus boletas o estados de cuenta.</p></details>
+      <details><summary>¿Puedo usarla en el celular y en la computadora?</summary><p>Sí. Funciona en el navegador de cualquier dispositivo, y en el celular puedes agregarla a tu pantalla de inicio como una app.</p></details>
+      <details><summary>¿Maneja dólares?</summary><p>Sí. Puedes registrar en dólares o euros y la app convierte a soles con el tipo de cambio del mes.</p></details>
+      <details><summary>¿Qué pasa si dejo de pagar Premium?</summary><p>Vuelves al plan gratis y tus datos siguen ahí. Antes puedes descargar tus reportes o una copia completa.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="join" id="beta">
+  <div class="w">
+    <div>
+      <div class="kicker">Beta abierta</div>
+      <h2>Únete a la beta</h2>
+      <p>Estamos buscando a las primeras personas que quieran ordenar sus finanzas con nosotros. Durante la beta todo es gratis, y tus comentarios deciden lo que construimos después.</p>
+    </div>
+    <form class="form" id="wf" novalidate>
+      <label for="w-n">Tu nombre<input id="w-n" name="nombre" type="text" autocomplete="given-name" required></label>
+      <label for="w-e">Tu correo<input id="w-e" name="correo" type="email" autocomplete="email" inputmode="email" required></label>
+      <label for="w-h">¿Cómo llevas tus cuentas hoy?
+        <select id="w-h" name="hoy"><option value="">Elige una opción</option><option>En Excel o Google Sheets</option><option>En una libreta</option><option>Con otra app</option><option>No las llevo</option></select>
+      </label>
+      <button class="btn btn-p" type="submit" id="w-b">Quiero entrar a la beta</button>
+      <div class="err" id="w-x" role="alert"></div>
+      <div class="ok" id="w-ok" hidden role="status"></div>
+      <p class="fine">Solo usaremos tu correo para avisarte de la beta. Puedes darte de baja cuando quieras. Más en la <a href="../legal.html#privacidad">política de privacidad</a>.</p>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="w">
+    <span>© 2026 Cuadra · Hecho en Lima, Perú</span>
+    <nav aria-label="Legal"><a href="#preguntas">Preguntas</a><a href="../legal.html#privacidad">Política de privacidad</a><a href="../legal.html#terminos">Términos</a></nav>
+  </div>
+</footer>
+
+<script>
+(()=>{
+  const $=id=>document.getElementById(id);
+  const fmt=v=>'S/ '+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  /* Calculadora de gasto hormiga */
+  const m=$('c-m'),v=$('c-v'),r=Math.pow(1.055,1/12)-1;
+  function calc(){
+    const pm=+m.value,vs=+v.value,ano=pm*vs*52,mes=ano/12,fv=mes*((Math.pow(1+r,12)-1)/r);
+    $('o-m').textContent=fmt(pm);$('o-v').textContent=vs;
+    $('t-mes').textContent=fmt(mes);$('t-ano').textContent=fmt(ano);
+    $('t-big').textContent='S/ '+Math.round(ano).toLocaleString('en-US');$('t-aho').textContent=fmt(fv);
+  }
+  m.addEventListener('input',()=>{document.querySelectorAll('.chipset button').forEach(b=>b.setAttribute('aria-pressed','false'));calc();});
+  v.addEventListener('input',calc);
+  document.querySelectorAll('.chipset button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.chipset button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));m.value=b.dataset.p;calc();}));
+  calc();
+  /* Precios */
+  const setP=a=>{$('pa').setAttribute('aria-pressed',String(a));$('pm').setAttribute('aria-pressed',String(!a));
+    $('pp').textContent=a?'S/ 79':'S/ 9.90';$('pu').textContent=a?'al año':'al mes';$('pe').textContent=a?'Equivale a S/ 6.58 al mes':'Se cobra cada mes, cancelas cuando quieras';};
+  $('pa').addEventListener('click',()=>setP(true));$('pm').addEventListener('click',()=>setP(false));
+  /* Tutoriales */
+  const T={
+    gasto:{t:'Registrar un gasto',d:'Toma 10 segundos',img:'registrar',alt:'Formulario para registrar un gasto',s:['Toca el botón <kbd>+</kbd> de abajo a la derecha.','Elige el tipo: <b>Hormiga</b> para gastos chicos del día, <b>Gasto fijo</b> para alquiler, servicios o estudios.','Escribe el monto y qué fue, por ejemplo «Menú del día».','En «¿De dónde sale este gasto?» elige Yape, Plin o efectivo. Se descuenta solo.','Toca <b>Guardar</b>. Si te equivocaste, toca <b>Deshacer</b> en el aviso.'],x:'Atajo: en «Escribe rápido» pon <kbd>almuerzo 25 yape</kbd> y la app llena todo por ti.'},
+    tarjeta:{t:'Tarjetas de crédito',d:'Toma 20 segundos',img:'tarjeta',alt:'Formulario de compra con tarjeta de crédito',s:['Toca <kbd>+</kbd> y elige <b>Compra tarjeta</b>.','Elige la tarjeta, escribe el monto y qué compraste.','Toca <b>Guardar</b>: la compra se suma a la deuda de esa tarjeta, no a tus gastos del mes.','Cuando pagues la tarjeta, toca <kbd>+</kbd> y elige <b>Pago tarjeta</b>, con la cuenta de donde sale el dinero.','El pago baja la deuda y cuenta como gasto del mes. Así no cuentas lo mismo dos veces.'],x:'Pon la línea de crédito de cada tarjeta en Ajustes y verás cuánto te queda disponible.'},
+    ahorro:{t:'Ahorros con TREA',d:'Toma 30 segundos',img:'ahorros',alt:'Cuentas de ahorro con su TREA y ganancia estimada',s:['Toca <kbd>+</kbd>, elige <b>Ahorro</b> y luego <b>Depositar</b>.','Elige la cuenta, escribe el monto y, si quieres, de dónde sale el dinero. La vista previa te muestra cómo quedan los saldos.','Para poner la tasa, en la tarjeta de la cuenta toca «Agregar TREA o TEA».','Elige TREA o TEA, escribe la tasa anual y toca <b>Guardar</b>.','La cuenta muestra cuánto ganarías al mes y al año con ese saldo.'],x:'Usa la TREA cuando el banco te la dé: ya incluye comisiones y es la cifra más real.'},
+    cuadrar:{t:'Cuadrar cuentas',d:'Toma 1 minuto',img:'cuadrar',alt:'Ventana para cuadrar cuentas con el saldo real',s:['Entra al mes y toca <b>Cuadrar cuentas</b>.','Abre la app de tu banco o tu billetera y mira el saldo real de cada cuenta.','Escríbelo al lado de cada una. La app te dice cuánto falta o sobra.','Toca <b>Aplicar ajustes</b> para dejar todo igual que en la realidad.'],x:'Si te falta dinero casi siempre en la misma cuenta, ahí se te escapa algún gasto hormiga.'},
+    reporte:{t:'Descargar un reporte',d:'Toma 15 segundos',img:'reporte',alt:'Ventana para descargar el reporte',s:['Toca <b>Descargar reporte</b> en el Resumen o en cualquier mes.','Elige el período: este mes, los últimos 3 o 6 meses, un año o los meses que quieras.','Elige <b>PDF</b> para enviarlo o imprimirlo, o <b>Excel</b> para revisar las cifras.','Escribe tu nombre como titular y toca <b>Descargar</b>.'],x:'El Excel trae una hoja por sección, con totales y filtros listos para usar.'},
+    historial:{t:'Volver a una versión anterior',d:'Toma 10 segundos',img:'historial',alt:'Historial de versiones de los últimos días',s:['Ve al Resumen y baja hasta <b>Tus datos</b>.','Elige el día al que quieres volver y toca <b>Volver a esta versión</b>.','Confirma con <b>Sí, volver</b>. Lo que tenías se guarda como «Antes de restaurar».','Si cambias de opinión, toca <b>Deshacer</b> en el aviso.'],x:'Una vez al mes, descarga también una «copia completa» y guárdala en tu Drive o tu correo.'}
+  };
+  const tabs=[...document.querySelectorAll('[role=tab]')];
+  function showT(k,focus){const t=T[k];if(!t)return;
+    tabs.forEach(b=>{const on=b.dataset.t===k;b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;if(on){$('tp').setAttribute('aria-labelledby',b.id);if(focus)b.focus();}});
+    $('tt').textContent=t.t;$('td').textContent=t.d;$('ts').innerHTML=t.s.map(s=>'<li><span>'+s+'</span></li>').join('');$('tx').innerHTML=t.x;
+    const i=$('ti');i.src='img/'+t.img+'.jpg';i.alt=t.alt;}
+  tabs.forEach((b,n)=>{b.addEventListener('click',()=>showT(b.dataset.t));
+    b.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const j=(n+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;showT(tabs[j].dataset.t,true);}});});
+  /* Lista de espera (demo: todavía no se envía a ningún lado) */
+  $('wf').addEventListener('submit',e=>{e.preventDefault();const n=$('w-n').value.trim(),em=$('w-e').value.trim();
+    if(!n||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){$('w-x').textContent=!n?'Escribe tu nombre.':'Revisa tu correo, parece incompleto.';return;}
+    $('w-x').textContent='';const ok=$('w-ok'),btn=$('w-b');btn.disabled=true;btn.textContent='Enviando…';
+    const done=m=>{ok.hidden=false;ok.textContent=m;btn.textContent='Listo';};
+    fetch('https://lmjhlghwthydpeismulb.supabase.co/rest/v1/lista_espera',{method:'POST',headers:{'Content-Type':'application/json',apikey:'sb_publishable_Chi2CqOxqdL_15IggSgUZA_09aZ4XEf',Authorization:'Bearer sb_publishable_Chi2CqOxqdL_15IggSgUZA_09aZ4XEf',Prefer:'return=minimal'},body:JSON.stringify({nombre:n.slice(0,80),correo:em.toLowerCase(),hoy:$('w-h').value||null})})
+    .then(r=>{if(r.ok)done('Listo, '+n+'. Quedaste en la lista de la beta: te escribiremos a '+em+' cuando abramos.');else if(r.status===409)done('Ese correo ya estaba en la lista. No necesitas hacer nada más, te avisaremos.');else throw new Error(r.status);})
+    .catch(()=>{btn.disabled=false;btn.textContent='Quiero entrar a la beta';$('w-x').textContent='No pude guardarte ahora. Revisa tu conexión e inténtalo de nuevo.';});});
+})();
+</script>
