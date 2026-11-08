@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cuadra · Legal</title>
+<meta name="robots" content="index,follow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#f7f9f8;--surface:#fff;--ink:#14201b;--muted:#5a6a63;--line:#dde5e1;--accent:#047857;--on-accent:#fff;--soft:#e8f3ee;--warn-bg:#fff7e6;--warn-line:#f0d9a8;--warn-ink:#6b4a00;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1714;--surface:#16211c;--ink:#e8f0ec;--muted:#9bb0a6;--line:#27382f;--accent:#34d399;--on-accent:#06281c;--soft:#173226;--warn-bg:#2a2412;--warn-line:#5a4a1c;--warn-ink:#f0d9a0;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1714;--surface:#16211c;--ink:#e8f0ec;--muted:#9bb0a6;--line:#27382f;--accent:#34d399;--on-accent:#06281c;--soft:#173226;--warn-bg:#2a2412;--warn-line:#5a4a1c;--warn-ink:#f0d9a0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 56px}
+.w{max-width:760px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:18px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;color:var(--ink);text-decoration:none}
+.logo{width:32px;height:32px;border-radius:9px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font:600 13px ui-monospace,Menlo,monospace}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tools button,.tools a{font:inherit;font-size:14px;min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;text-decoration:none}
+.tools button[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.tabs{display:flex;gap:6px;margin:8px 0 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tabs a{padding:12px 14px;color:var(--muted);text-decoration:none;font-weight:600;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tabs a[aria-current="true"]{color:var(--ink);border-color:var(--accent)}
+h1{font-size:clamp(26px,5vw,34px);line-height:1.2;margin:8px 0 6px;text-wrap:balance}
+h2{font-size:19px;margin:30px 0 6px;text-wrap:balance}
+p,li{max-width:68ch}
+.meta{color:var(--muted);font-size:14px;margin:0 0 18px}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-ink);border-radius:12px;padding:12px 14px;font-size:14px;margin:16px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 20px 20px}
+ul{padding-left:20px}li{margin:4px 0}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted);font-weight:600}
+.tw{overflow-x:auto}
+a{color:var(--accent)}
+.ph{background:var(--soft);padding:0 5px;border-radius:5px;font-weight:600}
+[data-l]{display:none}
+html[data-lang="es"] [data-l="es"],html[data-lang="en"] [data-l="en"]{display:block}
+html[data-lang="es"] span[data-l="es"],html[data-lang="en"] span[data-l="en"]{display:inline}
+html[data-lang="es"] a[data-l="es"],html[data-lang="en"] a[data-l="en"]{display:inline-flex}
+html[data-lang="es"] .tools button[data-l="es"],html[data-lang="en"] .tools button[data-l="en"]{display:inline-flex}
+section[hidden]{display:none!important}
+footer{margin-top:36px;color:var(--muted);font-size:13px}
+@media (max-width:480px){.card{padding:4px 14px 16px}}
+</style>
+</head>
+<body>
+<div class="w">
+<header>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true">S/</span>Cuadra</a>
+  <div class="tools">
+    <a href="index.html"><span data-l="es">Volver a la app</span><span data-l="en">Back to the app</span></a>
+    <button type="button" id="l-es" aria-pressed="true">Español</button>
+    <button type="button" id="l-en" aria-pressed="false">English</button>
+  </div>
+</header>
+<nav class="tabs" aria-label="Legal">
+  <a href="#privacidad" id="t-p"><span data-l="es">Política de privacidad</span><span data-l="en">Privacy Policy</span></a>
+  <a href="#terminos" id="t-t"><span data-l="es">Términos de uso</span><span data-l="en">Terms of Use</span></a>
+</nav>
+
+<!-- ============ PRIVACIDAD ============ -->
+<section id="s-privacidad" class="card">
+<div data-l="es">
+<h1>Política de privacidad</h1>
+<p class="meta">Última actualización: <span class="ph">[fecha de publicación]</span></p>
+<div class="note">Borrador de trabajo. Antes de lanzar, completa los datos entre corchetes y pide que lo revise un abogado.</div>
+
+<h2>1. Quién es responsable de tus datos</h2>
+<p>El titular del banco de datos y responsable del tratamiento es <span class="ph">[tu nombre completo o razón social]</span> (en adelante, «Cuadra», «nosotros»), con domicilio en Lima, Perú. Contacto: <span class="ph">[correo de contacto]</span>.</p>
+
+<h2>2. Qué datos recogemos</h2>
+<ul>
+<li><b>Cuenta:</b> tu correo electrónico y tu contraseña. La contraseña se guarda cifrada (hash) por el proveedor de autenticación; nosotros no podemos verla.</li>
+<li><b>Lo que registras tú:</b> ingresos, gastos, ahorros, inversiones, tarjetas, metas, nombres de tus cuentas y configuración de la app.</li>
+<li><b>Copias automáticas:</b> una versión diaria de tus datos, durante 30 días, para que puedas volver atrás si algo sale mal.</li>
+<li><b>Datos técnicos:</b> dirección IP y registros básicos de acceso que generan los servidores que usamos.</li>
+</ul>
+<p>No pedimos ni guardamos claves de bancos, números de tarjeta ni números de cuenta completos, y Cuadra no se conecta a tus bancos. Lo que escribas en los campos de texto (por ejemplo, el nombre de una cuenta) depende de ti.</p>
+
+<h2>3. Para qué los usamos</h2>
+<ul>
+<li>Darte acceso a tu cuenta y mostrarte tus finanzas en cualquier dispositivo.</li>
+<li>Guardar y restaurar tus datos, y generar tus reportes en PDF o Excel.</li>
+<li>Mantener la seguridad del servicio y prevenir abusos.</li>
+<li>Responder tus consultas y avisarte de cambios importantes del servicio.</li>
+</ul>
+<p>No vendemos tus datos, no los usamos para publicidad y no los compartimos con terceros con fines comerciales.</p>
+
+<h2>4. Con quién compartimos datos (encargados)</h2>
+<div class="tw"><table>
+<tr><th>Proveedor</th><th>Para qué</th></tr>
+<tr><td>Supabase</td><td>Base de datos y autenticación donde se guardan tu cuenta y tus datos.</td></tr>
+<tr><td>GitHub Pages</td><td>Aloja la página de la app. Puede registrar tu IP al servirla.</td></tr>
+<tr><td>jsDelivr, cdnjs, Google Fonts</td><td>Entregan librerías y tipografías. Reciben tu IP al cargarlas, no tus datos financieros.</td></tr>
+<tr><td>Fuentes de tipo de cambio (SUNAT y servicios públicos)</td><td>Consultan el tipo de cambio. No reciben tus datos personales.</td></tr>
+</table></div>
+<p>Algunos de estos proveedores tienen servidores fuera del Perú, por lo que tus datos pueden transferirse al extranjero con medidas de seguridad adecuadas.</p>
+
+<h2>5. Cuánto tiempo los conservamos</h2>
+<p>Mientras tengas tu cuenta. Si la eliminas desde la app (Personalizar → Tus datos → Eliminar mi cuenta), se borran tus datos y tus versiones guardadas. Los registros técnicos de los proveedores pueden conservarse por un tiempo corto según sus propias políticas.</p>
+
+<h2>6. Tus derechos</h2>
+<p>Según la Ley N.° 29733, Ley de Protección de Datos Personales, y su reglamento, puedes pedir acceso, rectificación, cancelación y oposición sobre tus datos, y revocar tu consentimiento. Puedes descargar una copia completa de tus datos y eliminar tu cuenta tú mismo desde la app. Para cualquier otro pedido escríbenos a <span class="ph">[correo de contacto]</span> y respondemos dentro de los plazos legales. También puedes acudir a la Autoridad Nacional de Protección de Datos Personales.</p>
+
+<h2>7. Seguridad</h2>
+<p>Usamos conexión cifrada (HTTPS) y reglas de acceso por usuario en la base de datos, de modo que cada cuenta solo puede leer sus propios datos. Ningún sistema es 100% infalible: elige una contraseña larga y que no uses en otro sitio.</p>
+
+<h2>8. Almacenamiento en tu dispositivo</h2>
+<p>La app guarda en tu navegador una copia de tus datos y tus preferencias (como el idioma y el tema) para funcionar sin conexión. No usamos cookies de seguimiento ni herramientas de analítica de terceros.</p>
+
+<h2>9. Menores de edad</h2>
+<p>Cuadra está pensada para mayores de 18 años. Si eres menor, usa la app solo con permiso de tu madre, padre o tutor.</p>
+
+<h2>10. Cambios</h2>
+<p>Si cambiamos esta política de forma importante, te avisaremos en la app o por correo antes de que aplique. La fecha de arriba indica la última versión.</p>
+</div>
+
+<div data-l="en">
+<h1>Privacy Policy</h1>
+<p class="meta">Last updated: <span class="ph">[publication date]</span></p>
+<div class="note">Working draft. Before launch, fill in the bracketed details and have a lawyer review it.</div>
+
+<h2>1. Who is responsible for your data</h2>
+<p>The data controller is <span class="ph">[your full name or company name]</span> (“Cuadra”, “we”), based in Lima, Peru. Contact: <span class="ph">[contact email]</span>.</p>
+
+<h2>2. What data we collect</h2>
+<ul>
+<li><b>Account:</b> your email address and password. The password is stored hashed by the authentication provider; we cannot see it.</li>
+<li><b>What you enter:</b> income, expenses, savings, investments, cards, goals, the names of your accounts and your app settings.</li>
+<li><b>Automatic copies:</b> one version of your data per day, kept for 30 days, so you can go back if something goes wrong.</li>
+<li><b>Technical data:</b> IP address and basic access logs generated by the servers we use.</li>
+</ul>
+<p>We do not ask for or store bank passwords, card numbers or full account numbers, and Cuadra does not connect to your banks. What you type into free-text fields (for example, an account name) is up to you.</p>
+
+<h2>3. What we use it for</h2>
+<ul>
+<li>Giving you access to your account and showing your finances on any device.</li>
+<li>Saving and restoring your data and generating your PDF or Excel reports.</li>
+<li>Keeping the service secure and preventing abuse.</li>
+<li>Answering your questions and notifying you of important service changes.</li>
+</ul>
+<p>We do not sell your data, we do not use it for advertising and we do not share it with third parties for commercial purposes.</p>
+
+<h2>4. Who we share data with (processors)</h2>
+<div class="tw"><table>
+<tr><th>Provider</th><th>Purpose</th></tr>
+<tr><td>Supabase</td><td>Database and authentication where your account and data are stored.</td></tr>
+<tr><td>GitHub Pages</td><td>Hosts the app page. May log your IP when serving it.</td></tr>
+<tr><td>jsDelivr, cdnjs, Google Fonts</td><td>Deliver libraries and fonts. They receive your IP when loading them, not your financial data.</td></tr>
+<tr><td>Exchange-rate sources (SUNAT and public services)</td><td>Provide the exchange rate. They do not receive your personal data.</td></tr>
+</table></div>
+<p>Some of these providers have servers outside Peru, so your data may be transferred abroad with appropriate security measures.</p>
+
+<h2>5. How long we keep it</h2>
+<p>For as long as you have your account. If you delete it from the app (Customize → Your data → Delete my account), your data and saved versions are erased. Providers' technical logs may be kept for a short time under their own policies.</p>
+
+<h2>6. Your rights</h2>
+<p>Under Peru's Personal Data Protection Law (Law No. 29733) and its regulations, you may request access, rectification, cancellation and objection regarding your data, and withdraw your consent. You can download a full copy of your data and delete your account yourself from the app. For anything else, write to <span class="ph">[contact email]</span> and we will reply within the legal deadlines. You may also contact Peru's National Authority for Personal Data Protection.</p>
+
+<h2>7. Security</h2>
+<p>We use encrypted connections (HTTPS) and per-user access rules in the database, so each account can only read its own data. No system is 100% infallible: choose a long password that you don't use anywhere else.</p>
+
+<h2>8. Storage on your device</h2>
+<p>The app keeps a copy of your data and your preferences (such as language and theme) in your browser so it can work offline. We do not use tracking cookies or third-party analytics tools.</p>
+
+<h2>9. Minors</h2>
+<p>Cuadra is intended for people aged 18 or over. If you are under 18, use the app only with the permission of a parent or guardian.</p>
+
+<h2>10. Changes</h2>
+<p>If we make a significant change to this policy, we will tell you in the app or by email before it applies. The date above shows the latest version.</p>
+</div>
+</section>
+
+<!-- ============ TÉRMINOS ============ -->
+<section id="s-terminos" class="card" hidden>
+<div data-l="es">
+<h1>Términos de uso</h1>
+<p class="meta">Última actualización: <span class="ph">[fecha de publicación]</span></p>
+<div class="note">Borrador de trabajo. Antes de lanzar, completa los datos entre corchetes y pide que lo revise un abogado.</div>
+
+<h2>1. Qué es Cuadra</h2>
+<p>Cuadra es una herramienta web para registrar y visualizar tus finanzas personales: ingresos, gastos, ahorros, tarjetas y metas. Es una herramienta de organización, no una entidad financiera.</p>
+
+<h2>2. Aceptación</h2>
+<p>Al crear una cuenta o usar Cuadra aceptas estos términos y la Política de privacidad. Si no estás de acuerdo, no uses el servicio.</p>
+
+<h2>3. Tu cuenta</h2>
+<ul>
+<li>Debes tener 18 años o más.</li>
+<li>Eres responsable de tu contraseña y de lo que ocurra con tu cuenta. Avísanos si sospechas un acceso no autorizado.</li>
+<li>Una cuenta es para una persona. No la compartas ni la revendas.</li>
+</ul>
+
+<h2>4. No es asesoría financiera</h2>
+<p>La información, los cálculos y las sugerencias de Cuadra (por ejemplo, el objetivo del fondo de emergencia o las ganancias estimadas) son orientativos. No constituyen asesoría financiera, legal, tributaria ni de inversión. Para decisiones importantes consulta a un profesional certificado.</p>
+
+<h2>5. Tus datos y su exactitud</h2>
+<p>Los datos son tuyos. Los cálculos dependen de lo que registres, y los tipos de cambio provienen de fuentes públicas y pueden diferir de los de tu banco. Revisa siempre tus cifras antes de usarlas para decidir o presentarlas a terceros. Los reportes los genera el titular a partir de sus propios registros y no son documentos emitidos por una entidad financiera.</p>
+
+<h2>6. Uso aceptable</h2>
+<p>No puedes usar Cuadra para actividades ilegales, intentar acceder a datos de otras personas, sobrecargar o vulnerar el servicio, ni copiarlo o revenderlo sin permiso.</p>
+
+<h2>7. Planes y pagos</h2>
+<p>Cuadra puede ofrecer un plan gratuito y planes de pago. Si cambiamos lo que incluye cada plan o sus precios, te avisaremos con anticipación razonable. Las condiciones de cobro, renovación y devolución se indicarán claramente antes de que pagues.</p>
+
+<h2>8. Disponibilidad</h2>
+<p>Hacemos lo posible para que el servicio funcione de forma continua, pero se ofrece «tal cual» y puede tener interrupciones, errores o cambios. Te recomendamos descargar una copia de tus datos de vez en cuando desde la app.</p>
+
+<h2>9. Limitación de responsabilidad</h2>
+<p>En la medida permitida por la ley, Cuadra no responde por pérdidas indirectas ni por decisiones tomadas con base en la información de la app. Nada en estos términos limita derechos que la ley peruana reconoce a los consumidores.</p>
+
+<h2>10. Propiedad intelectual</h2>
+<p>La app, su diseño y su código pertenecen a su titular. Tú conservas todos los derechos sobre tus datos y nos das permiso solo para almacenarlos y procesarlos para prestarte el servicio.</p>
+
+<h2>11. Terminación</h2>
+<p>Puedes eliminar tu cuenta cuando quieras desde la app. Podemos suspender o cerrar cuentas que incumplan estos términos o pongan en riesgo el servicio.</p>
+
+<h2>12. Cambios, ley aplicable y contacto</h2>
+<p>Podemos actualizar estos términos y te avisaremos de los cambios importantes. Se rigen por las leyes del Perú, y cualquier controversia se someterá a los jueces y tribunales de Lima, sin perjuicio de tus derechos como consumidor. Contacto: <span class="ph">[correo de contacto]</span>.</p>
+</div>
+
+<div data-l="en">
+<h1>Terms of Use</h1>
+<p class="meta">Last updated: <span class="ph">[publication date]</span></p>
+<div class="note">Working draft. Before launch, fill in the bracketed details and have a lawyer review it.</div>
+
+<h2>1. What Cuadra is</h2>
+<p>Cuadra is a web tool for recording and visualizing your personal finances: income, expenses, savings, cards and goals. It is an organization tool, not a financial institution.</p>
+
+<h2>2. Acceptance</h2>
+<p>By creating an account or using Cuadra you accept these terms and the Privacy Policy. If you do not agree, do not use the service.</p>
+
+<h2>3. Your account</h2>
+<ul>
+<li>You must be 18 or older.</li>
+<li>You are responsible for your password and for what happens in your account. Tell us if you suspect unauthorized access.</li>
+<li>An account is for one person. Do not share or resell it.</li>
+</ul>
+
+<h2>4. Not financial advice</h2>
+<p>The information, calculations and suggestions in Cuadra (for example, the emergency fund target or estimated earnings) are for guidance only. They are not financial, legal, tax or investment advice. For important decisions, consult a certified professional.</p>
+
+<h2>5. Your data and its accuracy</h2>
+<p>The data is yours. Calculations depend on what you enter, and exchange rates come from public sources and may differ from your bank's. Always check your figures before using them to decide or to show to third parties. Reports are prepared by the holder from their own records and are not documents issued by a financial institution.</p>
+
+<h2>6. Acceptable use</h2>
+<p>You may not use Cuadra for illegal activities, try to access other people's data, overload or compromise the service, or copy or resell it without permission.</p>
+
+<h2>7. Plans and payments</h2>
+<p>Cuadra may offer a free plan and paid plans. If we change what each plan includes or its prices, we will give you reasonable notice. Billing, renewal and refund terms will be clearly shown before you pay.</p>
+
+<h2>8. Availability</h2>
+<p>We do our best to keep the service running, but it is provided “as is” and may have interruptions, errors or changes. We recommend downloading a copy of your data from the app from time to time.</p>
+
+<h2>9. Limitation of liability</h2>
+<p>To the extent permitted by law, Cuadra is not liable for indirect losses or for decisions made based on the information in the app. Nothing in these terms limits rights that Peruvian law gives to consumers.</p>
+
+<h2>10. Intellectual property</h2>
+<p>The app, its design and its code belong to its owner. You keep all rights to your data and grant us permission only to store and process it to provide the service to you.</p>
+
+<h2>11. Termination</h2>
+<p>You can delete your account at any time from the app. We may suspend or close accounts that breach these terms or put the service at risk.</p>
+
+<h2>12. Changes, governing law and contact</h2>
+<p>We may update these terms and will tell you about significant changes. They are governed by the laws of Peru, and any dispute will be submitted to the courts of Lima, without prejudice to your rights as a consumer. Contact: <span class="ph">[contact email]</span>.</p>
+</div>
+</section>
+
+<footer>© 2026 Cuadra · Lima, Perú</footer>
+</div>
+<script>
+(function(){
+  var root=document.documentElement;
+  function get(){try{var q=new URLSearchParams(location.search).get('l');if(q==='en'||q==='es')return q;var s=localStorage.getItem('cuadra-lang');if(s==='en'||s==='es')return s;}catch(e){}return /^en/i.test(navigator.language||'')?'en':'es';}
+  function setL(l,save){root.setAttribute('data-lang',l);root.lang=l;
+    document.getElementById('l-es').setAttribute('aria-pressed',l==='es');document.getElementById('l-en').setAttribute('aria-pressed',l==='en');
+    document.title=l==='en'?'Cuadra · Legal':'Cuadra · Legal';
+    if(save){try{localStorage.setItem('cuadra-lang',l);}catch(e){}}}
+  function route(){var h=location.hash==='#terminos'?'terminos':'privacidad';
+    document.getElementById("s-privacidad").hidden=h!=='privacidad';document.getElementById("s-terminos").hidden=h!=='terminos';
+    document.getElementById('t-p').setAttribute('aria-current',h==='privacidad');document.getElementById('t-t').setAttribute('aria-current',h==='terminos');}
+  document.getElementById('l-es').onclick=function(){setL('es',true)};document.getElementById('l-en').onclick=function(){setL('en',true)};
+  addEventListener('hashchange',route);setL(get(),false);route();
+})();
+</script>
+</body>
+</html>
