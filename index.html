@@ -461,6 +461,8 @@ h1{letter-spacing:-.03em}
 .authbox .b{height:44px}
 .authbox .err{min-height:16px}
 .authbox .err.err{color:var(--bad)}
+.lnk{background:none;border:none;color:var(--accent);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline;min-height:44px;padding:0 8px}
+.danger{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:10px 12px}.danger summary{cursor:pointer;font-weight:600;color:var(--bad);min-height:28px;display:flex;align-items:center}.danger[open]{border-color:var(--bad)}.danger .fld,.danger .b{margin-top:10px}.b.dng{border-color:var(--bad);color:var(--bad)}.b.dng:disabled{opacity:.5;cursor:not-allowed}
 
 .metarow{margin-bottom:14px}
 .metarow:last-child{margin-bottom:0}
@@ -864,6 +866,7 @@ function viewResumen(){
     ${IS_SB?`<div class="gs"><h3>Tu cuenta</h3>
       <div class="ms">${sbUser?'Conectado como '+esc(sbUser.email||'tu cuenta')+'. ':''}Tus datos se guardan en tu base de datos privada, protegida con tu inicio de sesión. Solo tú puedes verlos.</div>
       <div class="qa"><button class="b" id="sb-logout" type="button">Cerrar sesión</button></div>
+      <details class="danger"><summary>Eliminar mi cuenta</summary><p class="ms">Se borran para siempre tus datos y tus versiones guardadas. Antes, descarga tu copia o tus reportes si los necesitas. No se puede deshacer.</p><label class="fld">Escribe ELIMINAR para confirmar<input id="del-txt" type="text" autocomplete="off" autocapitalize="characters"></label><button class="b dng" id="del-go" type="button" disabled>Eliminar para siempre</button><div class="ms err" id="del-msg" role="status"></div></details>
       <label class="chk"><input type="checkbox" id="gs-auto" data-gs="auto"${sync.auto?' checked':''}> Guardar automáticamente</label>
       <div class="qa"><button class="b" id="gs-load" type="button">Recargar mis datos</button><button class="b" id="gs-push" type="button">Guardar todo ahora</button></div>
       <div class="ms" id="gs-msg" role="status">${esc(sync.msg||'')}</div>
@@ -1588,15 +1591,71 @@ const supabaseBackend={name:'sb',
   write:async(rows,conf3)=>{const stamp=((conf3.find(x=>x[0]==='guardado')||[])[1])||('v'+Date.now());const r=await sb.from('estado').upsert({user_id:sbUser.id,registro:rows,config:conf3,stamp,updated_at:new Date().toISOString()});if(r.error)throw{code:'tool_error',message:r.error.message};}};
 function initSupabase(){
   try{sb=supabase.createClient(SB_URL,SB_KEY);}catch(e){return;}
-  sb.auth.getSession().then(({data})=>{if(data&&data.session)sbReady(data.session);else showAuth();});
-  sb.auth.onAuthStateChange((_e,session)=>{if(session){if(!sbUser)sbReady(session);}else{sbUser=null;backend=null;showAuth();}});
+  recovering=/[#&]type=recovery/.test(location.hash);
+  sb.auth.getSession().then(({data})=>{if(data&&data.session){if(recovering)showRecover();else sbReady(data.session);}else showAuth();});
+  sb.auth.onAuthStateChange((_e,session)=>{if(_e==='PASSWORD_RECOVERY'){recovering=true;showRecover();return;}if(session){if(!sbUser&&!recovering)sbReady(session);}else{sbUser=null;backend=null;if(!recovering)showAuth();}});
 }
+
+let recovering=false;
+const sbErr=m=>{m=String(m||'');
+  if(/invalid login credentials/i.test(m))return 'Correo o contraseña incorrectos.';
+  if(/email not confirmed/i.test(m))return 'Falta confirmar tu correo. Revisa tu bandeja y vuelve a entrar.';
+  if(/already registered|already been registered/i.test(m))return 'Ese correo ya tiene cuenta. Entra o recupera tu contraseña.';
+  if(/weak|pwned|easy to guess|compromised|known to be/i.test(m))return 'Esa contraseña es muy común o apareció en filtraciones. Elige otra más larga.';
+  if(/rate limit|too many|security purposes/i.test(m))return 'Demasiados intentos. Espera un minuto y vuelve a probar.';
+  if(/password should be at least/i.test(m))return 'La contraseña debe tener al menos 8 caracteres.';
+  return m;};
+async function sbForgot(email,msgEl,btn){
+  if(!sb)return;msgEl.className='ms err';
+  if(!email){msgEl.textContent='Escribe tu correo arriba y vuelve a tocar aquí.';return;}
+  if(btn)btn.disabled=true;
+  try{const r=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+    if(r.error&&/rate limit|too many|security purposes/i.test(r.error.message||'')){msgEl.textContent=sbErr(r.error.message);return;}
+    msgEl.className='ms';msgEl.textContent='Si ese correo tiene cuenta, te enviamos un enlace para crear una contraseña nueva. Revisa también tu spam.';
+  }catch(e){msgEl.textContent='No se pudo conectar. Revisa tu internet.';}
+  finally{if(btn)btn.disabled=false;}
+}
+function showRecover(){
+  hideAuth();
+  const bg=document.createElement('div');bg.id='authbg';bg.className='authbg';
+  bg.innerHTML=`<form class="authbox" id="rcbox" novalidate><div class="authlogo" aria-hidden="true">S/</div><h2>Crea tu contraseña nueva</h2><p class="ms">Elige una contraseña de 8 caracteres o más que no uses en otro sitio.</p>
+    <label class="fld">Contraseña nueva<input type="password" id="rc-p1" autocomplete="new-password" minlength="8" required></label>
+    <label class="fld">Repítela<input type="password" id="rc-p2" autocomplete="new-password" minlength="8" required></label>
+    <div class="ms err" id="rc-msg" role="status"></div>
+    <button class="b p" type="submit" id="rc-go">Guardar contraseña</button></form>`;
+  document.body.appendChild(bg);
+  const g=id=>document.getElementById(id);
+  g('rcbox').addEventListener('submit',async e=>{e.preventDefault();
+    const p1=g('rc-p1').value,p2=g('rc-p2').value,msg=g('rc-msg');msg.className='ms err';
+    if(p1.length<8){msg.textContent='Usa 8 caracteres o más.';return;}
+    if(p1!==p2){msg.textContent='Las dos contraseñas no coinciden.';return;}
+    g('rc-go').disabled=true;
+    try{const r=await sb.auth.updateUser({password:p1});
+      if(r.error){msg.textContent=sbErr(r.error.message);g('rc-go').disabled=false;return;}
+      recovering=false;try{history.replaceState(null,'',location.pathname+location.search);}catch(_){}
+      const s=await sb.auth.getSession();if(s&&s.data&&s.data.session)sbReady(s.data.session);else{hideAuth();showAuth();}
+    }catch(er){msg.textContent='No se pudo conectar. Revisa tu internet.';g('rc-go').disabled=false;}
+  });
+  g('rc-p1').focus();
+}
+async function sbDelete(btn){
+  const msg=document.getElementById('del-msg');if(!sb||!sbUser||!msg)return;
+  msg.className='ms err';btn.disabled=true;msg.textContent='Eliminando…';
+  try{
+    const r=await sb.rpc('delete_my_account');
+    if(r.error){msg.textContent='No se pudo eliminar tu cuenta. Inténtalo de nuevo en un momento.';btn.disabled=false;return;}
+    try{await sb.auth.signOut();}catch(e){}
+    try{Object.keys(localStorage).filter(k=>k.indexOf('mis-finanzas')===0).forEach(k=>localStorage.removeItem(k));}catch(e){}
+    location.reload();
+  }catch(e){msg.textContent='No se pudo conectar. Revisa tu internet.';btn.disabled=false;}
+}
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='del-txt'){const b=document.getElementById('del-go');if(b)b.disabled=e.target.value.trim().toUpperCase()!=='ELIMINAR';}});
 function sbReady(session){sbUser=session.user;backend=supabaseBackend;sync.connected=true;hideAuth();updateChip();loadFromSheet(true);}
 async function sbAuth(mode,email,pass,msgEl,btn){
   if(!sb)return;msgEl.className='ms err';msgEl.textContent='';if(btn)btn.disabled=true;
   try{
     const r=mode==='signup'?await sb.auth.signUp({email,password:pass}):await sb.auth.signInWithPassword({email,password:pass});
-    if(r.error){msgEl.textContent=r.error.message;return;}
+    if(r.error){msgEl.textContent=sbErr(r.error.message);return;}
     if(mode==='signup'&&r.data&&!r.data.session){msgEl.className='ms';msgEl.textContent='Cuenta creada. Si te pide confirmar el correo, revísalo; luego entra.';}
   }catch(e){msgEl.textContent='No se pudo conectar. Revisa tu internet.';}
   finally{if(btn)btn.disabled=false;}
@@ -1606,14 +1665,15 @@ function showAuth(){
   const bg=document.createElement('div');bg.id='authbg';bg.className='authbg';
   bg.innerHTML=`<form class="authbox" id="authbox" novalidate><div class="authlogo" aria-hidden="true">S/</div><h2>Plantilla de Finanzas</h2><p class="ms">Entra con tu cuenta para ver tus finanzas en cualquier dispositivo.</p>
     <label class="fld">Correo<input type="email" id="au-email" autocomplete="username" required></label>
-    <label class="fld">Contraseña<input type="password" id="au-pass" autocomplete="current-password" required minlength="6"></label>
+    <label class="fld">Contraseña<input type="password" id="au-pass" autocomplete="current-password" required></label>
     <div class="ms err" id="au-msg" role="status"></div>
     <button class="b p" type="submit" id="au-in">Entrar</button>
-    <button class="b" type="button" id="au-up">Crear cuenta</button></form>`;
+    <button class="b" type="button" id="au-up">Crear cuenta</button><button class="lnk" type="button" id="au-fp">¿Olvidaste tu contraseña?</button></form>`;
   document.body.appendChild(bg);
   const g=id=>document.getElementById(id);
   g('authbox').addEventListener('submit',e=>{e.preventDefault();sbAuth('signin',g('au-email').value.trim(),g('au-pass').value,g('au-msg'),g('au-in'));});
-  g('au-up').addEventListener('click',()=>{const em=g('au-email').value.trim(),pw=g('au-pass').value;if(!em||pw.length<6){g('au-msg').textContent='Escribe tu correo y una contraseña de 6+ caracteres.';return;}sbAuth('signup',em,pw,g('au-msg'),g('au-up'));});
+  g('au-up').addEventListener('click',()=>{const em=g('au-email').value.trim(),pw=g('au-pass').value;if(!em||pw.length<8){g('au-msg').textContent='Escribe tu correo y una contraseña de 8 caracteres o más.';return;}sbAuth('signup',em,pw,g('au-msg'),g('au-up'));});
+  g('au-fp').addEventListener('click',()=>sbForgot(g('au-email').value.trim(),g('au-msg'),g('au-fp')));
   g('au-email').focus();
 }
 function hideAuth(){const e=document.getElementById('authbg');if(e)e.remove();}
@@ -2281,6 +2341,7 @@ app.addEventListener('click',e=>{
   if(b.id==='bk-csv'){saveFile('mis-finanzas-movimientos-'+BK()+'.csv','\ufeff'+[REGHEAD].concat(toRows()).map(r=>r.map(csvCell).join(',')).join('\n'));return;}
   if(b.id==='bk-load'){document.getElementById('bk-file').click();return;}
   if(b.id==='sb-logout'){sbLogout();return;}
+  if(b.id==='del-go'){sbDelete(b);return;}
   if(b.id==='fx-now'||b.id==='tcm-sunat'){fxUpdate(true);return;}
   if(b.id==='gs-load'){loadFromSheet();return;}
   if(b.id==='gs-push'){pushNow(true);return;}
