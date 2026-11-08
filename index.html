@@ -59,7 +59,7 @@ select,.ctl button{height:34px;border:1px solid var(--line);background:var(--sur
 .tabs{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
 .tab{flex:none;padding:6px 12px;border-radius:8px;font-weight:500;font-size:13px;color:var(--muted)}
 @media (hover:hover) and (pointer:fine){.tab:hover{background:var(--surface-2);color:var(--ink)}}
-.tab.off{opacity:.55}
+.tab.off{opacity:.7}
 .tab[aria-current="page"]{background:var(--accent);color:var(--on-accent);opacity:1}
 
 main{padding-block:22px 48px}
@@ -107,9 +107,9 @@ h2{font:600 15px var(--font-display);margin:0}
 .meter{height:12px;border-radius:6px;background:var(--surface-2);overflow:hidden;border:1px solid var(--line)}
 .meter div{height:100%;background:var(--c-aho);border-radius:6px}
 .hm7{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:36px;gap:4px;align-content:start}
-.hmhead{text-align:center;font-size:11px;color:var(--muted);padding-bottom:2px}
+.hmhead{text-align:center;font-size:12px;color:var(--muted);padding-bottom:2px}
 .hmcell{height:36px;border-radius:7px;border:1px solid var(--line);display:grid;place-items:center}
-.hmcell span{font-size:11px;color:var(--muted)}
+.hmcell span{font-size:12px;color:var(--muted)}
 .hmcell.on span{color:var(--fg);font-weight:600}
 .hmcell.empty{border:none;background:transparent!important}
 .cfg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px}
@@ -136,8 +136,8 @@ button.b.p{background:var(--accent);color:var(--on-accent);border-color:transpar
 .sh.solid i{display:none}
 .tb{overflow-x:auto;padding:12px 14px 6px}
 .rw{display:grid;gap:6px;align-items:center;margin-bottom:6px;min-width:330px}
-.rw.lb{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-.x{width:22px;height:28px;border:none;background:none;color:var(--muted);cursor:pointer;border-radius:6px;font-size:14px;padding:0}
+.rw.lb{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.x .ic{display:block;margin:auto;pointer-events:none}.x{width:22px;height:28px;border:none;background:none;color:var(--muted);cursor:pointer;border-radius:6px;font-size:14px;padding:0}
 @media (hover:hover) and (pointer:fine){.x:hover{color:var(--bad)}}
 .add{margin:0 14px 12px;height:30px;font-size:12px}
 .tot{display:flex;justify-content:space-between;gap:8px;padding:10px 14px;border-top:1px solid var(--line);font-weight:600;background:var(--surface-2)}
@@ -225,7 +225,7 @@ body.edit .cb h2.ttl{padding-right:76px}
 .cpb{display:flex;gap:var(--sp-2)}
 .cpb .b{flex:1}
 
-.eh{height:26px!important;font-size:11px!important;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)!important;padding:0 6px!important}
+.eh{height:26px!important;font-size:12px!important;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)!important;padding:0 6px!important}
 .tb textarea{width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:var(--r-sm);padding:var(--sp-2);font:inherit;color:var(--ink);resize:vertical;margin-top:var(--sp-2)}
 .pr .l .pill{flex:none}
 
@@ -289,7 +289,7 @@ header{background:color-mix(in srgb,var(--surface) 86%,transparent);backdrop-fil
 .hero-v{font-size:46px;letter-spacing:-.02em}
 .kpi{padding:14px 14px 14px 20px;border-radius:var(--r-md)}
 .kpi::before{left:0;top:14px;bottom:14px;width:4px;height:auto;border-radius:0 4px 4px 0}
-.kl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:500}
+.kl{font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:500}
 .kv{font-size:22px;margin-top:4px}
 .sh{padding:12px 16px;gap:10px}
 .sh i{width:22px;height:22px;border-radius:7px;background:color-mix(in srgb,var(--h) 28%,transparent);display:grid;place-items:center}
@@ -377,7 +377,7 @@ h1{font-weight:700}
 .cd{font-size:12px;text-align:right}.cd.ok{color:var(--ok)}.cd.bad{color:var(--bad)}
 @media (max-width:520px){.cr{grid-template-columns:1fr 100px}.cd{grid-column:1/-1;text-align:left}}
 
-.caplink{display:inline-flex;align-items:center;height:34px;padding:0 12px;border-radius:8px;background:var(--accent);color:#fff;text-decoration:none;font-size:13px;font-weight:600}
+.caplink{display:inline-flex;align-items:center;height:34px;padding:0 12px;border-radius:8px;background:var(--accent);color:var(--on-accent);text-decoration:none;font-size:13px;font-weight:600}
 @media (hover:hover) and (pointer:fine){.caplink:hover{filter:brightness(1.05)}}
 .cap-wrap{max-width:560px;margin:0 auto;display:grid;gap:var(--sp-3);padding-top:var(--sp-2)}
 .cap-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
@@ -385,7 +385,7 @@ h1{font-weight:700}
 .cap-link{color:var(--accent);font-size:13px;text-decoration:none;white-space:nowrap}
 .cap-big{font-family:var(--font-num);font-weight:600;font-size:clamp(40px,13vw,64px);line-height:1;letter-spacing:-.02em}
 .cap-big.neg{color:var(--bad)}
-.cap-btn{height:60px;border:none;border-radius:16px;background:var(--accent);color:#fff;font:600 18px var(--font-body,inherit);cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.14)}
+.cap-btn{height:60px;border:none;border-radius:16px;background:var(--accent);color:var(--on-accent);font:600 18px var(--font-body,inherit);cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.14)}
 .cap-btn:active{transform:scale(.98)}
 .cap-liq{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
 .cap-liq b{font-family:var(--font-num)}
@@ -396,7 +396,7 @@ h1{font-weight:700}
 .cap-r b{font-family:var(--font-num);white-space:nowrap}.cap-r b.g{color:var(--bad)}
 .cap-tip{text-align:center}
 
-.cbadge{margin-left:auto;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 8px}
+.cbadge{margin-left:auto;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 8px}
 .cardtop{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:2px 0 8px}
 .carddebt,.cardav{font-family:var(--font-num);font-weight:600;font-size:20px}
 .cardmeter{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden;margin-bottom:10px}
@@ -581,7 +581,7 @@ button,[role=button],.tab,.chip{-webkit-user-select:none;user-select:none;-webki
 .cardcfg summary{cursor:pointer;font-size:12.5px;color:var(--muted);padding:6px 0;list-style-position:inside}
 .carddebt{color:var(--ink)}
 .cap-r b.g{color:var(--ink)}
-.mvk{font-size:11.5px;color:var(--muted);margin-top:4px}
+.mvk{font-size:12px;color:var(--muted);margin-top:4px}
 .cbadge{font-size:11px}
 .tab.off{opacity:.78}
 [data-cid=oh] .sh.solid{background:color-mix(in srgb,var(--h) 78%,#000)}
@@ -908,7 +908,7 @@ const catSel=(s,i,v)=>`<select class="f" id="${s}-${i}-k" data-s="${s}" data-i="
 const del=(s,i)=>`<button type="button" class="x" data-del="${s}" data-i="${i}" aria-label="Quitar fila">×</button>`;
 const TPL={ing:'1fr 58px 90px 44px',gas:'1fr 88px 112px 58px 44px',aho:'1fr 90px 58px 44px',bnk:'1fr 100px 44px'};
 const EDITABLE=['ing','fij','hor','aho','inv'];
-const act=(s,i)=>`<div class="rwx">${EDITABLE.indexOf(s)>=0?`<button type="button" class="x ed-row" data-edit="${s}" data-i="${i}" aria-label="Editar fila" title="Editar">✎</button>`:''}<button type="button" class="x" data-del="${s}" data-i="${i}" aria-label="Quitar fila">×</button></div>`;
+const act=(s,i)=>`<div class="rwx">${EDITABLE.indexOf(s)>=0?`<button type="button" class="x ed-row" data-edit="${s}" data-i="${i}" aria-label="Editar fila" title="Editar"><svg class="ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>`:''}<button type="button" class="x" data-del="${s}" data-i="${i}" aria-label="Quitar fila">×</button></div>`;
 const HEAD={ing:['Concepto','Fecha','Monto',''],gas:['Concepto','Monto','Categoría','Fecha',''],aho:['Cuenta','Saldo','Fecha',''],bnk:['Concepto','Monto','']};
 const mInp=(s,i,r,ph)=>{const v=inp(s,i,'m',r.m,'number',ph||'0.00');return (r.cur&&r.cur!==curOf(s))?`<span class="mwrap"><b class="curb" aria-hidden="true">${r.cur}</b>${v}</span>`:v;};
 function rowsHtml(m,s,t){return m[s].map((r,i)=>{
@@ -942,7 +942,7 @@ function tasaHtml(a){
   const tz=tasaOf(a.c),k=esc(a.c);
   if(!tz)return `<button type="button" class="aa-tb" data-act="atasa" data-acct="${k}">+ Agregar TREA o TEA para ver cuánto ganas</button>`;
   const mes=ahoGana(a.v,tz,30),anio=ahoGana(a.v,tz,360);
-  return `<button type="button" class="aa-tb on" data-act="atasa" data-acct="${k}" title="Cambiar la tasa"><b>${esc(tz.t)} ${num2(tz.v)}%</b> · ganas ≈ ${fmt(mes)} al mes · ${fmt(anio)} al año ✎</button>`;
+  return `<button type="button" class="aa-tb on" data-act="atasa" data-acct="${k}" title="Cambiar la tasa"><b>${esc(tz.t)} ${num2(tz.v)}%</b> · ganas ≈ ${fmt(mes)} al mes · ${fmt(anio)} al año <svg class="ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>`;
 }
 function ahoCard(m){
   const p=ahoPos(m),y=p?p[0]:year,i=p?p[1]:0,accs=ahoAccts(y,i),ml=m.aho||[];
@@ -954,9 +954,9 @@ function ahoCard(m){
   let gm=0,ga=0,conT=0;list.forEach(a=>{const tz=tasaOf(a.c);if(tz&&a.v>0){conT++;gm+=ahoGana(a.v,tz,30);ga+=ahoGana(a.v,tz,360);}});
   const gana=conT?`<div class="ms ahogana">Con las tasas que anotaste ganarías ≈ <b>${fmt(gm)}</b> al mes y <b>${fmt(ga)}</b> al año${conT<list.length?' (solo cuentas con tasa)':''}.</div>`:'';
   const sum=parts.length?`<div class="ms ahoflow">En ${MES[i].toLowerCase()} ${parts.join(' y ')}.</div>`:'';
-  const accH=list.length?list.map(a=>`<div class="aacct"><div class="aa-h"><span class="aa-l"><b class="aa-n">${esc(a.c)}</b><button type="button" class="x aa-ed" data-act="aren" data-acct="${esc(a.c)}" aria-label="Cambiar el nombre de ${esc(a.c)}" title="Cambiar nombre">✎</button></span><b class="aa-v">${fmt(a.v)}</b></div><div class="aa-t">${tasaHtml(a)}</div></div>`).join(''):(hasLeg?'<div class="empty ahoempty">Tu saldo viene de meses que solo traían totales. Crea tus cuentas con «+ Nueva cuenta».</div>':'<div class="empty ahoempty">Todavía no tienes cuentas de ahorro. Crea la primera con «+ Nueva cuenta» y tu saldo actual.</div>');
+  const accH=list.length?list.map(a=>`<div class="aacct"><div class="aa-h"><span class="aa-l"><b class="aa-n">${esc(a.c)}</b><button type="button" class="x aa-ed" data-act="aren" data-acct="${esc(a.c)}" aria-label="Cambiar el nombre de ${esc(a.c)}" title="Cambiar nombre"><svg class="ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></span><b class="aa-v">${fmt(a.v)}</b></div><div class="aa-t">${tasaHtml(a)}</div></div>`).join(''):(hasLeg?'<div class="empty ahoempty">Tu saldo viene de meses que solo traían totales. Crea tus cuentas con «+ Nueva cuenta».</div>':'<div class="empty ahoempty">Todavía no tienes cuentas de ahorro. Crea la primera con «+ Nueva cuenta» y tu saldo actual.</div>');
   const led=ml.map((r,j)=>({r,j})).filter(x=>(x.r.c||'').trim()||+x.r.m),nm={dep:'Depósito',ret:'Retiro',aj:'Ajuste',tr:'Traspaso'};
-  const ledH=led.length?`<div class="movl"><div class="ms">Movimientos de ${MES[i].toLowerCase()}</div>${led.map(({r,j})=>{const k=ahoKind(r),v=+r.m||0,cu=rowCur('aho',r);return `<div class="aml"><span class="amt-t ${k}">${nm[k]}</span><span class="aml-c">${esc(ahoName(r))}${r.f?' · '+esc(r.f):''}</span><b class="aml-v${v<0?' neg':''}">${v>0?'+':v<0?'−':''}${cu} ${num2(Math.abs(v))}</b><span class="rwx">${(k==='dep'||k==='ret')?`<button type="button" class="x ed-row" data-edit="aho" data-i="${j}" aria-label="Editar movimiento" title="Editar">✎</button>`:''}<button type="button" class="x" data-del="aho" data-i="${j}" aria-label="Quitar movimiento">×</button></span></div>`;}).join('')}</div>`:'';
+  const ledH=led.length?`<div class="movl"><div class="ms">Movimientos de ${MES[i].toLowerCase()}</div>${led.map(({r,j})=>{const k=ahoKind(r),v=+r.m||0,cu=rowCur('aho',r);return `<div class="aml"><span class="amt-t ${k}">${nm[k]}</span><span class="aml-c">${esc(ahoName(r))}${r.f?' · '+esc(r.f):''}</span><b class="aml-v${v<0?' neg':''}">${v>0?'+':v<0?'−':''}${cu} ${num2(Math.abs(v))}</b><span class="rwx">${(k==='dep'||k==='ret')?`<button type="button" class="x ed-row" data-edit="aho" data-i="${j}" aria-label="Editar movimiento" title="Editar"><svg class="ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>`:''}<button type="button" class="x" data-del="aho" data-i="${j}" aria-label="Quitar movimiento">×</button></span></div>`;}).join('')}</div>`:'';
   return `<section class="card bcard ahocard" data-cid="aho" style="--h:var(--h-aho)">${secHead('aho','Ahorros')}<div class="sbody"${isFold('aho')?' hidden':''}><div class="ahobody">${sum}${accH}${gana}</div>${ledH}<button type="button" class="b add" data-act="anew">+ Nueva cuenta</button><button type="button" class="b add" data-act="mover">Mover dinero</button></div><div class="tot"><span>Saldo total</span><span id="t-aho">${fmt(bal)}</span></div></section>`;
 }
 function payInfo(k,i){
@@ -2200,7 +2200,7 @@ function viewCapturar(){
     <button type="button" class="cap-btn" data-act="new">+ Registrar movimiento</button>
     <div class="cap-liq"><span>Te queda según tu presupuesto</span><b>${fmt(D.res)}</b></div>
     <div class="cap-streak">Has registrado <b>${r7}</b> ${r7===1?'movimiento':'movimientos'} en los últimos 7 días</div>
-    <div class="cap-recent"><div class="cap-rt">Últimos movimientos</div>${last.length?last.map(r=>`<div class="cap-r"><span>${esc(r.c||'(sin concepto)')}</span><b class="${gastos.indexOf(r.s)>=0?'g':''}">${gastos.indexOf(r.s)>=0?'-':''}${num2(r.mt)}</b><button type="button" class="capx" data-capedit="${r.s}:${r.idx}" aria-label="Editar ${esc(r.c||'')}">✎</button><button type="button" class="capx" data-capdel="${r.s}:${r.idx}" aria-label="Borrar ${esc(r.c||'')}">×</button></div>`).join(''):'<div class="ms">Aún no registras nada este mes.</div>'}</div>
+    <div class="cap-recent"><div class="cap-rt">Últimos movimientos</div>${last.length?last.map(r=>`<div class="cap-r"><span>${esc(r.c||'(sin concepto)')}</span><b class="${gastos.indexOf(r.s)>=0?'g':''}">${gastos.indexOf(r.s)>=0?'-':''}${num2(r.mt)}</b><button type="button" class="capx" data-capedit="${r.s}:${r.idx}" aria-label="Editar ${esc(r.c||'')}"><svg class="ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button><button type="button" class="capx" data-capdel="${r.s}:${r.idx}" aria-label="Borrar ${esc(r.c||'')}">×</button></div>`).join(''):'<div class="ms">Aún no registras nada este mes.</div>'}</div>
     <div class="ms cap-tip">Guarda esta pantalla en tu celular: menú del navegador → «Agregar a pantalla de inicio».</div>
   </section>`;
 }
