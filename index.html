@@ -7,68 +7,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<style>html{color-scheme:light}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style><style id="sk-cuadre">
-/* ===== Cuadra · piel "Cuadre" (v13) ===== */
-:root{--bg:#EEF1EF;--surface:#FFFFFF;--surface-2:#F4F6F5;--ink:#12201C;--line:#D3DBD7;--accent:#0B7A62;--c-ing:#2B4BD6;--c-gas:#E4572E;--c-hor:#E4572E;--c-fij:#2B4BD6;
-  --r-sm:3px;--r-md:5px;--r-lg:6px;--hero-a:#12201C;--hero-b:#12201C;--hero-ink:#F2F6F4;--amber:#F2A33A;
-  --font-display:'Instrument Sans','Segoe UI',system-ui,sans-serif;--font-body:'Instrument Sans','Segoe UI',system-ui,sans-serif;--font-num:'Geist Mono',ui-monospace,Consolas,monospace}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0C1210;--surface:#151D1A;--surface-2:#1C2622;--line:#2A3731;--hero-a:#0A100E;--hero-b:#0A100E;--c-ing:#6F8BFF;--c-gas:#F2784F;--c-hor:#F2784F;--c-fij:#6F8BFF}}
-:root[data-theme="dark"]{--bg:#0C1210;--surface:#151D1A;--surface-2:#1C2622;--line:#2A3731;--hero-a:#0A100E;--hero-b:#0A100E;--c-ing:#6F8BFF;--c-gas:#F2784F;--c-hor:#F2784F;--c-fij:#6F8BFF}
-body{background-image:linear-gradient(rgba(11,122,98,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(11,122,98,.06) 1px,transparent 1px);background-size:28px 28px;letter-spacing:-.005em}
-h1,.bt{letter-spacing:-.03em}
-.logo{border-radius:4px;border:1.5px solid var(--ink)}
-.card{box-shadow:none}
-.hero{background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px)!important;background-size:28px 28px!important;background-color:var(--hero-a)!important;box-shadow:none;border:1.5px solid #000}
-.hero-v{border-bottom:3px double rgba(242,246,244,.55);padding-bottom:6px;display:inline-block;max-width:100%}
-.hero-v.neg{border-bottom-color:#FFB4A8}
-.hero button,.acts button,.b.add{border-radius:3px}
-button.primary,.btn-p,.sheet .save,[data-s="save"],#fab{border-radius:3px;box-shadow:3px 3px 0 var(--ink);border:1.5px solid var(--ink)}
-#fab{box-shadow:3px 3px 0 var(--ink)}
-.tab[aria-current]{border-radius:3px;box-shadow:2px 2px 0 var(--ink)}
-.tab{border-radius:3px}
-/* tira de sumadora: panel "Dónde está tu dinero" */
-.liq{background:#fff!important;color:#12201C;border:0!important;border-radius:0!important;padding:18px 16px 26px;box-shadow:0 12px 26px -16px rgba(0,0,0,.6);
- -webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/12px 51% repeat-x,linear-gradient(#000 0 0) top/100% calc(100% - 6px) no-repeat;mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/12px 51% repeat-x,linear-gradient(#000 0 0) top/100% calc(100% - 6px) no-repeat}
-.liq .hero-l,.liq-h .hero-l{color:#5b6862}
-.liq-list li{border-bottom:1px dashed rgba(18,32,28,.18)!important}
-.liq-list b,.liq-t b{font-family:var(--font-num);font-weight:500;color:#12201C}
-.liq-t{border-top:1px dashed rgba(18,32,28,.5)!important;margin-top:4px}
-.liq-t b{font-weight:600;border-bottom:3px double #12201C;padding-bottom:2px}
-.liq .rw input,.hero .liq .rw input{background:#F4F6F5!important;border-color:#C9D2CE!important;color:#12201C!important}
-.liq .rw input::placeholder{color:#7a8a83!important}
-.liq .rw input:focus{border-color:#0B7A62!important;box-shadow:0 0 0 3px rgba(11,122,98,.2)!important}
-.liq .liq-n,.liq .hero-l{color:#5b6862!important;opacity:1!important}
-.liq .liq-t span{color:#12201C}
-.liq .x,.hero .liq .x{color:#5b6862!important}
-.liq .add,.liq-ed{border-color:#12201C!important;color:#12201C!important;background:transparent!important;border-radius:3px}
-.liq-n{color:#5b6862;opacity:1}
-/* escalones del fondo de emergencia */
-.fond+.meter{height:48px;border:0;border-radius:0;background:var(--line);overflow:hidden;clip-path:polygon(0 75%,25% 75%,25% 50%,50% 50%,50% 25%,75% 25%,75% 0,100% 0,100% 100%,0 100%)}
-.fond+.meter div{border-radius:0;background:var(--amber)}
-.cardmeter{border-radius:2px}.cardmeter>div{border-radius:0}
-.metarow .meter{height:12px;clip-path:none;border-radius:3px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
-.metarow .meter div{background:var(--c-aho);border-radius:0}
-.hbar span:only-child{background:var(--amber)!important}
-.pill{border-radius:3px}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
-</style><style id="sk-escalon">
-:root{--bg:#ECEBF4;--surface:#FFFFFF;--surface-2:#F4F3FA;--ink:#171A3D;--muted:#5C5F86;--line:#D9D8E8;--accent:#2E3299;--on-accent:#FFFFFF;--accent-soft:#DEDDF3;
-  --c-ing:#4A4FD0;--c-fij:#4A4FD0;--c-gas:#D6456A;--c-hor:#D6456A;--c-aho:#12856B;--r-sm:8px;--r-md:12px;--r-lg:18px;--hero-a:#171A3D;--hero-b:#171A3D;--hero-ink:#F3F2FA;--amber:#F2A33A;
-  --font-display:'Familjen Grotesk','Segoe UI',system-ui,sans-serif;--font-body:'Figtree','Segoe UI',system-ui,sans-serif;--font-num:'Familjen Grotesk','Segoe UI',system-ui,sans-serif}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1130;--surface:#171A3D;--surface-2:#1D2150;--ink:#F3F2FA;--muted:#A9ACD6;--line:#2C3170;--accent:#FFC46B;--on-accent:#2A1A00;--accent-soft:#2C2A4A;--c-ing:#8C92FF;--c-fij:#8C92FF;--c-gas:#F0708F;--c-hor:#F0708F;--hero-a:#0B0D26;--hero-b:#0B0D26}}
-:root[data-theme="dark"]{--bg:#0F1130;--surface:#171A3D;--surface-2:#1D2150;--ink:#F3F2FA;--muted:#A9ACD6;--line:#2C3170;--accent:#FFC46B;--on-accent:#2A1A00;--accent-soft:#2C2A4A;--c-ing:#8C92FF;--c-fij:#8C92FF;--c-gas:#F0708F;--c-hor:#F0708F;--hero-a:#0B0D26;--hero-b:#0B0D26}
-h1,.bt{letter-spacing:-.025em}
-.logo{border-radius:10px}
-.hero{background-image:none!important;background-color:var(--hero-a)!important;box-shadow:none}
-.tab[aria-current]{background:var(--accent);color:var(--on-accent)}
-.cdot{background:var(--amber)!important}
-#fab,.btn-p{background:var(--amber);color:#2A1A00}
-.fond+.meter{height:48px;border:0;border-radius:0;background:var(--line);overflow:hidden;clip-path:polygon(0 75%,25% 75%,25% 50%,50% 50%,50% 25%,75% 25%,75% 0,100% 0,100% 100%,0 100%)}
-.fond+.meter div{border-radius:0;background:var(--amber)}
-.hbar span:only-child{background:var(--amber)!important}
-.hero .pill{background:rgba(255,255,255,.14);color:#F3F2FA}
-.hero .pill::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--amber);margin-right:6px}
-</style><style>.skins{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}.sk-l{font-weight:600;margin-right:4px}.skins button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600}</style><script>(function(){var s='cuadre';try{var v=localStorage.getItem('mis-finanzas-prototipo-v1-skin');if(v==='original'||v==='cuadre'||v==='escalon')s=v;}catch(e){}document.documentElement.dataset.skin=s;['cuadre','escalon'].forEach(function(k){var e=document.getElementById('sk-'+k);if(e)e.disabled=(k!==s);});})();</script>
+<style>html{color-scheme:light}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
 <title>Cuadra</title>
@@ -678,7 +617,68 @@ button,[role=button],.tab,.chip{-webkit-user-select:none;user-select:none;-webki
 .pdate b{font-weight:600}
 .pdate.urg{display:inline-block;background:color-mix(in srgb,var(--bad) 12%,transparent);color:var(--bad);border-radius:8px;padding:4px 8px;font-weight:500}
 .cardfields{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
-</style>
+</style><style id="sk-cuadre">
+/* ===== Cuadra · piel "Cuadre" (v13) ===== */
+:root{--bg:#EEF1EF;--surface:#FFFFFF;--surface-2:#F4F6F5;--ink:#12201C;--line:#D3DBD7;--accent:#0B7A62;--c-ing:#2B4BD6;--c-gas:#E4572E;--c-hor:#E4572E;--c-fij:#2B4BD6;
+  --r-sm:3px;--r-md:5px;--r-lg:6px;--hero-a:#12201C;--hero-b:#12201C;--hero-ink:#F2F6F4;--amber:#F2A33A;
+  --font-display:'Instrument Sans','Segoe UI',system-ui,sans-serif;--font-body:'Instrument Sans','Segoe UI',system-ui,sans-serif;--font-num:'Geist Mono',ui-monospace,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0C1210;--surface:#151D1A;--surface-2:#1C2622;--line:#2A3731;--hero-a:#0A100E;--hero-b:#0A100E;--c-ing:#6F8BFF;--c-gas:#F2784F;--c-hor:#F2784F;--c-fij:#6F8BFF}}
+:root[data-theme="dark"]{--bg:#0C1210;--surface:#151D1A;--surface-2:#1C2622;--line:#2A3731;--hero-a:#0A100E;--hero-b:#0A100E;--c-ing:#6F8BFF;--c-gas:#F2784F;--c-hor:#F2784F;--c-fij:#6F8BFF}
+body{background-image:linear-gradient(rgba(11,122,98,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(11,122,98,.06) 1px,transparent 1px);background-size:28px 28px;letter-spacing:-.005em}
+h1,.bt{letter-spacing:-.03em}
+.logo{border-radius:4px;border:1.5px solid var(--ink)}
+.card{box-shadow:none}
+.hero{background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px)!important;background-size:28px 28px!important;background-color:var(--hero-a)!important;box-shadow:none;border:1.5px solid #000}
+.hero-v{border-bottom:3px double rgba(242,246,244,.55);padding-bottom:6px;display:inline-block;max-width:100%}
+.hero-v.neg{border-bottom-color:#FFB4A8}
+.hero button,.acts button,.b.add{border-radius:3px}
+button.primary,.btn-p,.sheet .save,[data-s="save"],#fab{border-radius:3px;box-shadow:3px 3px 0 var(--ink);border:1.5px solid var(--ink)}
+#fab{box-shadow:3px 3px 0 var(--ink)}
+.tab[aria-current]{border-radius:3px;box-shadow:2px 2px 0 var(--ink)}
+.tab{border-radius:3px}
+/* tira de sumadora: panel "Dónde está tu dinero" */
+.liq{background:#fff!important;color:#12201C;border:0!important;border-radius:0!important;padding:18px 16px 26px;box-shadow:0 12px 26px -16px rgba(0,0,0,.6);
+ -webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/12px 51% repeat-x,linear-gradient(#000 0 0) top/100% calc(100% - 6px) no-repeat;mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/12px 51% repeat-x,linear-gradient(#000 0 0) top/100% calc(100% - 6px) no-repeat}
+.liq .hero-l,.liq-h .hero-l{color:#5b6862}
+.liq-list li{border-bottom:1px dashed rgba(18,32,28,.18)!important}
+.liq-list b,.liq-t b{font-family:var(--font-num);font-weight:500;color:#12201C}
+.liq-t{border-top:1px dashed rgba(18,32,28,.5)!important;margin-top:4px}
+.liq-t b{font-weight:600;border-bottom:3px double #12201C;padding-bottom:2px}
+.liq .rw input,.hero .liq .rw input{background:#F4F6F5!important;border-color:#C9D2CE!important;color:#12201C!important}
+.liq .rw input::placeholder{color:#7a8a83!important}
+.liq .rw input:focus{border-color:#0B7A62!important;box-shadow:0 0 0 3px rgba(11,122,98,.2)!important}
+.liq .liq-n,.liq .hero-l{color:#5b6862!important;opacity:1!important}
+.liq .liq-t span{color:#12201C}
+.liq .x,.hero .liq .x{color:#5b6862!important}
+.liq .add,.liq-ed{border-color:#12201C!important;color:#12201C!important;background:transparent!important;border-radius:3px}
+.liq-n{color:#5b6862;opacity:1}
+/* escalones del fondo de emergencia */
+.fond+.meter{height:48px;border:0;border-radius:0;background:var(--line);overflow:hidden;clip-path:polygon(0 75%,25% 75%,25% 50%,50% 50%,50% 25%,75% 25%,75% 0,100% 0,100% 100%,0 100%)}
+.fond+.meter div{border-radius:0;background:var(--amber)}
+.cardmeter{border-radius:2px}.cardmeter>div{border-radius:0}
+.metarow .meter{height:12px;clip-path:none;border-radius:3px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.metarow .meter div{background:var(--c-aho);border-radius:0}
+.hbar span:only-child{background:var(--amber)!important}
+.pill{border-radius:3px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style><style id="sk-escalon">
+:root{--bg:#ECEBF4;--surface:#FFFFFF;--surface-2:#F4F3FA;--ink:#171A3D;--muted:#5C5F86;--line:#D9D8E8;--accent:#2E3299;--on-accent:#FFFFFF;--accent-soft:#DEDDF3;
+  --c-ing:#4A4FD0;--c-fij:#4A4FD0;--c-gas:#D6456A;--c-hor:#D6456A;--c-aho:#12856B;--r-sm:8px;--r-md:12px;--r-lg:18px;--hero-a:#171A3D;--hero-b:#171A3D;--hero-ink:#F3F2FA;--amber:#F2A33A;
+  --font-display:'Familjen Grotesk','Segoe UI',system-ui,sans-serif;--font-body:'Figtree','Segoe UI',system-ui,sans-serif;--font-num:'Familjen Grotesk','Segoe UI',system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1130;--surface:#171A3D;--surface-2:#1D2150;--ink:#F3F2FA;--muted:#A9ACD6;--line:#2C3170;--accent:#FFC46B;--on-accent:#2A1A00;--accent-soft:#2C2A4A;--c-ing:#8C92FF;--c-fij:#8C92FF;--c-gas:#F0708F;--c-hor:#F0708F;--hero-a:#0B0D26;--hero-b:#0B0D26}}
+:root[data-theme="dark"]{--bg:#0F1130;--surface:#171A3D;--surface-2:#1D2150;--ink:#F3F2FA;--muted:#A9ACD6;--line:#2C3170;--accent:#FFC46B;--on-accent:#2A1A00;--accent-soft:#2C2A4A;--c-ing:#8C92FF;--c-fij:#8C92FF;--c-gas:#F0708F;--c-hor:#F0708F;--hero-a:#0B0D26;--hero-b:#0B0D26}
+h1,.bt{letter-spacing:-.025em}
+.logo{border-radius:10px}
+.hero{background-image:none!important;background-color:var(--hero-a)!important;box-shadow:none}
+.tab[aria-current]{background:var(--accent);color:var(--on-accent)}
+.cdot{background:var(--amber)!important}
+#fab,.btn-p{background:var(--amber);color:#2A1A00}
+.fond+.meter{height:48px;border:0;border-radius:0;background:var(--line);overflow:hidden;clip-path:polygon(0 75%,25% 75%,25% 50%,50% 50%,50% 25%,75% 25%,75% 0,100% 0,100% 100%,0 100%)}
+.fond+.meter div{border-radius:0;background:var(--amber)}
+.hbar span:only-child{background:var(--amber)!important}
+.hero .pill{background:rgba(255,255,255,.14);color:#F3F2FA}
+.hero .pill::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--amber);margin-right:6px}
+</style><style>.skins{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}.sk-l{font-weight:600;margin-right:4px}.skins button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600}.tab.off{opacity:.95}.amt-t.dep{color:color-mix(in srgb,var(--c-aho) 72%,CanvasText)}</style><script>(function(){var s='cuadre';try{var v=localStorage.getItem('mis-finanzas-prototipo-v1-skin');if(v==='original'||v==='cuadre'||v==='escalon')s=v;}catch(e){}document.documentElement.dataset.skin=s;['cuadre','escalon'].forEach(function(k){var e=document.getElementById('sk-'+k);if(e)e.disabled=(k!==s);});})();</script>
 
 <header id="hdr"></header>
 <main class="wrap" id="app"></main>
