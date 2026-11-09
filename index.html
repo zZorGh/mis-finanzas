@@ -1828,7 +1828,16 @@ async function sbDelete(btn){
   }catch(e){msg.textContent='No se pudo conectar. Revisa tu internet.';btn.disabled=false;}
 }
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='del-txt'){const b=document.getElementById('del-go');if(b)b.disabled=!/^(ELIMINAR|DELETE)$/.test(e.target.value.trim().toUpperCase());}});
-function sbReady(session){sbUser=session.user;backend=supabaseBackend;sync.connected=true;hideAuth();updateChip();Promise.resolve(loadFromSheet(true)).then(()=>{try{if(!cfg.onb&&toRows().length===0)showOnboard();}catch(e){}});}
+/* Los datos guardados en el navegador llevan la marca de su dueño. Si entra otra cuenta en este equipo,
+   se descartan sin subirlos; así nunca pasan a la cuenta equivocada. Sin marca (datos de antes de iniciar
+   sesión), los adopta la primera cuenta que entra. Tema y estilo se conservan porque no son datos personales. */
+const OKEY=KEY+'-owner',KEEPK=[KEY+'-skin',KEY+'-tema'];
+function wipeLocal(){try{Object.keys(localStorage).filter(k=>k.indexOf(KEY)===0&&KEEPK.indexOf(k)<0).forEach(k=>localStorage.removeItem(k));}catch(e){}}
+function sbReady(session){
+  let prev=null;try{prev=localStorage.getItem(OKEY);}catch(e){}
+  if(prev&&prev!==session.user.id){wipeLocal();try{localStorage.setItem(OKEY,session.user.id);}catch(e){}location.reload();return;}
+  if(!prev){try{localStorage.setItem(OKEY,session.user.id);}catch(e){}}
+  sbUser=session.user;backend=supabaseBackend;sync.connected=true;hideAuth();updateChip();Promise.resolve(loadFromSheet(true)).then(()=>{try{if(!cfg.onb&&toRows().length===0)showOnboard();}catch(e){}});}
 async function sbAuth(mode,email,pass,msgEl,btn){
   if(!sb)return;msgEl.className='ms err';msgEl.textContent='';if(btn)btn.disabled=true;
   try{
@@ -1855,7 +1864,14 @@ function showAuth(){
   g('au-email').focus();
 }
 function hideAuth(){const e=document.getElementById('authbg');if(e)e.remove();}
-async function sbLogout(){if(sb){try{await sb.auth.signOut();}catch(e){}location.reload();}}
+Object.assign(I18N_EN,{'Tienes cambios que todavía no se subieron a tu cuenta. Si cierras sesión ahora, se perderán. ¿Cerrar sesión igual?':"You have changes that haven't been uploaded to your account yet. If you sign out now, they will be lost. Sign out anyway?"});
+async function sbLogout(){
+  if(!sb)return;
+  if(sync.dirty&&backend){try{await pushNow(false);}catch(e){}}
+  if((sync.dirty||sync.state==='conflict')&&!confirm(T('Tienes cambios que todavía no se subieron a tu cuenta. Si cierras sesión ahora, se perderán. ¿Cerrar sesión igual?')))return;
+  try{await sb.auth.signOut();}catch(e){}
+  wipeLocal();location.reload();
+}
 
 async function pushNow(force){
   if(!backend)return;if(backend.name==='mcp'&&!sync.id)return;
