@@ -6,7 +6,7 @@ d.S['2026'][9].aho=[r('Vieja',100),r('Nueva',500)];d.S['2026'][10].aho=[r('Vieja
 d.cfg=d.cfg||{};d.cfg.ahoV=3;let ok=0,bad=0;const T=(n,c)=>{c?ok++:(bad++,console.log('FALLA',n));};
 (async()=>{const b=await chromium.launch();const p=await (await b.newContext({viewport:{width:1300,height:900}})).newPage();
 const errs=[];p.on('pageerror',e=>errs.push(e.message));
-await p.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({contentType:'application/javascript',body:chart});return r.abort();});
+await p.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({contentType:'application/javascript',headers:{'access-control-allow-origin':'*'},body:chart});return r.abort();});
 await p.addInitScript(s=>{if(!localStorage.getItem('qa_x')){localStorage.setItem('mis-finanzas-prototipo-v1',s);localStorage.setItem('qa_x','1');}window.claude={use:async()=>null};},JSON.stringify(d));
 await p.goto('http://127.0.0.1:8765/wrap-repo.html#noviembre');await p.waitForTimeout(900);
 const lst=async()=>(await p.locator('.aa-n').allInnerTexts());

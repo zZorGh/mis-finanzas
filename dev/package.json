@@ -4,7 +4,7 @@
   "scripts": {
     "wrap": "node build-wrap.js",
     "serve": "node srv.js",
-    "test": "node build-wrap.js && node t61.js wrap-repo.html && node t73.js && node t74.js && node t82.js && node t83.js && node t84.js && node t85.js",
+    "test": "node build-wrap.js && node t61.js wrap-repo.html && node t73.js && node t74.js && node t82.js && node t83.js && node t84.js && node t85.js && node t86.js",
     "scan": "node build-wrap.js && node scan.js && node scan-auth.js && node scan-web.js"
   },
   "devDependencies": { "playwright": "^1.50.0", "chart.js": "4.4.1" }

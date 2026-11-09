@@ -19,7 +19,7 @@ const seed=(owner,dirty)=>`if(!sessionStorage.getItem('__seeded')){sessionStorag
 (async()=>{
  const b=await chromium.launch();
  const mk=async(uid,owner,dirty,hash,offline)=>{const ctx=await b.newContext({viewport:{width:1100,height:800}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
-  await p.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({contentType:'application/javascript',body:chart});return r.abort();});
+  await p.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({contentType:'application/javascript',headers:{'access-control-allow-origin':'*'},body:chart});return r.abort();});
   await p.addInitScript(stub(uid)+seed(owner,dirty)+(offline?`sessionStorage.setItem('__fail','1');`:''));
   await p.goto('http://127.0.0.1:8765/wrap-repo.html'+(hash||''));await p.waitForTimeout(1500);p.errs=errs;return p;};
  const ups=async p=>JSON.parse(await p.evaluate(()=>sessionStorage.getItem('__L')||'[]'));

@@ -6,7 +6,7 @@ const MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','se
 async function run(fakeISO,data,url,nm){
  const b=await chromium.launch();const ctx=await b.newContext({viewport:{width:420,height:900},timezoneId:'America/Lima'});const p=await ctx.newPage();
  const errs=[];p.on('pageerror',e=>errs.push(e.message));
- await p.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({contentType:'application/javascript',body:chart});return r.abort();});
+ await p.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({contentType:'application/javascript',headers:{'access-control-allow-origin':'*'},body:chart});return r.abort();});
  await p.addInitScript(([s,iso])=>{const R=Date,off=new R(iso).getTime()-R.now();class D extends R{constructor(...a){a.length?super(...a):super(R.now()+off)}static now(){return R.now()+off}}window.Date=D;localStorage.setItem('mis-finanzas-prototipo-v1',s);window.claude={use:async()=>null};},[JSON.stringify(data),fakeISO]);
  await p.goto(url);await p.waitForTimeout(900);
  const h=await p.evaluate(()=>location.hash);const cur=await p.locator('[aria-current="page"]').first().innerText().catch(()=>'' );

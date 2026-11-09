@@ -1,6 +1,6 @@
 /* Service worker: la app siempre trae lo último de la red; el caché es solo para
    abrir sin conexión (muestra tus últimos datos locales). */
-const CACHE = 'mis-finanzas-v2';
+const CACHE = 'mis-finanzas-v3';
 const ASSETS = [
   './manifest.webmanifest',
   './icon-192.png',

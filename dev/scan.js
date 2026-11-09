@@ -27,7 +27,7 @@ const SCAN=()=>{
 const states=[['#resumen',null],['#noviembre',null],['#octubre',null],['#noviembre','#ed'],['#noviembre','[data-act="liqedit"]'],['#noviembre','[data-act="cierre"]'],['#noviembre','[data-act="rep"]'],['#resumen','[data-act="mover"]'],['#resumen','[data-act="anew"]'],['#resumen','[data-act="aren"]'],['#capturar',null],['#noviembre','[data-act="pagar"]']];
 for(const sk of ['original','cuadre','escalon'])for(const cs of ['light','dark'])for(const [w,h] of [[390,844],[1280,900]]){
  const p=await (await b.newContext({viewport:{width:w,height:h},colorScheme:cs})).newPage();p.on('pageerror',e=>errs.push(sk+cs+w+' '+e.message));
- await p.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({contentType:'application/javascript',body:chart});return r.abort();});
+ await p.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({contentType:'application/javascript',headers:{'access-control-allow-origin':'*'},body:chart});return r.abort();});
  await p.addInitScript(([d,s])=>{localStorage.setItem('mis-finanzas-prototipo-v1',d);localStorage.setItem('mis-finanzas-prototipo-v1-skin',s);window.claude={use:async()=>null};},[demo,sk]);
  for(const [hash,act] of states){
   await p.goto('http://127.0.0.1:8765/wrap-repo.html'+hash);await p.reload();await p.waitForTimeout(500);

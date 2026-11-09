@@ -3,7 +3,7 @@ const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js'
 (async()=>{const b=await chromium.launch();let errs=[];
 for(const sk of ['original','cuadre','escalon'])for(const cs of ['light','dark']){
 const p=await (await b.newContext({viewport:{width:400,height:820},colorScheme:cs})).newPage();p.on('pageerror',e=>errs.push(sk+e.message));
-await p.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({contentType:'application/javascript',body:chart});return r.abort();});
+await p.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({contentType:'application/javascript',headers:{'access-control-allow-origin':'*'},body:chart});return r.abort();});
 await p.addInitScript(([d,s])=>{localStorage.setItem('mis-finanzas-prototipo-v1',d);localStorage.setItem('mis-finanzas-prototipo-v1-skin',s);window.claude={use:async()=>null};},[demo,sk]);
 await p.goto('http://127.0.0.1:8765/wrap-repo.html#noviembre');await p.waitForTimeout(1000);await p.screenshot({path:`sk-${sk}-${cs}.png`});
 console.log(sk,cs,await p.evaluate(()=>document.documentElement.dataset.skin+' '+(document.documentElement.scrollWidth>innerWidth+1)));

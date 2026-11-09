@@ -11,7 +11,7 @@ const results=[];
 async function suite(tag,opts,seed){
   const b=await chromium.launch();const ctx=await b.newContext(opts);const p=await ctx.newPage();
   const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|net::ERR/.test(m.text()))errs.push('console: '+m.text());});
-  await p.route('**/*',r=>{const u=r.request().url();if(u.startsWith('file:')||u.startsWith('data:')||u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({contentType:'application/javascript',body:chart});return r.abort();});
+  await p.route('**/*',r=>{const u=r.request().url();if(u.startsWith('file:')||u.startsWith('data:')||u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({contentType:'application/javascript',headers:{'access-control-allow-origin':'*'},body:chart});return r.abort();});
   await p.addInitScript(([d,s])=>{if(s&&!localStorage.getItem('qa_seeded')){localStorage.setItem('mis-finanzas-prototipo-v1',d);localStorage.setItem('qa_seeded','1');}window.claude={use:async()=>null};},[demo,seed]);
   await p.goto('http://127.0.0.1:8765/'+FILE+'#resumen');await p.waitForSelector('.hero');await p.selectOption('#yr','2026');await p.waitForTimeout(400);
   const st=()=>p.evaluate(k=>JSON.parse(localStorage.getItem(k)),KEY);
