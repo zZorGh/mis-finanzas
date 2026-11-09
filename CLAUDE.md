@@ -53,6 +53,7 @@ Ver `dev/README.md`. Resumen: `cd dev && npm install && npx playwright install c
 3. Los ganchos revisan los datos personales solos (arriba).
 4. Commit en español, claro; `git push origin main`. Pages tarda 1–2 min; recargar con Ctrl+Shift+R.
 5. Si cambias `inicio/` o `legal.html`, revisa también en móvil. Las capturas de celular de la landing (`inicio/img/*.jpg`) son de la app con datos de ejemplo; hay que regenerarlas si el diseño cambia mucho.
+6. La landing es un documento completo: `<!doctype html>`, `<html lang="es-PE">` y `<meta name="viewport">` (sin ellos, en celulares se ve como escritorio en miniatura; `npm run scan` lo detecta emulando un teléfono real). La vista previa al compartir usa `inicio/img/og.jpg` (1200×630, datos de ejemplo); si cambian el titular o el diseño, regenérala. `sitemap.xml` va en la raíz.
 
 ## Producto y negocio
 - Idea de precio (a validar con la beta): núcleo gratis; reportes, historial y extras de pago; punto de partida S/ 9.90 al mes o S/ 79 al año.

@@ -20,13 +20,14 @@ const SCAN=()=>{
   if(ratio<need&&!grad)out.push({t:txt.slice(0,30),ratio:+ratio.toFixed(2),need,tag:el.tagName+'.'+String(el.className).slice(0,30)});
   else if(grad&&ratio<3)out.push({t:txt.slice(0,30),ratio:+ratio.toFixed(2),need:'grad',tag:el.tagName+'.'+String(el.className).slice(0,30)});
  }
- return {out,over:document.documentElement.scrollWidth>innerWidth+1};
+ return {out,over:document.documentElement.scrollWidth>innerWidth+1,modo:document.compatMode,ancho:document.documentElement.clientWidth};
 };
-(async()=>{const b=await chromium.launch();
+(async()=>{const b=await chromium.launch();let malo=0;
 for(const [u,hash] of [['../inicio/index.html',''],['../legal.html','#privacidad'],['../legal.html','#terminos']])for(const cs of ['light','dark'])for(const w of [390,1280]){
- const p=await (await b.newContext({viewport:{width:w,height:900},colorScheme:cs})).newPage();
+ const p=await (await b.newContext({viewport:{width:w,height:900},colorScheme:cs,isMobile:w<768,hasTouch:w<768})).newPage();
  await p.route('**/*',r=>{const x=r.request().url();return x.startsWith('file:')||x.startsWith('data:')?r.continue():r.abort();});
  await p.goto('file://'+__dirname+'/'+u+hash);await p.waitForTimeout(500);
  const r=await p.evaluate(SCAN);const o=r.out.filter(x=>x.need!=='grad');
- console.log(u+hash,cs,w,r.over?'DESBORDE':'ok',JSON.stringify(o.slice(0,4)));await p.close();}
-await b.close();})();
+ const noMovil=r.modo!=='CSS1Compat'||(w<768&&r.ancho>w+1);if(noMovil)malo++;
+ console.log(u+hash,cs,w,r.over?'DESBORDE':'ok',noMovil?`NO ES MÓVIL (modo ${r.modo}, diseño a ${r.ancho}px: falta <!doctype html> o <meta name="viewport">)`:'',JSON.stringify(o.slice(0,4)));await p.close();}
+await b.close();process.exitCode=malo?1:0;})();
