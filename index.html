@@ -592,6 +592,8 @@ button,[role=button],.tab,.chip{-webkit-user-select:none;user-select:none;-webki
 .cbadge{font-size:11px}
 .tab.off{opacity:.78}
 [data-cid=oh] .sh.solid{background:color-mix(in srgb,var(--h) 78%,#000)}
+/* BCP en oscuro: el azul claro con letra blanca quedaba en 4.3:1; un 10% más oscuro llega a 5.2:1 */
+[data-cid=bcp] .sh.solid{background:color-mix(in srgb,var(--h) 90%,#000)}
 .smore{border:1px solid var(--line);border-radius:12px;padding:0 12px;display:grid;gap:10px}
 .smore[open]{padding-bottom:12px}
 .smore summary{cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--ink);list-style:none}
@@ -1204,9 +1206,25 @@ function drawHeatmap(){
   ['fij','hor'].forEach(s=>(m[s]||[]).forEach(r=>{const d=parseInt(r.f)||0,v=+r.m||0;if(d>=1&&d<=days&&v){tot[d]=(tot[d]||0)+v;if(tot[d]>max)max=tot[d];}}));
   let html=['L','M','M','J','V','S','D'].map(h=>`<div class="hmhead">${h}</div>`).join('');
   for(let i=0;i<first;i++)html+='<div class="hmcell empty"></div>';
-  for(let d=1;d<=days;d++){const v=tot[d]||0,int=max>0?v/max:0,bg=v>0?`color-mix(in srgb, var(--accent) ${Math.round(14+int*76)}%, var(--surface-2))`:'var(--surface-2)';html+=`<div class="hmcell${v>0?' on':''}" style="background:${bg}" title="${MES[view]} ${d}: ${fmt(v)}"><span>${d}</span></div>`;}
-  g.innerHTML=html;
+  for(let d=1;d<=days;d++){const v=tot[d]||0,int=max>0?v/max:0,bg=v>0?`color-mix(in srgb, var(--accent) ${Math.round(14+int*76)}%, var(--surface-2))`:'var(--surface-2)';html+=`<div class="hmcell${v>0?' on':''}"${v>0?` data-p="${Math.round(14+int*76)}"`:''} style="background:${bg}" title="${MES[view]} ${d}: ${fmt(v)}"><span>${d}</span></div>`;}
+  g.innerHTML=html;hmInk();
   const lg=document.getElementById('hmleg');if(lg)lg.textContent=max>0?'Día de mayor gasto: '+fmt(max)+'. Toca o pasa el cursor por cada día para ver el detalle.':'Sin gastos fijos ni hormiga este mes todavía. Los consumos de tarjeta están en cada tarjeta, más arriba.';
+}
+/* Número legible en cada día del calendario: con mucho color de fondo, el texto normal se pierde
+   (en temas oscuros el acento es claro; en los claros, oscuro). Se usa el texto normal o el color
+   de la superficie, el que contraste más; si ninguno llega a 4.5:1, se mueve un poco la intensidad. */
+function hmInk(){
+  const g=document.getElementById('hmgrid');if(!g)return;const cells=g.querySelectorAll('.hmcell[data-p]');if(!cells.length)return;
+  const pr=document.createElement('i');g.appendChild(pr);
+  const rgb=v=>{pr.style.color=v;const c=getComputedStyle(pr).color,n=(c.match(/[\d.]+/g)||[]).map(Number);return /^color\(/.test(c)?n.slice(0,3).map(x=>x*255):n.slice(0,3);};
+  const acc=rgb('var(--accent)'),s2=rgb('var(--surface-2)'),fg=rgb('var(--fg)'),su=rgb('var(--surface)');pr.remove();
+  const lum=c=>{const l=c.map(v=>{v/=255;return v<=.03928?v/12.92:((v+.055)/1.055)**2.4;});return .2126*l[0]+.7152*l[1]+.0722*l[2];};
+  const cr=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);};
+  const ink=p=>{const bg=acc.map((a,i)=>a*p/100+s2[i]*(1-p/100)),f=cr(fg,bg),s=cr(su,bg);return f>=s?{c:f,v:''}:{c:s,v:'var(--surface)'};};
+  cells.forEach(el=>{const p0=+el.dataset.p;let p=p0,k=ink(p);
+    for(let d=2;k.c<4.5&&d<=40;d+=2){for(const q of [p0+d,p0-d]){if(q<14||q>100)continue;const t=ink(q);if(t.c>=4.5){p=q;k=t;break;}}}
+    if(p!==p0)el.style.background=`color-mix(in srgb, var(--accent) ${p}%, var(--surface-2))`;
+    el.firstChild.style.color=k.v;});
 }
 function refreshMonth(anim){
   const m=S[year][view],D=dv(m);
@@ -2488,7 +2506,7 @@ const app=document.getElementById('app'),hdr=document.getElementById('hdr');
 /* Los montos muy largos (millones) se achican para caber en su caja en vez de cortarse o empujar la página. */
 function fitNums(){document.querySelectorAll('.kv,.hero-v,.cap-big').forEach(e=>{e.style.fontSize='';if(!e.clientWidth||getComputedStyle(e).display==='inline')return;let s=parseFloat(getComputedStyle(e).fontSize);const min=Math.max(11,s*.45);let g=0;while(e.scrollWidth>e.clientWidth+1&&s>min&&g++<60){s-=1;e.style.fontSize=s+'px';}});}
 function syncBar(){try{let m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement('meta');m.name='theme-color';document.head.appendChild(m);}let c=getComputedStyle(hdr).backgroundColor;if(!c||/rgba\(0, 0, 0, 0\)|transparent/.test(c))c=getComputedStyle(document.body).backgroundColor;m.content=c;}catch(x){}}
-let FT=0;const fitSoon=()=>{cancelAnimationFrame(FT);FT=requestAnimationFrame(()=>{fitNums();syncBar();});};
+let FT=0;const fitSoon=()=>{cancelAnimationFrame(FT);FT=requestAnimationFrame(()=>{fitNums();syncBar();hmInk();});};
 new MutationObserver(fitSoon).observe(app,{childList:true,subtree:true,characterData:true});
 new MutationObserver(fitSoon).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 addEventListener('resize',fitSoon);try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',fitSoon);}catch(x){}

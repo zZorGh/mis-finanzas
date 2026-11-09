@@ -1,6 +1,6 @@
 const {chromium}=require('playwright');
 const SCAN=()=>{
- const parse=c=>{const m=c.match(/rgba?\(([^)]+)\)/);if(!m)return null;const p=m[1].split(/[ ,\/]+/).filter(Boolean).map(Number);return {r:p[0],g:p[1],b:p[2],a:p.length>3?p[3]:1};};
+ const parse=c=>{const s=/^color\(srgb ([\d.e-]+) ([\d.e-]+) ([\d.e-]+)(?: \/ ([\d.]+))?\)/.exec(c);if(s)return {r:s[1]*255,g:s[2]*255,b:s[3]*255,a:s[4]===undefined?1:+s[4]};const m=c.match(/rgba?\(([^)]+)\)/);if(!m)return null;const p=m[1].split(/[ ,\/]+/).filter(Boolean).map(Number);return {r:p[0],g:p[1],b:p[2],a:p.length>3?p[3]:1};};
  const over=(f,b)=>({r:f.r*f.a+b.r*(1-f.a),g:f.g*f.a+b.g*(1-f.a),b:f.b*f.a+b.b*(1-f.a),a:1});
  const lum=c=>{const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(c.r)+.7152*f(c.g)+.0722*f(c.b)};
  const bgOf=el=>{const layers=[];let e=el,grad=false;while(e){const cs=getComputedStyle(e);const bg=parse(cs.backgroundColor);if(cs.backgroundImage&&cs.backgroundImage!=='none'&&/gradient/.test(cs.backgroundImage)&&!(bg&&bg.a>=.99))grad=true;if(bg&&bg.a>0)layers.push(bg);if(bg&&bg.a>=.99)break;e=e.parentElement;}

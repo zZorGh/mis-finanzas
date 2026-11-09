@@ -67,7 +67,7 @@ Ver `dev/README.md`. Resumen: `cd dev && npm install && npx playwright install c
 5. Reportes PDF/Excel en inglés.
 6. Sello «Cuadra» en la app cuando las cuentas coinciden con el banco (hoy solo existe en la propuesta visual).
 7. La pantalla de acceso/onboarding aún no usa la piel Cuadre (hereda colores y tipografía, pero no los bordes rectos ni la sombra dura).
-8. Contraste mínimo: nombre «BCP» en el encabezado de su tarjeta (4.3 de 4.5).
+8. ~~Contraste mínimo~~ hecho: BCP, «−33%» y los días del calendario pasan 4.5:1 en los 3 estilos. El escáner ya lee `color-mix`; si salta un aviso nuevo de contraste, es real.
 9. `README.md` y `docs/*` aún hablan de «Plantilla Personal de Finanzas» y de Google Sheets; actualizarlos a Cuadra.
 10. Textos legales y revisión con abogado, cuando haya ingresos.
 
