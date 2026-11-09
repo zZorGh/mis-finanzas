@@ -5,3 +5,6 @@
 *.bak*
 d25.json
 .DS_Store
+
+# sello local de pruebas pasadas (lo escribe npm run verificar)
+dev/.sello-pruebas

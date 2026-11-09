@@ -1,0 +1,2 @@
+# Los ganchos de git deben quedar con fin de linea LF o sh no los ejecuta
+.githooks/* text eol=lf

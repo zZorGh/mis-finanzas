@@ -16,4 +16,4 @@ if(hint){const lbl=await p.locator('[data-metasug="3"]').innerText();console.log
  await p.fill('#mn',nm);await p.fill('#mobj','12345');await p.click('#addmeta');await p.waitForTimeout(300);
  st=JSON.parse(await p.evaluate(()=>localStorage.getItem('mis-finanzas-prototipo-v1')));
  T('actualiza objetivo de meta existente',st.cfg.metas.filter(m=>m.n===nm).length===1&&st.cfg.metas.find(m=>m.n===nm).o===12345);}
-await b.close();console.log('Total',ok+bad,'ok',ok,'fallas',bad);})();
+await b.close();console.log('Total',ok+bad,'ok',ok,'fallas',bad);process.exitCode=bad?1:0;})();

@@ -36,4 +36,4 @@ for(const sk of ['original','cuadre','escalon'])for(const cs of ['light','dark']
   if(r.out.length||r.over||note)all[key]={over:r.over,out:r.out.slice(0,6),n:r.out.length};}
  await p.close();}
 fs.writeFileSync('scan.json',JSON.stringify(all,null,1));
-console.log('estados con hallazgos:',Object.keys(all).length);console.log('errores JS:',errs.length?errs.slice(0,5):'ninguno');await b.close();})();
+console.log('estados con hallazgos:',Object.keys(all).length);console.log('errores JS:',errs.length?errs.slice(0,5):'ninguno');process.exitCode=errs.length?1:0;await b.close();})();

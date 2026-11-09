@@ -31,5 +31,5 @@ async function run(fakeISO,data,url,nm){
  const e=JSON.parse(JSON.stringify(d));for(const y of Object.keys(e.S))for(const m of e.S[y])if(m)for(const k of Object.keys(m))if(Array.isArray(m[k]))m[k]=[];
  r=await run('2026-11-08T15:00:00-05:00',e,U);T('sin datos -> no salta a mes',!/nov/i.test(r.cur)||/resumen/i.test(r.cur)||r.cur==='');console.log('vacío cur=',JSON.stringify(r.cur));await r.b.close();
  // 4 nosnap
- console.log(ok,'ok',bad,'mal');
+ console.log(ok,'ok',bad,'mal');process.exitCode=bad?1:0;
 })();

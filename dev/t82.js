@@ -23,4 +23,4 @@ await p.keyboard.press('Escape');
 await p.click('#lg');await p.waitForTimeout(500);
 T('vuelve a español',(await p.innerText('#hdr')).includes('Personalizar'));
 T('sin errores JS',errs.length===0);if(errs.length)console.log(errs);
-await b.close();console.log('Total',ok+bad,'ok',ok,'fallas',bad);})();
+await b.close();console.log('Total',ok+bad,'ok',ok,'fallas',bad);process.exitCode=bad?1:0;})();

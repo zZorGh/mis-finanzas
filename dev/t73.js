@@ -72,4 +72,4 @@ await p.close();
 // 6 omitir
 p=await mk('',true);await p.waitForTimeout(700);await p.click('#ob-skip');await p.waitForTimeout(300);
 T('omitir cierra',await p.locator('#onbg').count()===0);await p.close();
-await b.close();console.log('Total',ok+bad,'ok',ok,'fallas',bad);})();
+await b.close();console.log('Total',ok+bad,'ok',ok,'fallas',bad);process.exitCode=bad?1:0;})();

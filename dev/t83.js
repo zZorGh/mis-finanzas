@@ -28,4 +28,4 @@ await p.click('[data-act="adel"][data-acct="Vieja"]');await p.waitForTimeout(200
 await p.click('#toast [data-undo]');await p.waitForTimeout(300);T('deshacer la devuelve',(await lst()).includes('Vieja'));
 T('sin errores',errs.length===0);if(errs.length)console.log(errs);
 await p.screenshot({path:'del-acct.png'});
-await b.close();console.log('Total',ok+bad,'ok',ok,'fallas',bad);})();
+await b.close();console.log('Total',ok+bad,'ok',ok,'fallas',bad);process.exitCode=bad?1:0;})();

@@ -14,11 +14,14 @@ App web de finanzas personales en soles (Lima, Perú), en plan de monetizarse (f
 - Los textos legales (`legal.html`) tienen marcadores `[tu nombre completo o razón social]`, `[correo de contacto]`, `[fecha de publicación]` a propósito: los completará cuando la app genere ingresos. No los rellenes.
 
 ## Regla de oro: el repo es público y no lleva datos personales
-Nunca subas movimientos, saldos, correos, claves secretas ni el ID de su hoja de Google. La clave `sb_publishable_…` de Supabase sí es pública y va en el código; **jamás** una `service_role`/`sb_secret`. Antes de cada commit:
-```
-grep -rEi "service_role|sb_secret|SNAP\.v|<su nombre>|<su apellido>|<saldos reales conocidos>" index.html legal.html inicio   # debe dar 0
-```
-(El dueño te dará los valores reales a vigilar: nombre, apellido y cifras de su cuenta. No los escribas en archivos del repo.) El `.gitignore` ya excluye `*.xlsx`, `*.csv`, `*respaldo*.json`, `d25.json`.
+Nunca subas movimientos, saldos, correos, claves secretas ni el ID de su hoja de Google. La clave `sb_publishable_…` de Supabase sí es pública y va en el código; **jamás** una `service_role`/`sb_secret`. El `.gitignore` ya excluye `*.xlsx`, `*.csv`, `*respaldo*.json`, `d25.json`.
+
+**Se cumple sola** (`dev/regla-de-oro.js`), con los ganchos de `.githooks/`:
+- `pre-commit` bloquea claves secretas (`service_role`, `sb_secret`, `SNAP.v`), archivos de datos aunque se fuercen con `git add -f`, y los datos personales de la lista privada `~/.cuadra/vigilar.txt` (nombre, apellido, correos, cifras de su cuenta; uno por línea). **Esa lista nunca va al repo** y el aviso no muestra el dato, solo dónde está.
+- `pre-push` repite el control sobre lo que se sube y, si cambia la app (`index.html`, `legal.html`, `sw.js`, `manifest.webmanifest`, `inicio/`), exige el sello de `npm run verificar` para esa versión exacta.
+- `.claude/settings.json` impide a Claude saltarse los ganchos (`--no-verify`, `commit -n`, cambiar `core.hooksPath`).
+- En un clon nuevo, actívalos una vez: `git config core.hooksPath .githooks`. Auditoría completa del repo: `cd dev && npm run regla`.
+- Si un gancho bloquea, se corrige el contenido; **nunca** se salta.
 
 ## Arquitectura
 Todo en un archivo: `index.html` (~300 KB), JavaScript sin framework dentro de una IIFE, Chart.js 4.4.1 por CDN. Sin build ni dependencias: se edita el archivo directamente.
@@ -45,9 +48,9 @@ Selector en Ajustes → «Estilo de la app»; se guarda en `localStorage['mis-fi
 Ver `dev/README.md`. Resumen: `cd dev && npm install && npx playwright install chromium`, luego `npm test` (regresión, ~10 min) y `npm run scan` (contraste/desbordes/errores en todos los estilos). **Corre ambos antes de proponer un push.** Lección aprendida: una captura bonita no basta; los errores reales salieron al abrir estados secundarios (modo «Editar», diálogos) en cada estilo, claro y oscuro.
 
 ## Publicar
-1. `git pull`; edita; `cd dev && npm test && npm run scan`.
+1. `git pull`; edita; `cd dev && npm run verificar` (= `npm test` + `npm run scan` + sello; ~12 min, con `npm run serve` corriendo). Las pruebas y el escáner salen con error si algo falla (en el escáner, solo los errores de JS: los avisos de contraste tienen falsos positivos conocidos).
 2. Muestra captura/demo al dueño y espera su OK.
-3. grep de datos personales (arriba) = 0.
+3. Los ganchos revisan los datos personales solos (arriba).
 4. Commit en español, claro; `git push origin main`. Pages tarda 1–2 min; recargar con Ctrl+Shift+R.
 5. Si cambias `inicio/` o `legal.html`, revisa también en móvil. Las capturas de celular de la landing (`inicio/img/*.jpg`) son de la app con datos de ejemplo; hay que regenerarlas si el diseño cambia mucho.
 

@@ -1,0 +1,3 @@
+#!/bin/sh
+# Regla de oro: ver dev/regla-de-oro.js
+exec node "$(git rev-parse --show-toplevel)/dev/regla-de-oro.js" push

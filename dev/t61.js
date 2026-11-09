@@ -77,5 +77,5 @@ async function suite(tag,opts,seed){
 
   const by={};results.forEach(r=>{(by[r.name]=by[r.name]||{})[r.tag]=r;});
   let bad=0;Object.keys(by).forEach(n=>{const rs=Object.values(by[n]);const f=rs.filter(r=>!r.ok);if(f.length){bad+=f.length;console.log('FALLA  '+n+'\n'+f.map(r=>'       ['+r.tag+'] '+r.info).join('\n'));}});
-  console.log('\nTotal: '+results.length+' comprobaciones, '+results.filter(r=>r.ok).length+' ok, '+bad+' con falla.');
+  console.log('\nTotal: '+results.length+' comprobaciones, '+results.filter(r=>r.ok).length+' ok, '+bad+' con falla.');process.exitCode=bad?1:0;
 })();
