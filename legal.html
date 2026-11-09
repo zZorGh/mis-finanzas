@@ -7,7 +7,7 @@
 <meta name="robots" content="index,follow">
 <link rel="icon" type="image/png" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
 <style>
 :root{--bg:#f7f9f8;--surface:#fff;--ink:#14201b;--muted:#5a6a63;--line:#dde5e1;--accent:#047857;--on-accent:#fff;--soft:#e8f3ee;--warn-bg:#fff7e6;--warn-line:#f0d9a8;--warn-ink:#6b4a00;color-scheme:light}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1714;--surface:#16211c;--ink:#e8f0ec;--muted:#9bb0a6;--line:#27382f;--accent:#34d399;--on-accent:#06281c;--soft:#173226;--warn-bg:#2a2412;--warn-line:#5a4a1c;--warn-ink:#f0d9a0;color-scheme:dark}}
@@ -44,6 +44,14 @@ html[data-lang="es"] .tools button[data-l="es"],html[data-lang="en"] .tools butt
 section[hidden]{display:none!important}
 footer{margin-top:36px;color:var(--muted);font-size:13px}
 @media (max-width:480px){.card{padding:4px 14px 16px}}
+/* cuadra-cuadre v13 */
+:root{--bg:#EEF1EF;--ink:#12201C;--line:#D3DBD7;--accent:#0B7A62}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0C1210}}
+:root[data-theme="dark"]{--bg:#0C1210}
+body{font-family:'Instrument Sans',system-ui,-apple-system,"Segoe UI",sans-serif;background-image:linear-gradient(rgba(11,122,98,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(11,122,98,.06) 1px,transparent 1px);background-size:28px 28px}
+h1,h2,h3{letter-spacing:-.03em}
+.logo{border-radius:4px;border:1.5px solid var(--ink);font-family:'Geist Mono',ui-monospace,monospace}
+.tools button,.tools a{border-radius:3px}
 </style>
 </head>
 <body>

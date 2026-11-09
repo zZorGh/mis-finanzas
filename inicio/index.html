@@ -1,11 +1,10 @@
 <title>Cuadra</title>
-<link rel="icon" type="image/png" href="../icon-192.png"><link rel="apple-touch-icon" href="../icon-192.png">
 <meta charset="utf-8">
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Registra tus gastos en segundos, controla Yape, Plin y efectivo, sigue tus ahorros con su TREA y descarga un estado de cuenta en PDF o Excel.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
 <style>
 /* Layout: banda oscura de entrada con el teléfono, luego secciones claras en una columna de 1120px; el billete de cuadre (calculadora) es el gesto propio de la marca. */
 :root{
@@ -195,6 +194,17 @@ footer nav{display:flex;flex-wrap:wrap;gap:8px 20px}
 footer a{color:var(--muted)}
 .demo-flag{font:600 11px var(--fm);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:6px;padding:2px 6px}
 img{max-width:100%}
+/* cuadra-cuadre v13 */
+:root{--bg:#EEF1EF;--ink:#12201C;--line:#D3DBD7;--r:6px;--deep:#12201C;--deep-2:#12201C;--fd:'Instrument Sans','Segoe UI',system-ui,sans-serif;--fb:'Instrument Sans','Segoe UI',system-ui,sans-serif;--fm:'Geist Mono',ui-monospace,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0C1210;--deep:#0A100E;--deep-2:#0A100E}}
+:root[data-theme="dark"]{--bg:#0C1210;--deep:#0A100E;--deep-2:#0A100E}
+body{background-image:linear-gradient(rgba(11,122,98,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(11,122,98,.06) 1px,transparent 1px);background-size:28px 28px}
+h1,h2,h3{letter-spacing:-.035em}
+.btn{border-radius:3px;min-height:48px}
+.btn-p{border:1.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.btn-p:active{box-shadow:1px 1px 0 var(--ink);transform:translate(2px,2px)}
+.kicker{letter-spacing:.02em;text-transform:none;font-family:var(--fb)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
 <header class="nav">
