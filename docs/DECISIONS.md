@@ -1,5 +1,7 @@
 # Registro de decisiones (ADR)
 
+> **Nota (nov. 2026).** Las primeras decisiones son de cuando el proyecto era una plantilla personal sobre Google Sheets; siguen aquí como historia. La web pública de **MisSoles** usa Supabase (ver [ARQUITECTURA](ARQUITECTURA.md)).
+
 Decisiones de arquitectura y producto de este proyecto, con su contexto, las
 alternativas que descarté y las consecuencias. Formato ADR (Architecture Decision
 Record), pensado para dejar claro el *por qué* detrás de cada elección.

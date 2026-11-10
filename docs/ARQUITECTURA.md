@@ -38,3 +38,11 @@ del producto.
   y `layout` en JSON. Row-Level Security: cada cuenta solo ve lo suyo.
 - **Google Sheet:** pestañas `Registro` (un movimiento por fila) y `Config`.
 - **Respaldo:** exportación/restauración en JSON, común a todos los entornos.
+
+## Piezas de la web pública (nov. 2026)
+
+- `index.html`: la app completa.
+- `reportes.js`: arma los reportes PDF y Excel en un Web Worker, para no congelar la pantalla.
+- `sw.js`: service worker; páginas «red primero», recursos estáticos «caché primero».
+- **Supabase:** tablas `estado` y `estado_historial` (copia diaria, 30 días) con seguridad por fila, `lista_espera` (beta por invitación: solo correos aprobados pueden crear cuenta) y límites de tamaño. El SQL está en `supabase/`.
+- **Sincronización:** copia local en el navegador, subida con espera corta, reintentos con espera creciente y tiempo límite; los datos que llegan (nube, respaldo o almacenamiento local) se normalizan antes de usarse.

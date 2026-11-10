@@ -29,6 +29,7 @@ Todo en un archivo: `index.html` (~300 KB), JavaScript sin framework dentro de u
 - Los saldos de ahorro son **acumulados entre meses y años** por nombre de cuenta (`ahoAccts`); el «ahorro del mes» y el progreso de metas cuentan solo los movimientos del mes. Por eso diciembre ya muestra saldos.
 - `localStorage['mis-finanzas-prototipo-v1']` guarda todo; `cfg` es la configuración (incluye `ahoOcultas`, `ahoV` = versión de migración). Con sesión, se sincroniza con Supabase (`estado`, `estado_historial`).
 - **Dueño de los datos locales**: `localStorage[KEY+'-owner']` guarda el id del usuario. Si entra otra cuenta en ese navegador, `sbReady` borra los datos locales (`wipeLocal()`) sin subirlos y recarga; sin marca, los adopta la primera cuenta. Cerrar sesión también llama a `wipeLocal()` (avisa si quedan cambios sin subir). Solo se conservan `-skin` y `-tema`. Toda clave nueva de datos debe empezar con `KEY` para que se borre. Prueba: `dev/t85.js`.
+- **Fecha**: `now` es la fecha de Lima (`limaD()`) y se refresca sola al cambiar el día (`dayTick`); `YEARS` va de 2025 al año siguiente al actual. No uses `new Date()` para decidir «hoy» o el «mes actual».
 - **Rutas por hash**: `#resumen`, `#enero`…`#diciembre`, `#capturar`. Sin hash y con datos, abre en el mes actual (hora de Lima); sin datos, en el Resumen.
 - `sw.js`: service worker «red primero» para las páginas.
 - **Gráficos perezosos**: `mkChart` crea cada gráfico recién cuando está a <300 px de la pantalla (IntersectionObserver). Para capturas de página completa (p. ej. `inicio/img/*.jpg`), baja con scroll antes de capturar o los gráficos de abajo saldrán vacíos.
@@ -68,7 +69,7 @@ Ver `dev/README.md`. Resumen: `cd dev && npm install && npx playwright install c
 2. Muestra captura/demo al dueño y espera su OK.
 3. Los ganchos revisan los datos personales solos (arriba).
 4. Commit en español, claro; `git push origin main`. Pages tarda 1–2 min; recargar con Ctrl+Shift+R.
-5. Si cambias `inicio/` o `legal.html`, revisa también en móvil. Las capturas de celular de la landing (`inicio/img/*.jpg`) son de la app con datos de ejemplo; hay que regenerarlas si el diseño cambia mucho.
+5. Si cambias `inicio/` o `legal.html`, revisa también en móvil. Las capturas de celular de la landing (`inicio/img/*.jpg`) y `og.jpg` salen de `cd dev && npm run capturas` (siempre con `demo.json`, nunca con datos reales); regenéralas si el diseño cambia y sube `CACHE` en `sw.js`, porque se sirven «caché primero».
 6. La landing es un documento completo: `<!doctype html>`, `<html lang="es-PE">` y `<meta name="viewport">` (sin ellos, en celulares se ve como escritorio en miniatura; `npm run scan` lo detecta emulando un teléfono real). La vista previa al compartir usa `inicio/img/og.jpg` (1200×630, datos de ejemplo); si cambian el titular o el diseño, regenérala. `sitemap.xml` va en la raíz.
 
 ## Producto y negocio
@@ -86,7 +87,7 @@ Ver `dev/README.md`. Resumen: `cd dev && npm install && npx playwright install c
 6. Sello «Cuadra» en la app cuando las cuentas coinciden con el banco (hoy solo existe en la propuesta visual).
 7. La pantalla de acceso/onboarding aún no usa la piel Cuadre (hereda colores y tipografía, pero no los bordes rectos ni la sombra dura).
 8. ~~Contraste mínimo~~ hecho: BCP, «−33%» y los días del calendario pasan 4.5:1 en los 3 estilos. El escáner ya lee `color-mix`; si salta un aviso nuevo de contraste, es real.
-9. `README.md` y `docs/*` aún hablan de «Plantilla Personal de Finanzas» y de Google Sheets; actualizarlos a Cuadra.
+9. ~~README y docs~~ hecho (nov. 2026): el README describe MisSoles; los documentos de la primera etapa llevan una nota de «histórico».
 10. Textos legales y revisión con abogado, cuando haya ingresos.
 
 ## Decisiones ya tomadas (no reabrir sin motivo)

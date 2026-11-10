@@ -1,6 +1,6 @@
 /* Service worker: la app siempre trae lo último de la red; el caché es solo para
    abrir sin conexión (muestra tus últimos datos locales). */
-const CACHE = 'mis-finanzas-v4';
+const CACHE = 'mis-finanzas-v5';
 /* Librerías pesadas de reportes: no se precargan; se guardan la primera vez que se usan. */
 const RUNTIME = [
   'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js',

@@ -1,5 +1,7 @@
 # Case study — Personal Finance Template
 
+> **Historical document (2025).** It describes the first stage of the project, when it was a personal template on top of Google Sheets. The product is now called **MisSoles** and runs on Supabase; see the [README](../README.md) for the current state.
+
 > A personal-finance tool built on top of a Google Sheet. Runs in the browser and
 > on the phone, with 50/30/20 budgeting, liquidity tracking, and credit cards
 > modeled as real credit.

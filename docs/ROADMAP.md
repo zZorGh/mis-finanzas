@@ -1,5 +1,7 @@
 # Análisis del proyecto y roadmap
 
+> **Documento histórico (2025).** Este análisis es de la primera etapa (plantilla personal sobre Google Sheets). El plan vigente de **MisSoles** está en la sección «Pendiente» de `CLAUDE.md`.
+
 Auditoría honesta de **Plantilla Personal de Finanzas**: qué está sólido, qué le
 falta y qué mejoras implementar, ordenadas por fases (ahora / siguiente / futuro)
 y por esfuerzo. Pensado como plan de producto.

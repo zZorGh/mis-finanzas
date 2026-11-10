@@ -1,5 +1,7 @@
 # Sistema de diseño: Mis finanzas (MASTER)
 
+> **Documento histórico.** Sistema de diseño de la primera versión («Mis finanzas»). Los estilos actuales (Original, Cuadre y Escalón) están descritos en `CLAUDE.md`.
+
 Fuente: UI/UX Pro Max v2.15 (`search.py --design-system`), con la selección revisada a mano
 porque el resultado automático inicial no encajaba (patrón de landing, tipografía manuscrita).
 

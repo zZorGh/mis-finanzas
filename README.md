@@ -1,33 +1,52 @@
-# Plantilla Personal de Finanzas
+# MisSoles
 
-Proyecto personal (uso propio, no comercial) para llevar mis finanzas mensuales en una página web simple (de ahí el nombre), con Google Sheets como base de datos. 
+App web de finanzas personales **en soles**, pensada para cómo se paga en el Perú: Yape, Plin, efectivo y tarjetas de crédito. Está en **beta cerrada por invitación**.
+
+- **Conócela:** https://zzorgh.github.io/mis-finanzas/inicio/
+- **App:** https://zzorgh.github.io/mis-finanzas/ (necesitas una invitación; anótate en la lista de espera desde la landing)
 
 ## Qué hace
-- Un apartado por mes y un Resumen por año, con gráficos (ingreso, gastado y ahorrado; ahorro sobre el ingreso; gastos hormiga; año contra año).
-- Apartados: Ingresos, Presupuesto (control 50/30/20), Apuntes, Gastos fijos, Gastos hormiga, BBVA, BCP, oh!, Ahorros, Inversiones y Liquidez (Yape, Plin, efectivo).
-- Al registrar un gasto pregunta de dónde sale (Yape, Plin, efectivo, banco) y lo descuenta.
-- Gastos recurrentes, traer el mes anterior, cuadrar cuentas, meta del fondo de emergencia con fecha y aviso del límite de gastos hormiga.
-- Tarjetas que se mueven, cambian de tamaño, se configuran o se ocultan (modo Personalizar). Moneda configurable por apartado.
-- Respaldo: descarga en JSON o CSV y restauración desde el JSON.
+- **Registro en segundos:** un botón «+», o escribe «almuerzo 25 yape» y la app llena el resto. Entiende montos como `1,200` o `S/ 12.50`.
+- **Tu dinero real:** cada gasto se descuenta de la cuenta de donde salió (Yape, Plin, efectivo), y «Cuadrar cuentas» lo iguala con el saldo de tu banco.
+- **Tarjetas de crédito como deuda**, no como gasto doble: línea, deuda, disponible y día de pago.
+- **Ahorros** por cuenta, con TREA o TEA y lo que ganarías al mes y al año; metas y fondo de emergencia.
+- **Presupuesto 50/30/20**, gastos hormiga con alerta, gastos recurrentes y resumen del año con gráficos.
+- **Reportes** en PDF y Excel con formato de estado de cuenta.
+- **Tus datos son tuyos:** cuenta privada, historial de 30 días para volver atrás, copia completa descargable, funciona sin señal y se sincroniza al volver.
+- Español e inglés, tema claro y oscuro, tres estilos, y se instala en el celular como una app.
 
+## Cómo está hecha
+- **Sin framework y sin paso de compilación:** la app es un solo `index.html` (HTML, CSS y JavaScript), más `reportes.js` (arma los PDF y Excel en un Web Worker) y `sw.js` (funciona sin conexión). Se publica con GitHub Pages desde `main`.
+- **Datos:** Supabase (Postgres, Auth y seguridad por fila: cada cuenta solo ve lo suyo). En el navegador se guarda una copia local para trabajar sin señal.
+- **Librerías por CDN, verificadas con SRI:** Chart.js, supabase-js y, solo al generar reportes, ExcelJS y jsPDF.
+- **Landing** en `inicio/` y textos legales en `legal.html`.
 
-## Case study
+```
+index.html      la app
+reportes.js     reportes PDF/Excel (Web Worker)
+sw.js           service worker
+inicio/         landing y sus capturas
+legal.html      términos y privacidad
+supabase/       SQL de tablas, políticas y límites
+dev/            pruebas, escáner y herramientas (no se publica como parte de la app)
+docs/           decisiones y documentos históricos del proyecto
+```
 
-Las decisiones de producto y sus trade-offs están en [`docs/CASE-STUDY.md`](docs/CASE-STUDY.md). · In English: [`docs/CASE-STUDY.en.md`](docs/CASE-STUDY.en.md).
+## Probar
+```bash
+cd dev
+npm install
+npx playwright install chromium
+npm run serve      # en otra terminal
+npm run verificar  # regresión + escáner (~15 min)
+```
+Más detalle en [`dev/README.md`](dev/README.md). Las pruebas usan una cuenta de ejemplo (`dev/demo.json`) y un Supabase simulado: nada toca la base real.
 
-## Cómo está hecho
-- Un solo archivo `index.html`: HTML, CSS y JavaScript sin framework. Gráficos con Chart.js 4.4.1 (cdnjs) y fuentes IBM Plex (Google Fonts).
-- Los datos se guardan en el navegador (localStorage) y, si se conecta, en dos pestañas de una hoja de Google: `Registro` (un movimiento por fila) y `Config` (ajustes, diseño y marca de guardado).
-- Pensada para publicarse como *artifact* de claude.ai: ahí usa el conector de Google Sheets del usuario (`mcp`) y las descargas (`downloads`). Fuera de claude.ai funciona igual, pero solo con datos locales y sin conexión a la hoja ni descargas.
-- Diseño: ver [`docs/MASTER.md`](docs/MASTER.md).
+## Privacidad del repositorio
+Este repositorio es público y **no contiene datos personales**: ni movimientos, ni saldos, ni correos. Los ganchos de `.githooks/` lo comprueban en cada commit y en cada subida (`dev/regla-de-oro.js`). La clave `sb_publishable_…` que aparece en el código es pública por diseño; la seguridad está en las políticas de la base de datos.
 
-## Privacidad
-Este repositorio no incluye datos personales: ni movimientos, ni saldos, ni el ID de la hoja. Los datos viven en mi navegador y en mi hoja de Google. El ID de la hoja se escribe en Ajustes, dentro del Resumen.
-
-## Pendiente
-- Ingreso de gastos desde el celular por WhatsApp (requiere un servicio externo que reciba los mensajes).
-- Cargar enero a junio de 2025.
-
-Registro de decisiones (ADR): [`docs/DECISIONS.md`](docs/DECISIONS.md).
-
-Análisis y roadmap: [`docs/ROADMAP.md`](docs/ROADMAP.md).
+## Documentación
+- [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md): cómo elige la app su capa de datos.
+- [`docs/DECISIONS.md`](docs/DECISIONS.md): registro de decisiones.
+- [`docs/CASE-STUDY.md`](docs/CASE-STUDY.md) · [English](docs/CASE-STUDY.en.md), [`docs/ROADMAP.md`](docs/ROADMAP.md) y [`docs/MASTER.md`](docs/MASTER.md): documentos de la primera etapa del proyecto, cuando era una plantilla personal sobre Google Sheets. Se conservan como historia.
+- `CLAUDE.md`: guía de trabajo y estado actual del proyecto.
