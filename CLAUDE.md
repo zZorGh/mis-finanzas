@@ -11,7 +11,7 @@ App web de finanzas personales en soles (Lima, Perú), en plan de monetizarse (f
 - Responde en español, breve y cercano; da tu opinión sincera, incluso si no le gusta.
 - **Antes de subir algo, enséñale una demo** (captura o servidor local) y **espera su OK explícito**. No hagas push sin él.
 - Cambios en la base de datos (Supabase), solo con su aprobación explícita.
-- Los textos legales (`legal.html`) tienen marcadores `[tu nombre completo o razón social]`, `[correo de contacto]`, `[fecha de publicación]` a propósito: los completará cuando la app genere ingresos. No los rellenes.
+- Los textos legales (`legal.html`) ya llevan el nombre del responsable, su correo de contacto y la fecha (10 nov. 2026), por decisión expresa del dueño al abrir la beta. Si cambia el titular (p. ej. una empresa) o la fecha, se actualizan los tres sitios de cada idioma. Esos datos se quitaron a propósito de `~/.cuadra/vigilar.txt` para que el gancho no los bloquee; no los vuelvas a añadir ahí.
 
 ## Regla de oro: el repo es público y no lleva datos personales
 Nunca subas movimientos, saldos, correos, claves secretas ni el ID de su hoja de Google. La clave `sb_publishable_…` de Supabase sí es pública y va en el código; **jamás** una `service_role`/`sb_secret`. El `.gitignore` ya excluye `*.xlsx`, `*.csv`, `*respaldo*.json`, `d25.json`.
