@@ -438,6 +438,12 @@ h1{letter-spacing:-.03em}
 .cap-streak b{color:var(--accent);font-family:var(--font-num)}
 @media (max-width:560px){.rw.ring,.rw.rgas,.rw.raho{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 84px!important;min-width:0!important;row-gap:6px;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--line)}.rw.lb.ring,.rw.lb.rgas,.rw.lb.raho,.rw.lb.reur{display:none}.rw.ring>:first-child,.rw.rgas>:first-child,.rw.raho>:first-child{grid-column:1/3}.rw.ring>.rwx,.rw.rgas>.rwx,.rw.raho>.rwx{grid-column:3;grid-row:1}.rw.reur{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px!important;min-width:0!important;row-gap:6px;margin-bottom:8px}.rw.reur>.x{grid-column:3;grid-row:1/span 2;align-self:center}.kv{font-size:clamp(14px,4.4vw,18px);white-space:nowrap}}
 @media (pointer:coarse){.x{width:40px;height:40px;font-size:18px}.rw .rwx .x{width:38px}.fab{width:54px;height:54px}}
+/* Celular: botones de 44 px como mínimo para el dedo */
+@media (pointer:coarse){select,.ctl button,.caplink{height:44px}.nav{width:44px;height:44px}.curbtn{min-width:44px;min-height:44px}.toast [data-undo]{min-height:44px;padding:0 10px}}
+/* El + se esconde al bajar (para no tapar los montos de la derecha) y vuelve al subir */
+.fab.oculto{transform:translateY(calc(100% + 40px));pointer-events:none}
+/* El aviso usa el ancho que necesita (antes se apretaba a la mitad de la pantalla) */
+.toast{width:max-content}
 .sh.solid .cbadge{color:#fff;border-color:rgba(255,255,255,.75)}
 .mwrap{position:relative;display:block;min-width:0}.mwrap input{padding-left:24px!important;width:100%}.curb{position:absolute;left:8px;top:50%;transform:translateY(-50%);font:600 11px var(--mono,ui-monospace,monospace);color:var(--accent);pointer-events:none}.curbtn{font:inherit;color:inherit;background:var(--surface-2,transparent);border:1px solid var(--line);border-radius:8px;padding:2px 8px;cursor:pointer}.curbtn:disabled{cursor:default;opacity:.8}.ahonote{margin:8px 15px;padding:8px 10px;border-radius:8px;background:var(--surface-2,rgba(0,0,0,.04))}.ahoflow{margin:6px 15px}.movl{margin:10px 15px;display:grid;gap:4px}.movi{display:grid;grid-template-columns:64px 1fr auto;gap:8px;font-size:13px;padding:4px 0;border-top:1px solid var(--line)}.ahm{display:grid;gap:6px;margin:6px 0 10px}
 .tcm .cb{display:flex;flex-wrap:wrap;align-items:center;gap:6px 20px}.tcm .cb>.ttl{margin:0}.tcm .cb>.ms{flex:1 0 100%;margin:0}.tcm-row{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:4px 0}.tcm-row label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:120px;flex:0 1 160px}.tc-date{margin:-2px 0 10px}
@@ -1508,6 +1514,7 @@ function openSheet(){
   document.getElementById('sa').focus();
 }
 document.getElementById('fab').addEventListener('click',()=>{openSheet();sheetFrom=document.getElementById('fab');});
+(()=>{const f=document.getElementById('fab');let y0=scrollY;addEventListener('scroll',()=>{const y=scrollY,fin=y+innerHeight>=document.documentElement.scrollHeight-80;if(Math.abs(y-y0)<8&&!fin)return;f.classList.toggle('oculto',y>y0&&y>120&&!fin);y0=y;},{passive:true});})();
 function openEdit(s,i,mo){
   const mi=(mo==null)?(typeof view==='number'?view:((year===String(now.getFullYear()))?now.getMonth():0)):mo;
   const r=S[year][mi]&&S[year][mi][s]&&S[year][mi][s][i];if(!r)return;
