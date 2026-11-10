@@ -45,7 +45,7 @@ p=await mk();await p.evaluate(()=>window.__cb('PASSWORD_RECOVERY',{user:{id:'u1'
 // 4 eliminar cuenta
 p=await mk('',true);await p.waitForTimeout(700);if(await p.locator('#ob-skip').count())await p.click('#ob-skip');await p.waitForTimeout(200);
 T('sesión activa sin auth',await p.locator('#authbg').count()===0);
-let found=await p.locator('#del-go').count();
+await p.evaluate(()=>location.hash='#ajustes');await p.waitForTimeout(400);let found=await p.locator('#del-go').count();
 if(!found){for(const t of ['Personalizar','Tema']){const bt=p.locator('button',{hasText:t}).first();if(await bt.count()){await bt.click({timeout:2000}).catch(()=>{});await p.waitForTimeout(300);if(await p.locator('#del-go').count()){found=1;break;}}}}
 T('botón eliminar existe',found>0);
 if(found){await p.locator('details.danger summary').scrollIntoViewIfNeeded();await p.locator('details.danger summary').click();

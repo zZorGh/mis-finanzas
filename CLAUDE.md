@@ -61,6 +61,7 @@ Ver `dev/README.md`. Resumen: `cd dev && npm install && npx playwright install c
 - Su meta financiera n.º 1 es el fondo de emergencia (la app lo muestra en escalones).
 
 ## Pendiente (de más a menos valor)
+0. **Del dueño, después del rediseño (nov. 2026):** reservar `missoles.pe`; registrar «MisSoles» en Indecopi (mejor marca mixta); mandar invitaciones con `…/mis-finanzas/#crear` y marcar `aprobado` en `lista_espera`.
 1. Beta con 5–10 personas; mensaje de invitación con el link de `/inicio/`.
 2. Activar la protección de contraseñas filtradas en Supabase.
 3. Importar movimientos del banco (CSV/Excel) — pospuesto, sería la función de pago más valiosa.

@@ -24,7 +24,7 @@ const SCAN=()=>{
  return {out,over:document.documentElement.scrollWidth>innerWidth+1};
 };
 (async()=>{const b=await chromium.launch();const all={};const errs=[];
-const states=[['#resumen',null],['#noviembre',null],['#octubre',null],['#noviembre','#ed'],['#noviembre','[data-act="liqedit"]'],['#noviembre','[data-act="cierre"]'],['#noviembre','[data-act="rep"]'],['#resumen','[data-act="mover"]'],['#resumen','[data-act="anew"]'],['#resumen','[data-act="aren"]'],['#capturar',null],['#noviembre','[data-act="pagar"]']];
+const states=[['#resumen',null],['#noviembre',null],['#octubre',null],['#noviembre','#ed'],['#noviembre','[data-act="liqedit"]'],['#noviembre','[data-act="cierre"]'],['#noviembre','[data-act="rep"]'],['#resumen','[data-act="mover"]'],['#resumen','[data-act="anew"]'],['#resumen','[data-act="aren"]'],['#capturar',null],['#ajustes',null],['#noviembre','.tcmd summary'],['#noviembre','[data-act="pagar"]']];
 for(const sk of ['original','cuadre','escalon'])for(const cs of ['light','dark'])for(const [w,h] of [[390,844],[1280,900]]){
  const p=await (await b.newContext({viewport:{width:w,height:h},colorScheme:cs})).newPage();p.on('pageerror',e=>errs.push(sk+cs+w+' '+e.message));
  await p.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({contentType:'application/javascript',headers:{'access-control-allow-origin':'*'},body:chart});return r.abort();});

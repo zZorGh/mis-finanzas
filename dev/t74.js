@@ -5,7 +5,7 @@ let ok=0,bad=0;const T=(n,c)=>{c?ok++:(bad++,console.log('FALLA',n));};
 (async()=>{const b=await chromium.launch();const p=await (await b.newContext({viewport:{width:1300,height:900}})).newPage();
 await p.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({contentType:'application/javascript',headers:{'access-control-allow-origin':'*'},body:chart});return r.abort();});
 await p.addInitScript(s=>{if(!localStorage.getItem('qa_x')){localStorage.setItem('mis-finanzas-prototipo-v1',s);localStorage.setItem('qa_x','1');}window.claude={use:async()=>null};},JSON.stringify(d));
-await p.goto('http://127.0.0.1:8765/wrap-repo.html#resumen');await p.waitForTimeout(900);
+await p.goto('http://127.0.0.1:8765/wrap-repo.html#ajustes');await p.waitForTimeout(900);
 const hint=await p.locator('[data-metasug="3"]').count();T('aparecen sugerencias',hint===1);
 if(hint){const lbl=await p.locator('[data-metasug="3"]').innerText();console.log('3 meses ->',lbl);
  await p.click('[data-metasug="3"]');const v=+await p.inputValue('#mobj');T('rellena objetivo',v>0);

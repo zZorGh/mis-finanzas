@@ -46,7 +46,7 @@ const seed=(owner,dirty)=>`if(!sessionStorage.getItem('__seeded')){sessionStorag
  T('3 sin errores',p.errs.length===0);await p.context().close();
 
  // 4 Cerrar sesión borra los datos del navegador pero no el estilo.
- p=await mk('uA','uA',false,'#resumen');
+ p=await mk('uA','uA',false,'#ajustes');
  await p.locator('#sb-logout').scrollIntoViewIfNeeded();await p.click('#sb-logout');await p.waitForTimeout(1500);
  L=await ups(p);
  T('4 llama a signOut',L.some(x=>x[0]==='out'));
@@ -56,7 +56,7 @@ const seed=(owner,dirty)=>`if(!sessionStorage.getItem('__seeded')){sessionStorag
  T('4 sin errores',p.errs.length===0);await p.context().close();
 
  // 5 Cerrar sesión con cambios sin subir (sin señal): avisa; si cancela, no cierra ni borra.
- p=await mk('uA','uA',true,'#resumen',true);
+ p=await mk('uA','uA',true,'#ajustes',true);
  let asked='';p.once('dialog',d=>{asked=d.message();d.dismiss();});
  await p.locator('#sb-logout').scrollIntoViewIfNeeded();await p.click('#sb-logout');await p.waitForTimeout(1200);
  T('5 avisa de cambios sin subir',/no se subieron/.test(asked));
