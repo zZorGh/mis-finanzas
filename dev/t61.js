@@ -20,7 +20,7 @@ async function suite(tag,opts,seed){
   const go=async h=>{await p.evaluate(x=>location.hash=x,h);await p.waitForTimeout(250);};
   const chk=async(name,fn)=>{const e0=errs.length;let r;try{r=await fn();}catch(e){r='EXCEPCIÓN '+String(e.message).split('\n')[0].slice(0,140);}
     const newErr=errs.slice(e0);const okk=(r===true||r===undefined)&&!newErr.length;results.push({tag,name,ok:okk,info:okk?'':(r!==true&&r!==undefined?r:'')+(newErr.length?' | errores: '+newErr.join(' / ').slice(0,200):'')});};
-  const openSheet=async(t)=>{await p.click('#fab');await p.waitForSelector('#sheet');if(t)await pickT(p,t);};
+  const openSheet=async(t)=>{await p.click(await p.isVisible('#fab')?'#fab':'.caplink');await p.waitForSelector('#sheet');if(t)await pickT(p,t);};
   const save=async()=>{await p.click('[data-s="save"]');await p.waitForTimeout(250);};
   const nov=async()=>{await go('noviembre');await p.waitForSelector('#kA');};
   // ---------- navegación
