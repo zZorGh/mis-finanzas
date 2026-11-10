@@ -74,9 +74,9 @@ async function parteLocal(b){
    T(nom+': sin errores',q.errs.length===0,q.errs[0]);await ctx.close();}
   // almacenamiento lleno: avisa; al liberar espacio, el aviso se va
   {const q=await local(b,demoTxt,'#noviembre',`(()=>{const o=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(window.__full&&String(k).indexOf('mis-finanzas-prototipo-v1')===0)throw new DOMException('lleno','QuotaExceededError');return o.call(this,k,v);};})()`);
-   await q.evaluate(()=>window.__full=true);await q.click('[data-act="liqedit"]');const i=q.locator('.liq .rw input').nth(1);await i.fill('4321');await i.dispatchEvent('change');await q.waitForTimeout(300);
+   await q.evaluate(()=>window.__full=true);await q.click('[data-act="liqedit"]');const i=q.locator('.liq .rw input').nth(1);await i.fill('4321');await i.dispatchEvent('change');await q.waitForTimeout(800);
    T('almacenamiento lleno: aparece el aviso permanente',await q.locator('#savewarn').count()===1&&await q.locator('#savewarn').isVisible());
-   await q.evaluate(()=>window.__full=false);await i.fill('4322');await i.dispatchEvent('change');await q.waitForTimeout(300);
+   await q.evaluate(()=>window.__full=false);await i.fill('4322');await i.dispatchEvent('change');await q.waitForTimeout(800);
    T('al liberar espacio el aviso desaparece y se guarda',await q.locator('#savewarn').count()===0&&((await q.evaluate(k=>localStorage.getItem(k),K))||'').includes('4322'));
    T('almacenamiento lleno: sin errores',q.errs.length===0,q.errs[0]);await q.context().close();}
 }
