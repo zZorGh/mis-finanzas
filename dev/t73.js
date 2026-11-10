@@ -27,7 +27,7 @@ await p.fill('#au-email','ana@mail.pe');await p.click('#au-fp');await p.waitForT
 const lg=await p.evaluate(()=>window.__log);T('reset llamado con correo',lg.some(x=>x[0]==='reset'&&x[1]==='ana@mail.pe'&&/wrap-repo/.test(x[2]||'')));
 T('mensaje genérico',/Si ese correo tiene cuenta/.test(await p.innerText('#au-msg')));
 await p.fill('#au-pass','x');await p.click('#au-in');await p.waitForTimeout(200);T('error traducido',/incorrectos/.test(await p.innerText('#au-msg')));
-await p.fill('#au-pass','corta');await p.click('#au-up');T('mín 8 al crear',/8 caracteres/.test(await p.innerText('#au-msg')));
+await p.click('#au-up');T('crear cuenta abre su pantalla',await p.locator('#au-pass2').count()===1&&(await p.inputValue('#au-email'))==='ana@mail.pe');await p.fill('#au-pass','corta');await p.fill('#au-pass2','corta');await p.click('#au-go');T('mín 8 al crear',/8 caracteres/.test(await p.innerText('#au-msg')));await p.fill('#au-pass','Clave12345');await p.fill('#au-pass2','Clave12346');await p.click('#au-go');T('contraseñas distintas',/no coinciden/.test(await p.innerText('#au-msg')));await p.click('#au-sw');T('vuelve a entrar',await p.locator('#au-in').count()===1&&await p.locator('#au-pass2').count()===0);
 await p.close();
 // 2 recuperación
 p=await mk('#access_token=x&type=recovery',true);
