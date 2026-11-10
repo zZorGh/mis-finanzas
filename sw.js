@@ -1,6 +1,12 @@
 /* Service worker: la app siempre trae lo último de la red; el caché es solo para
    abrir sin conexión (muestra tus últimos datos locales). */
-const CACHE = 'mis-finanzas-v3';
+const CACHE = 'mis-finanzas-v4';
+/* Librerías pesadas de reportes: no se precargan; se guardan la primera vez que se usan. */
+const RUNTIME = [
+  'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js',
+  'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+  'https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js'
+];
 const ASSETS = [
   './manifest.webmanifest',
   './icon-192.png',
@@ -37,7 +43,7 @@ self.addEventListener('fetch', e => {
   // Recursos estáticos (scripts, íconos): caché primero, rápido.
   e.respondWith(
     caches.match(req).then(hit => hit || fetch(req).then(resp => {
-      try { if (resp && resp.ok && (url.origin === location.origin || ASSETS.indexOf(req.url) >= 0)) { const cp = resp.clone(); caches.open(CACHE).then(c => c.put(req, cp)); } } catch (_) {}
+      try { if (resp && resp.ok && (url.origin === location.origin || ASSETS.indexOf(req.url) >= 0 || RUNTIME.indexOf(req.url) >= 0)) { const cp = resp.clone(); caches.open(CACHE).then(c => c.put(req, cp)); } } catch (_) {}
       return resp;
     }).catch(() => undefined))
   );

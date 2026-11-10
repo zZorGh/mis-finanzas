@@ -4,7 +4,7 @@
   "scripts": {
     "wrap": "node build-wrap.js",
     "serve": "node srv.js",
-    "test": "node build-wrap.js && node t61.js wrap-repo.html && node t73.js && node t74.js && node t82.js && node t83.js && node t84.js && node t85.js && node t86.js",
+    "test": "node build-wrap.js && node t61.js wrap-repo.html && node t73.js && node t74.js && node t82.js && node t83.js && node t84.js && node t85.js && node t86.js && node t87.js",
     "scan": "node build-wrap.js && node scan.js && node scan-auth.js && node scan-web.js",
     "verificar": "npm test && npm run scan && node regla-de-oro.js sello",
     "regla": "node regla-de-oro.js todo"

@@ -8,3 +8,7 @@ d25.json
 
 # sello local de pruebas pasadas (lo escribe npm run verificar)
 dev/.sello-pruebas
+
+# copia generada por build-wrap.js para las pruebas
+dev/reportes.js
+dev/wrap-repo.html

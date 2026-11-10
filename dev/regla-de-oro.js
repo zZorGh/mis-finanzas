@@ -11,7 +11,7 @@ const SECRETOS=/service_role|sb_secret|SNAP\.v/i;
 // Estos archivos explican la regla y por eso nombran los patrones; los datos personales se buscan igual en ellos.
 const EXENTOS=new Set(['CLAUDE.md','dev/README.md','dev/regla-de-oro.js']);
 const ARCHIVO_PROHIBIDO=/\.(xlsx|csv)$|respaldo[^/]*\.json$|(^|\/)d25\.json$|\.bak/i;
-const APP=['index.html','legal.html','sw.js','manifest.webmanifest','inicio'];
+const APP=['index.html','reportes.js','legal.html','sw.js','manifest.webmanifest','inicio'];
 const VIGILAR=process.env.CUADRA_VIGILAR||path.join(os.homedir(),'.cuadra','vigilar.txt');
 const CERO=/^0+$/;
 

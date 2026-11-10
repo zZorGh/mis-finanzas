@@ -1,0 +1,9 @@
+# MisSoles: rastreo permitido solo en la landing y las páginas legales.
+# La app (inicio de sesión) lleva noindex; /dev, /supabase y /docs no aportan nada a quien busca.
+User-agent: *
+Allow: /
+Disallow: /dev/
+Disallow: /supabase/
+Disallow: /docs/
+
+Sitemap: https://zzorgh.github.io/mis-finanzas/sitemap.xml
