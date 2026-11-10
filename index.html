@@ -903,8 +903,14 @@ function dv(m){const f=(k)=>solesOf(m,k);
 
 const cv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const CH=[];
-const killCharts=()=>{CH.splice(0).forEach(c=>c.destroy());};
-function mkChart(id,conf){const el=document.getElementById(id);if(!el||!window.Chart)return;if(LANG==='en'){try{const dd=conf.data;if(dd.labels)dd.labels=dd.labels.map(T);dd.datasets.forEach(s=>{if(typeof s.label==='string')s.label=T(s.label);});}catch(x){}}CH.push(new Chart(el,conf));}
+/* Gráficos perezosos: cada gráfico se crea recién cuando está cerca de la pantalla. */
+let chIO=null;const chPend=new Map();
+const killCharts=()=>{CH.splice(0).forEach(c=>c.destroy());if(chIO)chPend.forEach((f,el)=>chIO.unobserve(el));chPend.clear();};
+function mkChart(id,conf){const el=document.getElementById(id);if(!el||!window.Chart)return;if(LANG==='en'){try{const dd=conf.data;if(dd.labels)dd.labels=dd.labels.map(T);dd.datasets.forEach(s=>{if(typeof s.label==='string')s.label=T(s.label);});}catch(x){}}const make=()=>CH.push(new Chart(el,conf));
+  const r=el.getBoundingClientRect();
+  if(!('IntersectionObserver' in window)||(r.top<innerHeight+300&&r.bottom>-300)){make();return;}
+  if(!chIO)chIO=new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)return;const f=chPend.get(e.target);if(!f)return;chPend.delete(e.target);chIO.unobserve(e.target);f();}),{rootMargin:'300px 0px'});
+  chPend.set(el,make);chIO.observe(el);}
 const base=anim=>({responsive:true,maintainAspectRatio:false,animation:(anim&&!reduce)?{duration:450}:false});
 const axes=yf=>({x:{ticks:{color:cv('--muted'),font:{size:11},autoSkip:false},grid:{display:false},border:{color:cv('--line')}},y:{beginAtZero:true,ticks:{color:cv('--muted'),font:{size:11},callback:yf||(v=>v>=1000?(v/1000)+'k':v)},grid:{color:cv('--line')},border:{display:false}}});
 const tipMoney={callbacks:{label:c=>' '+c.dataset.label+': '+fmt(c.parsed.y)}};

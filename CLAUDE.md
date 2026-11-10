@@ -31,6 +31,8 @@ Todo en un archivo: `index.html` (~300 KB), JavaScript sin framework dentro de u
 - **Dueño de los datos locales**: `localStorage[KEY+'-owner']` guarda el id del usuario. Si entra otra cuenta en ese navegador, `sbReady` borra los datos locales (`wipeLocal()`) sin subirlos y recarga; sin marca, los adopta la primera cuenta. Cerrar sesión también llama a `wipeLocal()` (avisa si quedan cambios sin subir). Solo se conservan `-skin` y `-tema`. Toda clave nueva de datos debe empezar con `KEY` para que se borre. Prueba: `dev/t85.js`.
 - **Rutas por hash**: `#resumen`, `#enero`…`#diciembre`, `#capturar`. Sin hash y con datos, abre en el mes actual (hora de Lima); sin datos, en el Resumen.
 - `sw.js`: service worker «red primero» para las páginas.
+- **Gráficos perezosos**: `mkChart` crea cada gráfico recién cuando está a <300 px de la pantalla (IntersectionObserver). Para capturas de página completa (p. ej. `inicio/img/*.jpg`), baja con scroll antes de capturar o los gráficos de abajo saldrán vacíos.
+- **Rutas extra**: `#ajustes` es pantalla propia (antes vivía al fondo del Resumen). En celular (<900 px) hay barra inferior `#bnav` y atajos «Ir a…» (`data-jump`).
 
 ### Supabase
 Tablas `estado` y `estado_historial` (RLS por usuario), RPC `delete_my_account()` (SECURITY DEFINER a propósito; el aviso del linter es esperado), y `lista_espera` (insert anónimo, nadie puede leerla con la clave pública; los correos se ven en el Table Editor). SQL en `supabase/`. Pendiente suyo: activar «Leaked password protection» en Authentication.
