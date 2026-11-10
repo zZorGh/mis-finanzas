@@ -1,6 +1,6 @@
 {
-  "name": "Cuadra",
-  "short_name": "Cuadra",
+  "name": "MisSoles",
+  "short_name": "MisSoles",
   "description": "Tus finanzas por mes y por año, con control 50/30/20, liquidez y tarjetas.",
   "start_url": "./",
   "scope": "./",

@@ -1,6 +1,6 @@
-# Cuadra — guía para Claude Code
+# MisSoles — guía para Claude Code
 
-App web de finanzas personales en soles (Lima, Perú), en plan de monetizarse (freemium). Antes se llamaba «Plantilla de Finanzas» / «Mis finanzas». Dueño: el autor del repo (habla español).
+App web de finanzas personales en soles (Lima, Perú), en plan de monetizarse (freemium). Nombre oficial: **MisSoles** (desde nov. 2026; «Cuadra» estaba registrada en Indecopi). Antes: «Cuadra», «Plantilla de Finanzas», «Mis finanzas». La clave `cuadra-lang` y el estilo «Cuadre» conservan su nombre a propósito. Dueño: el autor del repo (habla español).
 
 - App: https://zzorgh.github.io/mis-finanzas/ (`index.html`, raíz del repo)
 - Landing: `/inicio/` · Legal: `legal.html` (`#privacidad`, `#terminos`)
