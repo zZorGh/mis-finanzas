@@ -521,7 +521,7 @@ h1,h2,h3{letter-spacing:-.035em}
     $('w-x').textContent='';const ok=$('w-ok'),btn=$('w-b');btn.disabled=true;btn.textContent='Enviando…';
     const done=m=>{ok.hidden=false;ok.textContent=m;btn.textContent='Listo';};
     fetch('https://lmjhlghwthydpeismulb.supabase.co/rest/v1/lista_espera',{method:'POST',headers:{'Content-Type':'application/json',apikey:'sb_publishable_Chi2CqOxqdL_15IggSgUZA_09aZ4XEf',Authorization:'Bearer sb_publishable_Chi2CqOxqdL_15IggSgUZA_09aZ4XEf',Prefer:'return=minimal'},body:JSON.stringify({nombre:n.slice(0,80),correo:em.toLowerCase(),hoy:$('w-h').value||null})})
-    .then(r=>{if(r.ok)done('Listo, '+n+'. Quedaste en la lista de la beta: te escribiremos a '+em+' cuando abramos.');else if(r.status===409)done('Listo, '+n+'. Quedaste en la lista de la beta: te escribiremos a '+em+' cuando abramos.');else throw new Error(r.status);})
+    .then(r=>{if(r.ok)done('Listo, '+n+'. Quedaste en la lista de la beta. Ahora no te llegará ningún correo: cuando tu invitación esté lista te escribiremos a '+em+'. Entonces crea tu cuenta con ese mismo correo.');else if(r.status===409)done('Listo, '+n+'. Quedaste en la lista de la beta. Ahora no te llegará ningún correo: cuando tu invitación esté lista te escribiremos a '+em+'. Entonces crea tu cuenta con ese mismo correo.');else throw new Error(r.status);})
     .catch(()=>{btn.disabled=false;btn.textContent='Quiero entrar a la beta';$('w-x').textContent='No pude guardarte ahora. Revisa tu conexión e inténtalo de nuevo.';});});
 })();
 </script>

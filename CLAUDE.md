@@ -89,6 +89,7 @@ Ver `dev/README.md`. Resumen: `cd dev && npm install && npx playwright install c
 8. ~~Contraste mínimo~~ hecho: BCP, «−33%» y los días del calendario pasan 4.5:1 en los 3 estilos. El escáner ya lee `color-mix`; si salta un aviso nuevo de contraste, es real.
 9. ~~README y docs~~ hecho (nov. 2026): el README describe MisSoles; los documentos de la primera etapa llevan una nota de «histórico».
 10. Textos legales y revisión con abogado, cuando haya ingresos.
+11. **Visión a futuro (decidida nov. 2026): una sola app** que mezcle MisSoles con CoreFlow (`C:\proyectos\P.CoreFlow\coreflow`: Agenda, Tareas, asistente con IA, resúmenes). Va **después de la beta**, no antes. Idea de base: MisSoles sigue siendo el motor de dinero (saldos reales por cuenta); se le añaden Agenda con gasto previsto vs. saldos, Tareas, asistente con Claude (function calling; la IA nunca calcula dinero) y resumen diario. Se reutilizan las ideas de CoreFlow, no su código Django. Antes de construir, decidir con el dueño la arquitectura (ver la conversación del 11 nov. 2026).
 
 ## Decisiones ya tomadas (no reabrir sin motivo)
 - «Gasto por día» cuenta solo gastos fijos y hormiga (dinero líquido); los consumos de tarjeta no entran, a propósito. Si no hay gastos, el mensaje lo explica.
