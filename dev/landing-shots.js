@@ -24,7 +24,7 @@ const hist=[[0,404],[1,401],[2,398],[5,391]].map(([n,f])=>({dia:dia(n),tipo:'dia
   await go('#resumen');await shot('resumen');
   await go('#noviembre');await shot('mes');
   // registrar un gasto hormiga
-  await abrir();await p.click('#stype [data-g="gasto"]');await p.click('#ssub [data-t="hor"]');await p.fill('#sa','12.50');await p.fill('#sd','Menú del día');await p.click('#ssrc [data-src="liq:0"]');await p.locator('#sd').blur();await shot('registrar');await cerrar();
+  await abrir();await p.click('#stype [data-g="gasto"]');await p.fill('#sa','12.50');await p.fill('#sd','Menú del día');await p.click('#ssrc [data-src="liq:0"]');await p.locator('#sd').blur();await shot('registrar');await cerrar();
   // compra con tarjeta
   await abrir();await p.click('#stype [data-g="tarjeta"]');await p.click('#ssub [data-t="compra"]');await p.click('#sbank [data-b="bcp"]');await p.fill('#sa','89.90');await p.fill('#sd','Zapatillas');await p.locator('#sd').blur();await shot('tarjeta');await cerrar();
   // depósito a ahorro

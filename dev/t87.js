@@ -39,7 +39,7 @@ async function parteLocal(b){
     T(n+': sin código y la app sigue viva tras recargar',!xss&&txt.includes('Sueldo')&&p.errs.length===0,{xss,err:p.errs[0]});await p.context().close();}
   // montos
   const p=await local(b,demoTxt,'#noviembre');
-  const reg=async(txt)=>{await p.click('.caplink');await p.waitForSelector('#sheet');await p.click('#stype [data-g="gasto"]');await p.click('#ssub [data-t="hor"]');await p.fill('#sa',txt);await p.fill('#sd','T87 '+txt);await p.click('#ssrc [data-src="liq:0"]');await p.click('[data-s="save"]');await p.waitForTimeout(250);
+  const reg=async(txt)=>{await p.click('.caplink');await p.waitForSelector('#sheet');await p.click('#stype [data-g="gasto"]');await p.fill('#sa',txt);await p.fill('#sd','T87 '+txt);await p.click('#ssrc [data-src="liq:0"]');await p.click('[data-s="save"]');await p.waitForTimeout(250);
     const m=await p.evaluate(([k,c])=>{const r=JSON.parse(localStorage.getItem(k)).S['2026'][10].hor.find(x=>x.c===c);return r?r.m:null;},[K,'T87 '+txt]);const msg=await p.evaluate(()=>(document.getElementById('sdest')||{}).textContent||'');if(await p.isVisible('#sheet'))await p.keyboard.press('Escape');return {m,msg};};
   for(const [txt,v] of [['1,200',1200],['1.200',1200],['1,234.50',1234.5],['1.234,50',1234.5],['25',25],['12,5',12.5],['S/ 40',40]]){const r=await reg(txt);T('monto «'+txt+'» → '+v,r.m===v,r);}
   for(const txt of ['12abc','Infinity','1e21','1.5.5']){const r=await reg(txt);T('monto «'+txt+'» no se guarda y avisa',r.m===null&&/monto/i.test(r.msg),r);}

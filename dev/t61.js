@@ -1,5 +1,5 @@
 // Revisión completa de la app: web (1500) y celular (390). Uso: node t61.js [archivo]
-const pickT=async(p,t)=>{const G={hor:'gasto',fij:'gasto',compra:'tarjeta',pago:'tarjeta',ing:'ing',aho:'ahorro',inv:'ahorro'};await p.click('#stype [data-g="'+G[t]+'"]');if(t!=='ing')await p.click('#ssub [data-t="'+t+'"]');};
+const pickT=async(p,t)=>{const G={hor:'gasto',fij:'gasto',compra:'tarjeta',pago:'tarjeta',ing:'ing',aho:'ahorro',inv:'ahorro'};await p.click('#stype [data-g="'+G[t]+'"]');if(t==='hor'||t==='fij'){await p.evaluate(()=>{const d=document.getElementById('smore');if(d)d.open=true;});await p.click('#sgcls [data-t="'+t+'"]');}else if(t!=='ing')await p.click('#ssub [data-t="'+t+'"]');};
 const cierre=async(p,a)=>{await p.click('[data-act="cierre"]');await p.click('#sheet [data-act="'+a+'"]');};
 const {chromium}=require('playwright');const fs=require('fs');
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
@@ -54,7 +54,7 @@ async function suite(tag,opts,seed){
   // ---------- edición / borrado / inline
   await chk('Editar una fila (✎) y borrar (×) en hormiga',async()=>{await nov();await p.click('[data-cid=hor] [data-edit="hor"]');await p.waitForSelector('#sheet');await p.fill('#sa','22');await save();let s=await st();if(!s.S['2026'][10].hor.some(r=>r.m===22))return 'no guardó la edición';const n0=cnt(s,'hor');await p.click('[data-cid=hor] [data-edit="hor"]');await p.waitForSelector('#sheet');await p.click('[data-s="del-mov"]');await p.waitForTimeout(250);s=await st();return cnt(s,'hor')===n0-1||'no borró';});
   await chk('Tocar un ingreso para editar actualiza KPIs',async()=>{await nov();const k0=await T('#kI');await p.click('[data-cid=ing] [data-edit="ing"]');await p.waitForSelector('#sheet');await p.fill('#sa','9999');await save();return (await T('#kI'))!==k0||'kI no cambió';});
-  await chk('+ Agregar gasto fijo abre el registro en Fijo',async()=>{await p.click('[data-new="fij"]');await p.waitForSelector('#sheet');const on=await p.evaluate(()=>!!document.querySelector('#ssub [data-t="fij"][aria-checked=true]'));await p.click('[data-s="close"]');return on||'no abrió en Fijo';});
+  await chk('+ Agregar gasto fijo abre el registro en Fijo',async()=>{await p.click('[data-new="fij"]');await p.waitForSelector('#sheet');const on=await p.evaluate(()=>!!document.querySelector('#sgcls [data-t="fij"][aria-checked=true]'));await p.click('[data-s="close"]');return on||'no abrió en Fijo';});
   await chk('Fondo y notas (apuntes) se guardan',async()=>{await p.fill('#nota','nota QA');await p.waitForTimeout(600);return (await st()).S['2026'][10].nota==='nota QA'||'no guardó';});
   // ---------- acciones del mes
   await chk('Traer del mes anterior',async()=>{await go('diciembre');await cierre(p,'prev');await p.waitForTimeout(300);return true;});
