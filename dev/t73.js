@@ -7,7 +7,7 @@ window.supabase={createClient:()=>({
   resetPasswordForEmail:(e,o)=>{window.__log.push(['reset',e,o&&o.redirectTo]);return Promise.resolve({error:null})},
   updateUser:p=>{window.__log.push(['update',p.password]);return Promise.resolve({error:window.__weak?{message:'Password is known to be weak and easy to guess'}:null})},
   signOut:()=>{window.__push(['out']);return Promise.resolve({})},
-  signInWithPassword:()=>Promise.resolve({error:{message:'Invalid login credentials'}}),signUp:()=>Promise.resolve({error:null,data:{}})},
+  signInWithPassword:()=>Promise.resolve({error:{message:'Invalid login credentials'}}),signUp:o=>{window.__log.push(['signup',(o&&o.options&&o.options.emailRedirectTo)||'']);return Promise.resolve({error:null,data:{}});}},
  from:()=>chain,rpc:n=>{window.__push(['rpc',n]);return Promise.resolve({error:null})}})};`;
 (async()=>{const b=await chromium.launch();
 const mk=async(hash,sess)=>{const p=await (await b.newContext({viewport:{width:1100,height:800}})).newPage();
@@ -28,6 +28,7 @@ const lg=await p.evaluate(()=>window.__log);T('reset llamado con correo',lg.some
 T('mensaje genérico',/Si ese correo tiene cuenta/.test(await p.innerText('#au-msg')));
 await p.fill('#au-pass','x');await p.click('#au-in');await p.waitForTimeout(200);T('error traducido',/incorrectos/.test(await p.innerText('#au-msg')));
 await p.click('#au-up');T('crear cuenta abre su pantalla',await p.locator('#au-pass2').count()===1&&(await p.inputValue('#au-email'))==='ana@mail.pe');await p.fill('#au-pass','corta');await p.fill('#au-pass2','corta');await p.click('#au-go');T('mín 8 al crear',/8 caracteres/.test(await p.innerText('#au-msg')));await p.fill('#au-pass','Clave12345');await p.fill('#au-pass2','Clave12346');await p.click('#au-go');T('contraseñas distintas',/no coinciden/.test(await p.innerText('#au-msg')));await p.click('#au-sw');T('vuelve a entrar',await p.locator('#au-in').count()===1&&await p.locator('#au-pass2').count()===0);
+await p.click('#au-up');await p.fill('#au-pass','Clave12345');await p.fill('#au-pass2','Clave12345');await p.click('#au-go');await p.waitForTimeout(400);{const su=await p.evaluate(()=>({l:window.__log.filter(x=>x[0]==='signup'),u:location.origin+location.pathname}));T('el correo de confirmación vuelve a esta misma página',su.l.length===1&&su.l[0][1]===su.u&&/^http/.test(su.l[0][1]));}
 await p.close();
 // 2 recuperación
 p=await mk('#access_token=x&type=recovery',true);

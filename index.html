@@ -2181,7 +2181,7 @@ function sbReady(session){
 async function sbAuth(mode,email,pass,msgEl,btn){
   if(!sb)return;msgEl.className='ms err';msgEl.textContent='';if(btn)btn.disabled=true;
   try{
-    const r=mode==='signup'?await sb.auth.signUp({email,password:pass}):await sb.auth.signInWithPassword({email,password:pass});
+    const r=mode==='signup'?await sb.auth.signUp({email,password:pass,options:{emailRedirectTo:location.origin+location.pathname}}):await sb.auth.signInWithPassword({email,password:pass});
     if(r.error){msgEl.textContent=sbErr(r.error.message);return;}
     if(mode==='signup'&&r.data&&!r.data.session){showAuth('signin',email,'Cuenta creada. Te enviamos un correo para confirmarla: ábrelo y luego entra aquí.');return;}
   }catch(e){msgEl.textContent='No se pudo conectar. Revisa tu internet.';}
