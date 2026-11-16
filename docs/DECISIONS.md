@@ -128,3 +128,15 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 **Decisión.** Al registrar un ingreso se pregunta en qué cuenta se deposita (con la opción «No sumar a ninguna cuenta», que conserva el comportamiento anterior). El monto se suma al saldo y se guarda en la fila con signo negativo en `_d`, de modo que editar, borrar o deshacer lo revierten con la misma lógica que los gastos. Automático entiende «sueldo 500 yape».
 
 **Consecuencias.** Los saldos reflejan los ingresos. Los ingresos ya registrados no cambian (no tenían cuenta).
+
+---
+
+## ADR-010 · Métricas anónimas y reporte de errores, apagados hasta aprobar la tabla (nov. 2026)
+
+**Contexto.** En la beta se decide a ciegas: no se sabe qué modo de registro usan, en qué paso se traba la gente ni qué errores ocurren en los teléfonos de los testers.
+
+**Decisión.** La app puede enviar eventos anónimos (modo, paso, tipo de movimiento, errores de JavaScript) a una tabla `eventos` de Supabase, con un id aleatorio del dispositivo. No viajan montos, conceptos, cuentas, correos ni el id del usuario. La tabla solo permite insertar con la clave pública (con un freno contra el spam) y solo el dueño la lee. El código se publica **apagado** (`TRACK_DEFAULT=false`) y se enciende únicamente cuando el dueño aprueba aplicar el SQL y actualizar la política de privacidad. Cada persona puede apagarlo en Ajustes.
+
+**Alternativas consideradas.** Un servicio externo de analítica (PostHog, Sentry): más completo, pero manda datos a un tercero y añade una dependencia; se reevalúa cuando haya usuarios de pago.
+
+**Consecuencias.** Se podrá medir días activos, modos usados y abandono por paso; a cambio, una tabla más que mantener (retención sugerida de 90 días).
