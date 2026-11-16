@@ -135,7 +135,7 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 
 **Contexto.** En la beta se decide a ciegas: no se sabe qué modo de registro usan, en qué paso se traba la gente ni qué errores ocurren en los teléfonos de los testers.
 
-**Decisión.** La app puede enviar eventos anónimos (modo, paso, tipo de movimiento, errores de JavaScript) a una tabla `eventos` de Supabase, con un id aleatorio del dispositivo. No viajan montos, conceptos, cuentas, correos ni el id del usuario. La tabla solo permite insertar con la clave pública (con un freno contra el spam) y solo el dueño la lee. El código se publica **apagado** (`TRACK_DEFAULT=false`) y se enciende únicamente cuando el dueño aprueba aplicar el SQL y actualizar la política de privacidad. Cada persona puede apagarlo en Ajustes.
+**Decisión.** La app puede enviar eventos anónimos (modo, paso, tipo de movimiento, errores de JavaScript) a una tabla `eventos` de Supabase, con un id aleatorio del dispositivo. No viajan montos, conceptos, cuentas, correos ni el id del usuario. La tabla solo permite insertar con la clave pública (con un freno contra el spam) y solo el dueño la lee. El código se publicó **apagado** y se encendió (`TRACK_DEFAULT=true`, 16 nov. 2026) solo después de que el dueño aprobó aplicar el SQL y de actualizar la política de privacidad. Para usuarios desconocidos se reevaluará pasarlo a «solo si aceptan». Cada persona puede apagarlo en Ajustes.
 
 **Alternativas consideradas.** Un servicio externo de analítica (PostHog, Sentry): más completo, pero manda datos a un tercero y añade una dependencia; se reevalúa cuando haya usuarios de pago.
 

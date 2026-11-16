@@ -44,6 +44,9 @@ npm run verificar  # regresión + escáner (~15 min)
 ```
 Más detalle en [`dev/README.md`](dev/README.md). Las pruebas usan una cuenta de ejemplo (`dev/demo.json`) y un Supabase simulado: nada toca la base real.
 
+## Estadísticas de uso
+La app envía estadísticas **anónimas** (qué pantallas se usan, dónde se interrumpe un registro y errores técnicos) con un identificador aleatorio del dispositivo; nunca montos, conceptos, cuentas ni correos. Se pueden apagar en Ajustes → Privacidad, y la política (`legal.html`) lo explica. La tabla es `supabase/eventos.sql`.
+
 ## Privacidad del repositorio
 Este repositorio es público y **no contiene datos personales**: ni movimientos, ni saldos, ni correos. Los ganchos de `.githooks/` lo comprueban en cada commit y en cada subida (`dev/regla-de-oro.js`). La clave `sb_publishable_…` que aparece en el código es pública por diseño; la seguridad está en las políticas de la base de datos.
 

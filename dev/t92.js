@@ -1,4 +1,4 @@
-// t92: métricas anónimas y reporte de errores. Apagado por defecto; con cuadra-stats=1 envía eventos sin datos personales.
+// t92: métricas anónimas y reporte de errores. Encendidas por defecto (la política de privacidad lo explica); se apagan con cuadra-stats=0.
 const {chromium}=require('playwright');const fs=require('fs');
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
 const demo=JSON.parse(fs.readFileSync(__dirname+'/demo.json','utf8'));const K='mis-finanzas-prototipo-v1';
@@ -16,11 +16,11 @@ const todos=p=>[].concat(...p.posts);
 (async()=>{
   const b=await chromium.launch();
 
-  // 1. Apagado por defecto: no se envía nada
+  // 1. Encendido por defecto: se envía, y Ajustes muestra la tarjeta de privacidad activada
   let p=await nueva(b);
   await p.click('#fab');await p.waitForSelector('#sheet');await p.click('[data-mode="manual"]');await W(p);await p.keyboard.press('Escape');await W(p);await flush(p);
-  T('por defecto no se envía ninguna métrica',p.posts.length===0);
-  T('y no aparece la tarjeta de privacidad en Ajustes',await (async()=>{await p.goto('http://127.0.0.1:8765/wrap-repo.html#ajustes');await p.waitForTimeout(700);return (await p.locator('#st-on').count())===0;})());
+  T('por defecto se envían métricas anónimas',p.posts.length>0);
+  T('y Ajustes muestra la tarjeta de privacidad, activada',await (async()=>{await p.goto('http://127.0.0.1:8765/wrap-repo.html#ajustes');await p.waitForTimeout(700);return (await p.locator('#st-on').count())===1&&await p.isChecked('#st-on');})());
   await p.context().close();
 
   // 2. Apagado por la persona: no se envía nada
