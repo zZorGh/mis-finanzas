@@ -2,7 +2,7 @@
 // con los datos de ejemplo de demo.json. Nunca usa datos reales.
 // Uso: con `npm run serve` corriendo →  node landing-shots.js   (o: npm run capturas)
 const {chromium}=require('playwright');const fs=require('fs');const path=require('path');
-const man=async(p,m)=>{if(await p.locator('#sheet[data-mode="ask"]').count())await p.click('#sheet [data-mode="'+(m||'manual')+'"]');};
+const man=async(p,m)=>{if(await p.locator('#sheet[data-mode="ask"]').count()){if(m==='auto')await p.click('#sheet [data-mode="auto"]');else if(m==='wizard')await p.click('#sheet [data-mode="manual"]');else{await p.click('#sheet [data-mode="auto"]');await p.click('#smodesw');}}};
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
 const demo=JSON.parse(fs.readFileSync(__dirname+'/demo.json','utf8'));
 const OUT=path.join(__dirname,'..','inicio','img')+path.sep,K='mis-finanzas-prototipo-v1',Q=64;

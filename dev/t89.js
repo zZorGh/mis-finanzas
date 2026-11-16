@@ -1,7 +1,7 @@
 // t89: atajos de un toque. Solo salen de los gastos recurrentes que la persona configuró (o creó marcando «Repetir cada mes»);
 // nunca se inventan desde el historial. Un toque los registra; sin recurrentes no hay atajos.
 const {chromium}=require('playwright');const fs=require('fs');
-const man=async(p,m)=>{if(await p.locator('#sheet[data-mode="ask"]').count())await p.click('#sheet [data-mode="'+(m||'manual')+'"]');};
+const man=async(p,m)=>{if(await p.locator('#sheet[data-mode="ask"]').count()){if(m==='auto')await p.click('#sheet [data-mode="auto"]');else if(m==='wizard')await p.click('#sheet [data-mode="manual"]');else{await p.click('#sheet [data-mode="auto"]');await p.click('#smodesw');}}};
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
 const demo=JSON.parse(fs.readFileSync(__dirname+'/demo.json','utf8'));const K='mis-finanzas-prototipo-v1';
 let ok=0,bad=0;const T=(n,c)=>{c?ok++:(bad++,console.log('FALLA',n));};

@@ -2,7 +2,7 @@
 const pickT=async(p,t)=>{const G={hor:'gasto',fij:'gasto',compra:'tarjeta',pago:'tarjeta',ing:'ing',aho:'ahorro',inv:'ahorro'};await p.click('#stype [data-g="'+G[t]+'"]');if(t!=='ing')await p.click('#ssub [data-t="'+t+'"]');};
 const cierre=async(p,a)=>{await p.click('[data-act="cierre"]');await p.click('#sheet [data-act="'+a+'"]');};
 const {chromium}=require('playwright');const fs=require('fs');
-const man=async(p,m)=>{if(await p.locator('#sheet[data-mode="ask"]').count())await p.click('#sheet [data-mode="'+(m||'manual')+'"]');};
+const man=async(p,m)=>{if(await p.locator('#sheet[data-mode="ask"]').count()){if(m==='auto')await p.click('#sheet [data-mode="auto"]');else if(m==='wizard')await p.click('#sheet [data-mode="manual"]');else{await p.click('#sheet [data-mode="auto"]');await p.click('#smodesw');}}};
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
 const demo=fs.readFileSync(__dirname+'/demo.json','utf8');
 const FILE=process.argv[2]||'wrap-repo.html';

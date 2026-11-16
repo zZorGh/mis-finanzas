@@ -2,7 +2,7 @@
 // Datos dañados o con código dentro, lectura de montos, almacenamiento lleno y sincronización
 // (reintentos, tiempo límite, carga lenta, cierre de sesión y dos pestañas) con un Supabase simulado.
 const {chromium}=require('playwright');const fs=require('fs');
-const man=async(p,m)=>{if(await p.locator('#sheet[data-mode="ask"]').count())await p.click('#sheet [data-mode="'+(m||'manual')+'"]');};
+const man=async(p,m)=>{if(await p.locator('#sheet[data-mode="ask"]').count()){if(m==='auto')await p.click('#sheet [data-mode="auto"]');else if(m==='wizard')await p.click('#sheet [data-mode="manual"]');else{await p.click('#sheet [data-mode="auto"]');await p.click('#smodesw');}}};
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
 const demoTxt=fs.readFileSync(__dirname+'/demo.json','utf8');const demo=JSON.parse(demoTxt);
 const K='mis-finanzas-prototipo-v1',X='"><img src=x onerror=window.__xss=1>';
