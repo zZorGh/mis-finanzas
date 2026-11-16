@@ -140,3 +140,13 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 **Alternativas consideradas.** Un servicio externo de analítica (PostHog, Sentry): más completo, pero manda datos a un tercero y añade una dependencia; se reevalúa cuando haya usuarios de pago.
 
 **Consecuencias.** Se podrá medir días activos, modos usados y abandono por paso; a cambio, una tabla más que mantener (retención sugerida de 90 días).
+
+---
+
+## ADR-011 · La moneda alterna entre soles y la segunda moneda de Ajustes (nov. 2026)
+
+**Contexto.** El botón de moneda junto al monto recorría tres opciones (S/, $, €), aunque casi nadie usa las tres. Se probó preguntar la moneda en el primer paso del asistente y el dueño pidió mantener la opción de siempre junto al monto.
+
+**Decisión.** El botón junto al monto alterna entre soles y **una segunda moneda configurable** en Ajustes (dólares o euros, por defecto dólares). El primer paso del asistente no pregunta la moneda. No cambia cómo se guardan ni se convierten los montos.
+
+**Consecuencias.** Un campo nuevo en la configuración (`monedaAlt`), validado al cargar. Quien usa dólares y euros a la vez debe cambiar la segunda moneda en Ajustes para pasar de una a otra.
