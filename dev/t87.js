@@ -2,6 +2,7 @@
 // Datos dañados o con código dentro, lectura de montos, almacenamiento lleno y sincronización
 // (reintentos, tiempo límite, carga lenta, cierre de sesión y dos pestañas) con un Supabase simulado.
 const {chromium}=require('playwright');const fs=require('fs');
+const man=async(p,m)=>{if(await p.locator('#sheet[data-mode="ask"]').count())await p.click('#sheet [data-mode="'+(m||'manual')+'"]');};
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
 const demoTxt=fs.readFileSync(__dirname+'/demo.json','utf8');const demo=JSON.parse(demoTxt);
 const K='mis-finanzas-prototipo-v1',X='"><img src=x onerror=window.__xss=1>';
@@ -39,14 +40,14 @@ async function parteLocal(b){
     T(n+': sin código y la app sigue viva tras recargar',!xss&&txt.includes('Sueldo')&&p.errs.length===0,{xss,err:p.errs[0]});await p.context().close();}
   // montos
   const p=await local(b,demoTxt,'#noviembre');
-  const reg=async(txt)=>{await p.click('.caplink');await p.waitForSelector('#sheet');await p.click('#stype [data-g="gasto"]');await p.fill('#sa',txt);await p.fill('#sd','T87 '+txt);await p.click('#ssrc [data-src="liq:0"]');await p.click('[data-s="save"]');await p.waitForTimeout(250);
+  const reg=async(txt)=>{await p.click('.caplink');await p.waitForSelector('#sheet');await man(p);await p.click('#stype [data-g="gasto"]');await p.click('#ssub [data-t="hor"]');await p.fill('#sa',txt);await p.fill('#sd','T87 '+txt);await p.click('#ssrc [data-src="liq:0"]');await p.click('[data-s="save"]');await p.waitForTimeout(250);
     const m=await p.evaluate(([k,c])=>{const r=JSON.parse(localStorage.getItem(k)).S['2026'][10].hor.find(x=>x.c===c);return r?r.m:null;},[K,'T87 '+txt]);const msg=await p.evaluate(()=>(document.getElementById('sdest')||{}).textContent||'');if(await p.isVisible('#sheet'))await p.keyboard.press('Escape');return {m,msg};};
   for(const [txt,v] of [['1,200',1200],['1.200',1200],['1,234.50',1234.5],['1.234,50',1234.5],['25',25],['12,5',12.5],['S/ 40',40]]){const r=await reg(txt);T('monto «'+txt+'» → '+v,r.m===v,r);}
   for(const txt of ['12abc','Infinity','1e21','1.5.5']){const r=await reg(txt);T('monto «'+txt+'» no se guarda y avisa',r.m===null&&/monto/i.test(r.msg),r);}
   T('montos: sin errores de consola',p.errs.length===0,p.errs[0]);await p.context().close();
   // «Escribe rápido»
   {const q=await local(b,demoTxt,'#noviembre');
-   for(const [txt,v] of [['alquiler 1,200 yape',1200],['bodega S/ 7.8',7.8],['almuerzo 12,50 yape',12.5]]){await q.click('.caplink');await q.waitForSelector('#sheet');await q.fill('#smsg',txt);await q.waitForTimeout(150);T('escribe rápido «'+txt+'»',parseFloat(await q.inputValue('#sa'))===v);await q.keyboard.press('Escape');}
+   for(const [txt,v] of [['alquiler 1,200 yape',1200],['bodega S/ 7.8',7.8],['almuerzo 12,50 yape',12.5]]){await q.click('.caplink');await q.waitForSelector('#sheet');await man(q,'auto');await q.fill('#smsg',txt);await q.waitForTimeout(150);T('escribe rápido «'+txt+'»',parseFloat(await q.inputValue('#sa'))===v);await q.keyboard.press('Escape');}
    await q.context().close();}
   // uso diario: el aviso «Deshacer» no tapa «Guardar», «Eliminar» se deshace y el «+» abre en Gasto
   for(const [nom,vp] of [['escritorio',{width:1280,height:800}],['celular',{width:390,height:844}]]){
@@ -54,7 +55,7 @@ async function parteLocal(b){
    await q.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({...JS,body:chart});return r.abort();});
    await q.addInitScript(([s,k])=>{if(!localStorage.getItem('qa')){localStorage.setItem(k,s);localStorage.setItem(k+'-instalar','0');localStorage.removeItem(k+'-instalar');localStorage.setItem('qa','1');}window.claude={use:async()=>null};},[demoTxt,K]);
    await q.goto('http://127.0.0.1:8765/wrap-repo.html#noviembre');await q.waitForTimeout(900);
-   const abrir=async()=>{await q.click(vp.width<500?'#fab':'.caplink');await q.waitForSelector('#sheet');};
+   const abrir=async()=>{await q.click(vp.width<500?'#fab':'.caplink');await q.waitForSelector('#sheet');await man(q);};
    // registrar algo para que salga el aviso con «Deshacer»
    await abrir();await q.click('#stype [data-g="ing"]');await q.fill('#sa','3');await q.fill('#sd','Pan T87');await q.click('[data-s="save"]');await q.waitForTimeout(300);
    T(nom+': tras guardar sale «Deshacer»',await q.locator('.toast [data-undo]').isVisible());

@@ -2,6 +2,7 @@
 // Foco tras redibujar, diálogo de reportes, «Deshacer» con teclado, alto contraste, botones táctiles,
 // zoom 400 %, etiquetas para lectores de pantalla y textos sin traducir en inglés.
 const {chromium}=require('playwright');const fs=require('fs');
+const man=async(p,m)=>{if(await p.locator('#sheet[data-mode="ask"]').count())await p.click('#sheet [data-mode="'+(m||'manual')+'"]');};
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
 const demoTxt=fs.readFileSync(__dirname+'/demo.json','utf8');
 const K='mis-finanzas-prototipo-v1';
@@ -36,20 +37,20 @@ const act=p=>p.evaluate(()=>{const e=document.activeElement;return {id:e.id||'',
 
   /* ----- «Deshacer» con teclado y sin prisa ----- */
   {const p=await abrir(b,{width:1280,height:800});
-   await p.click('.caplink');await p.waitForSelector('#sheet');await p.click('#stype [data-g="ing"]');await p.fill('#sa','7');await p.fill('#sd','T88 ingreso');await p.click('[data-s="save"]');await p.waitForTimeout(300);
+   await p.click('.caplink');await p.waitForSelector('#sheet');await man(p);await p.click('#stype [data-g="ing"]');await p.fill('#sa','7');await p.fill('#sd','T88 ingreso');await p.click('[data-s="save"]');await p.waitForTimeout(300);
    const hay=()=>p.evaluate(k=>JSON.parse(localStorage.getItem(k)).S['2026'][10].ing.some(r=>r.c==='T88 ingreso'),K);
    T('deshacer: el movimiento quedó guardado',await hay());
    await p.waitForTimeout(7500);T('deshacer: el aviso sigue visible pasados 7 s',await p.locator('.toast [data-undo]').isVisible());
    await p.keyboard.press('Control+z');await p.waitForTimeout(400);T('deshacer: Ctrl+Z lo deshace sin buscar el botón',!(await hay()));
    // en un campo de texto Ctrl+Z no se roba
-   await p.click('.caplink');await p.waitForSelector('#sheet');await p.click('#stype [data-g="ing"]');await p.fill('#sa','8');await p.fill('#sd','T88 b');await p.click('[data-s="save"]');await p.waitForTimeout(300);
-   await p.click('.caplink');await p.waitForSelector('#sheet');await p.focus('#sd');await p.keyboard.press('Control+z');await p.waitForTimeout(300);
+   await p.click('.caplink');await p.waitForSelector('#sheet');await man(p);await p.click('#stype [data-g="ing"]');await p.fill('#sa','8');await p.fill('#sd','T88 b');await p.click('[data-s="save"]');await p.waitForTimeout(300);
+   await p.click('.caplink');await p.waitForSelector('#sheet');await man(p);await p.focus('#sd');await p.keyboard.press('Control+z');await p.waitForTimeout(300);
    T('deshacer: con el cursor en un campo, Ctrl+Z no toca los movimientos',await p.evaluate(k=>JSON.parse(localStorage.getItem(k)).S['2026'][10].ing.some(r=>r.c==='T88 b'),K));
    await p.context().close();}
 
   /* ----- Alto contraste ----- */
   {const p=await abrir(b,{width:1280,height:800},{forced:true});
-   await p.click('.caplink');await p.waitForSelector('#sheet');
+   await p.click('.caplink');await p.waitForSelector('#sheet');await man(p);
    const o=await p.evaluate(()=>{const f=e=>{const c=getComputedStyle(e);return {w:parseFloat(c.outlineWidth)||0,s:c.outlineStyle};};const a=document.querySelector('#stype [aria-checked="true"]'),n=document.querySelector('#stype [aria-checked="false"]');return {sel:f(a),no:f(n)};});
    T('alto contraste: lo seleccionado tiene contorno y lo demás no',o.sel.w>=3&&o.sel.s!=='none'&&(o.no.w===0||o.no.s==='none'),o);await p.context().close();}
 
@@ -75,7 +76,7 @@ const act=p=>p.evaluate(()=>{const e=document.activeElement;return {id:e.id||'',
    T('etiquetas: los días del calendario se pueden leer',await p.evaluate(()=>{const c=[...document.querySelectorAll('.hmcell[role="img"]')];return c.length>20&&c.every(x=>/\d/.test(x.getAttribute('aria-label')||''));}));
    await p.evaluate(()=>location.hash='#ajustes');await p.waitForTimeout(400);
    T('etiquetas: Ajustes tiene su encabezado principal',await p.evaluate(()=>{const h=document.querySelector('h1');return !!h&&/Ajustes/.test(h.textContent);}));
-   await p.click('.caplink');await p.waitForSelector('#sheet');T('etiquetas: el formulario de registro dice «Nuevo movimiento»',(await p.getAttribute('#sheet','aria-label'))==='Nuevo movimiento');
+   await p.click('.caplink');await p.waitForSelector('#sheet');await man(p);T('etiquetas: el formulario de registro dice «Nuevo movimiento»',(await p.getAttribute('#sheet','aria-label'))==='Nuevo movimiento');
    await p.keyboard.press('Escape');
    await p.evaluate(()=>location.hash='#noviembre');await p.waitForTimeout(400);await p.locator('[data-edit="fij"]').first().click();await p.waitForSelector('#sheet');
    T('etiquetas: el formulario de edición dice «Editar movimiento»',(await p.getAttribute('#sheet','aria-label'))==='Editar movimiento');
@@ -84,7 +85,7 @@ const act=p=>p.evaluate(()=>{const e=document.activeElement;return {id:e.id||'',
   /* ----- Inglés: textos que estaban sin traducir ----- */
   {const p=await abrir(b,{width:1280,height:800},{en:true});
    const todo=async()=>p.evaluate(()=>{const o=[document.body.innerText];document.querySelectorAll('[aria-label],[title],[placeholder]').forEach(e=>['aria-label','title','placeholder'].forEach(a=>{const v=e.getAttribute(a);if(v)o.push(v);}));return o.join('\n');});
-   const noDebe=['Pagar BBVA','Pagar BCP','Apuntes','Fijos 2,015','Hormiga 485','Gastos fijos 2,015','Gastos hormiga 485','Yape, Plin y efectivo','Remove movimiento','Noviembre 2:','Descargar PDF','Descargar Excel'];
+   const noDebe=['Pagar BBVA','Pagar BCP','Apuntes','Fijos 2,015','Cotidiano 485','Gastos fijos 2,015','Gastos cotidianos 485','Yape, Plin y efectivo','Remove movimiento','Noviembre 2:','Descargar PDF','Descargar Excel'];
    let txt=await todo();T('inglés: el mes (noviembre) está traducido',noDebe.every(s=>!txt.includes(s)),noDebe.filter(s=>txt.includes(s)));
    await p.evaluate(()=>location.hash='#enero');await p.waitForTimeout(500);txt=await todo();T('inglés: un mes cerrado: «Lo que tenías al cierre…» traducido',!txt.includes('Yape, Plin y efectivo')&&!/Fijos \d/.test(txt),txt.match(/.{0,30}Yape, Plin y.{0,20}/));
    await p.evaluate(()=>location.hash='#noviembre');await p.waitForTimeout(400);

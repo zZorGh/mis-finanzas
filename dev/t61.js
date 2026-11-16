@@ -1,7 +1,8 @@
 // Revisión completa de la app: web (1500) y celular (390). Uso: node t61.js [archivo]
-const pickT=async(p,t)=>{const G={hor:'gasto',fij:'gasto',compra:'tarjeta',pago:'tarjeta',ing:'ing',aho:'ahorro',inv:'ahorro'};await p.click('#stype [data-g="'+G[t]+'"]');if(t==='hor'||t==='fij'){await p.evaluate(()=>{const d=document.getElementById('smore');if(d)d.open=true;});await p.click('#sgcls [data-t="'+t+'"]');}else if(t!=='ing')await p.click('#ssub [data-t="'+t+'"]');};
+const pickT=async(p,t)=>{const G={hor:'gasto',fij:'gasto',compra:'tarjeta',pago:'tarjeta',ing:'ing',aho:'ahorro',inv:'ahorro'};await p.click('#stype [data-g="'+G[t]+'"]');if(t!=='ing')await p.click('#ssub [data-t="'+t+'"]');};
 const cierre=async(p,a)=>{await p.click('[data-act="cierre"]');await p.click('#sheet [data-act="'+a+'"]');};
 const {chromium}=require('playwright');const fs=require('fs');
+const man=async(p,m)=>{if(await p.locator('#sheet[data-mode="ask"]').count())await p.click('#sheet [data-mode="'+(m||'manual')+'"]');};
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
 const demo=fs.readFileSync(__dirname+'/demo.json','utf8');
 const FILE=process.argv[2]||'wrap-repo.html';
@@ -20,7 +21,7 @@ async function suite(tag,opts,seed){
   const go=async h=>{await p.evaluate(x=>location.hash=x,h);await p.waitForTimeout(250);};
   const chk=async(name,fn)=>{const e0=errs.length;let r;try{r=await fn();}catch(e){r='EXCEPCIÓN '+String(e.message).split('\n')[0].slice(0,140);}
     const newErr=errs.slice(e0);const okk=(r===true||r===undefined)&&!newErr.length;results.push({tag,name,ok:okk,info:okk?'':(r!==true&&r!==undefined?r:'')+(newErr.length?' | errores: '+newErr.join(' / ').slice(0,200):'')});};
-  const openSheet=async(t)=>{await p.click(await p.isVisible('#fab')?'#fab':'.caplink');await p.waitForSelector('#sheet');if(t)await pickT(p,t);};
+  const openSheet=async(t)=>{await p.click(await p.isVisible('#fab')?'#fab':'.caplink');await p.waitForSelector('#sheet');await man(p);if(t)await pickT(p,t);};
   const save=async()=>{await p.click('[data-s="save"]');await p.waitForTimeout(250);};
   const nov=async()=>{await go('noviembre');await p.waitForSelector('#kA');};
   // ---------- navegación
@@ -29,7 +30,7 @@ async function suite(tag,opts,seed){
   await p.selectOption('#yr','2026');
   await chk('Los 12 meses abren sin error ni desborde',async()=>{const bad=[];for(const m of MESES){await go(m);const ok=await p.evaluate(()=>!!document.getElementById('hR')&&!!document.querySelector('.ahocard'));if(!ok||await overflow())bad.push(m);}return bad.length?bad.join(','):true;});
   await chk('Pestañas y botones atrás/adelante',async()=>{await go('marzo');await go('mayo');await p.goBack();await p.waitForTimeout(250);return /marzo/i.test(await T('.hero h1'))||'atrás no volvió a marzo';});
-  await chk('Vista Registrar (#capturar)',async()=>{await go('capturar');await p.waitForSelector('.cap-wrap');await p.click('[data-act="new"]');await p.waitForSelector('#sheet');await p.click('[data-s="close"]');return !(await overflow())||'desborda';});
+  await chk('Vista Registrar (#capturar)',async()=>{await go('capturar');await p.waitForSelector('.cap-wrap');await p.click('[data-act="new"]');await p.waitForSelector('#sheet');await man(p);await p.click('[data-s="close"]');return !(await overflow())||'desborda';});
   // ---------- tema y personalizar
   await chk('Tema claro/oscuro',async()=>{await go('resumen');const a=await p.evaluate(()=>getComputedStyle(document.body).backgroundColor);await p.click('#th');await p.waitForTimeout(250);const b2=await p.evaluate(()=>getComputedStyle(document.body).backgroundColor);await p.click('#th');await p.waitForTimeout(150);return a!==b2||'el fondo no cambió';});
   await chk('Personalizar (activar y desactivar)',async()=>{await go('noviembre');await p.click('#ed');await p.waitForTimeout(250);const on=await p.evaluate(()=>document.body.classList.contains('edit'));await p.click('#ed');await p.waitForTimeout(200);return on&&!(await p.evaluate(()=>document.body.classList.contains('edit')))||'no alterna';});
@@ -54,7 +55,7 @@ async function suite(tag,opts,seed){
   // ---------- edición / borrado / inline
   await chk('Editar una fila (✎) y borrar (×) en hormiga',async()=>{await nov();await p.click('[data-cid=hor] [data-edit="hor"]');await p.waitForSelector('#sheet');await p.fill('#sa','22');await save();let s=await st();if(!s.S['2026'][10].hor.some(r=>r.m===22))return 'no guardó la edición';const n0=cnt(s,'hor');await p.click('[data-cid=hor] [data-edit="hor"]');await p.waitForSelector('#sheet');await p.click('[data-s="del-mov"]');await p.waitForTimeout(250);s=await st();return cnt(s,'hor')===n0-1||'no borró';});
   await chk('Tocar un ingreso para editar actualiza KPIs',async()=>{await nov();const k0=await T('#kI');await p.click('[data-cid=ing] [data-edit="ing"]');await p.waitForSelector('#sheet');await p.fill('#sa','9999');await save();return (await T('#kI'))!==k0||'kI no cambió';});
-  await chk('+ Agregar gasto fijo abre el registro en Fijo',async()=>{await p.click('[data-new="fij"]');await p.waitForSelector('#sheet');const on=await p.evaluate(()=>!!document.querySelector('#sgcls [data-t="fij"][aria-checked=true]'));await p.click('[data-s="close"]');return on||'no abrió en Fijo';});
+  await chk('+ Agregar gasto fijo abre el registro en Fijo',async()=>{await p.click('[data-new="fij"]');await p.waitForSelector('#sheet');const on=await p.evaluate(()=>!!document.querySelector('#ssub [data-t="fij"][aria-checked=true]'));await p.click('[data-s="close"]');return on||'no abrió en Fijo';});
   await chk('Fondo y notas (apuntes) se guardan',async()=>{await p.fill('#nota','nota QA');await p.waitForTimeout(600);return (await st()).S['2026'][10].nota==='nota QA'||'no guardó';});
   // ---------- acciones del mes
   await chk('Traer del mes anterior',async()=>{await go('diciembre');await cierre(p,'prev');await p.waitForTimeout(300);return true;});

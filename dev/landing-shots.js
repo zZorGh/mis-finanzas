@@ -2,6 +2,7 @@
 // con los datos de ejemplo de demo.json. Nunca usa datos reales.
 // Uso: con `npm run serve` corriendo →  node landing-shots.js   (o: npm run capturas)
 const {chromium}=require('playwright');const fs=require('fs');const path=require('path');
+const man=async(p,m)=>{if(await p.locator('#sheet[data-mode="ask"]').count())await p.click('#sheet [data-mode="'+(m||'manual')+'"]');};
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
 const demo=JSON.parse(fs.readFileSync(__dirname+'/demo.json','utf8'));
 const OUT=path.join(__dirname,'..','inicio','img')+path.sep,K='mis-finanzas-prototipo-v1',Q=64;
@@ -19,12 +20,12 @@ const hist=[[0,404],[1,401],[2,398],[5,391]].map(([n,f])=>({dia:dia(n),tipo:'dia
   const go=async h=>{await p.goto('http://127.0.0.1:8765/wrap-repo.html'+h);await p.waitForSelector('#app');await p.evaluate(()=>document.fonts.ready);await p.waitForTimeout(900);};
   const shot=async n=>{await p.waitForTimeout(350);await p.screenshot({path:OUT+n+'.jpg',type:'jpeg',quality:Q});console.log(n+'.jpg',Math.round(fs.statSync(OUT+n+'.jpg').size/1024)+' KB');};
   const cerrar=async()=>{if(await p.locator('#sheet').count()){await p.keyboard.press('Escape');await p.waitForTimeout(250);}await p.evaluate(()=>{const t=document.getElementById('toast');if(t)t.hidden=true;});};
-  const abrir=async()=>{await p.click('#fab');await p.waitForSelector('#sheet');};
+  const abrir=async()=>{await p.click('#fab');await p.waitForSelector('#sheet');await man(p);};
 
   await go('#resumen');await shot('resumen');
   await go('#noviembre');await shot('mes');
-  // registrar un gasto hormiga
-  await abrir();await p.click('#stype [data-g="gasto"]');await p.fill('#sa','12.50');await p.fill('#sd','Menú del día');await p.click('#ssrc [data-src="liq:0"]');await p.locator('#sd').blur();await shot('registrar');await cerrar();
+  // registrar un gasto cotidiano
+  await abrir();await p.click('#stype [data-g="gasto"]');await p.click('#ssub [data-t="hor"]');await p.fill('#sa','12.50');await p.fill('#sd','Menú del día');await p.click('#ssrc [data-src="liq:0"]');await p.locator('#sd').blur();await shot('registrar');await cerrar();
   // compra con tarjeta
   await abrir();await p.click('#stype [data-g="tarjeta"]');await p.click('#ssub [data-t="compra"]');await p.click('#sbank [data-b="bcp"]');await p.fill('#sa','89.90');await p.fill('#sd','Zapatillas');await p.locator('#sd').blur();await shot('tarjeta');await cerrar();
   // depósito a ahorro

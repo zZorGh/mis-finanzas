@@ -313,16 +313,16 @@ h1,h2,h3{letter-spacing:-.035em}
           <div class="kicker">Registro en segundos</div>
           <h3>Anota mientras pagas</h3>
           <p>Toca <kbd>+</kbd>, escribe el monto y elige de dónde salió. Se descuenta solo de Yape, Plin o tu efectivo.</p>
-          <ul><li>Escribe «almuerzo 25 yape» y listo</li><li>Gastos hormiga separados de los fijos</li><li>Gastos en dólares con el tipo de cambio del mes</li></ul>
+          <ul><li>Escribe «almuerzo 25 yape» y listo</li><li>Gastos cotidianos separados de los fijos</li><li>Gastos en dólares con el tipo de cambio del mes</li></ul>
         </div>
-        <div class="phone"><img src="img/registrar.jpg" width="390" height="844" alt="Formulario para registrar un gasto hormiga de 12.50 soles pagado con Yape" loading="lazy"></div>
+        <div class="phone"><img src="img/registrar.jpg" width="390" height="844" alt="Formulario para registrar un gasto cotidiano de 12.50 soles pagado con Yape" loading="lazy"></div>
       </div>
       <div class="fr">
         <div class="ft">
           <div class="kicker">Tu mes de un vistazo</div>
           <h3>Sabes cuánto te queda, no cuánto crees</h3>
           <p>Cada mes muestra lo que entró, lo que salió, lo que ahorraste y lo que te queda, con tu liquidez real al lado.</p>
-          <ul><li>Alerta cuando los gastos hormiga pasan tu límite</li><li>Tarjetas de crédito como deuda real, no como gasto doble</li><li>Cuadra tus cuentas con el saldo de tu app del banco</li></ul>
+          <ul><li>Alerta cuando tus gastos cotidianos pasan tu límite</li><li>Tarjetas de crédito como deuda real, no como gasto doble</li><li>Cuadra tus cuentas con el saldo de tu app del banco</li></ul>
         </div>
         <div class="phone"><img src="img/mes.jpg" width="390" height="844" alt="Vista del mes de noviembre con lo que queda, barra de gastos y liquidez disponible" loading="lazy"></div>
       </div>
@@ -419,13 +419,13 @@ h1,h2,h3{letter-spacing:-.035em}
         <h3 id="tt">Registrar un gasto</h3>
         <div class="dur" id="td">Toma 10 segundos</div>
         <ol id="ts">
-          <li><span>Toca el botón <kbd>+</kbd> de abajo a la derecha.</span></li>
-          <li><span>Elige el tipo: <b>Hormiga</b> para gastos chicos del día, <b>Gasto fijo</b> para alquiler, servicios o estudios.</span></li>
+          <li><span>Toca el botón <kbd>+</kbd> de abajo a la derecha y elige <b>Manual</b> (llenas el formulario) o <b>Automático</b> (escribes una frase).</span></li>
+          <li><span>En Manual, elige el tipo: <b>Cotidiano</b> para gastos chicos del día, <b>Gasto fijo</b> para alquiler, servicios o estudios.</span></li>
           <li><span>Escribe el monto y qué fue, por ejemplo «Menú del día».</span></li>
           <li><span>En «¿De dónde sale este gasto?» elige Yape, Plin o efectivo. Se descuenta solo.</span></li>
           <li><span>Toca <b>Guardar</b>. Si te equivocaste, toca <b>Deshacer</b> en el aviso.</span></li>
         </ol>
-        <p class="tip" id="tx">Atajo: en «Escribe rápido» pon <kbd>almuerzo 25 yape</kbd> y la app llena todo por ti.</p>
+        <p class="tip" id="tx">Atajo: elige <b>Automático</b>, escribe <kbd>almuerzo 25 yape</kbd> y la app llena todo por ti.</p>
       </div>
       <div class="phone"><img id="ti" src="img/registrar.jpg" width="390" height="844" alt="Formulario para registrar un gasto" loading="lazy"></div>
     </div>
@@ -501,7 +501,7 @@ h1,h2,h3{letter-spacing:-.035em}
   $('pa').addEventListener('click',()=>setP(true));$('pm').addEventListener('click',()=>setP(false));
   /* Tutoriales */
   const T={
-    gasto:{t:'Registrar un gasto',d:'Toma 10 segundos',img:'registrar',alt:'Formulario para registrar un gasto',s:['Toca el botón <kbd>+</kbd> de la barra de abajo (en computadora, <b>Registrar</b>).','Deja <b>Gasto</b> y elige <b>Hormiga</b> para gastos chicos del día o <b>Fijo</b> para alquiler, servicios o estudios.','Escribe el monto y qué fue, por ejemplo «Menú del día».','En «¿De dónde sale este gasto?» elige Yape, Plin o efectivo. Se descuenta solo.','Toca <b>Guardar</b>. Si te equivocaste, toca <b>Deshacer</b> en el aviso (dura 10 segundos).'],x:'Atajo: en «Escribe rápido» pon <kbd>almuerzo 25 yape</kbd> y la app llena todo por ti.'},
+    gasto:{t:'Registrar un gasto',d:'Toma 10 segundos',img:'registrar',alt:'Formulario para registrar un gasto',s:['Toca el botón <kbd>+</kbd> de la barra de abajo (en computadora, <b>Registrar</b>) y elige <b>Manual</b> o <b>Automático</b>.','En Manual, deja <b>Gasto</b> y elige <b>Cotidiano</b> para gastos chicos del día o <b>Fijo</b> para alquiler, servicios o estudios.','Escribe el monto y qué fue, por ejemplo «Menú del día».','En «¿De dónde sale este gasto?» elige Yape, Plin o efectivo. Se descuenta solo.','Toca <b>Guardar</b>. Si te equivocaste, toca <b>Deshacer</b> en el aviso (dura 10 segundos).'],x:'Atajo: elige <b>Automático</b>, escribe <kbd>almuerzo 25 yape</kbd> y la app llena todo por ti.'},
     tarjeta:{t:'Tarjetas de crédito',d:'Toma 20 segundos',img:'tarjeta',alt:'Formulario de compra con tarjeta de crédito',s:['Toca <kbd>+</kbd>, elige <b>Tarjeta</b> y luego <b>Compra</b>.','Elige la tarjeta, escribe el monto y qué compraste.','Toca <b>Guardar</b>: la compra se suma a la deuda de esa tarjeta, no a tus gastos del mes.','Cuando pagues la tarjeta, toca <b>Pagar</b> en esa tarjeta (o <kbd>+</kbd>, <b>Tarjeta</b>, <b>Pago</b>) y elige de qué cuenta sale el dinero.','El pago baja la deuda y cuenta como gasto del mes. Así no cuentas lo mismo dos veces.'],x:'Pon la línea de crédito en la misma tarjeta, en «Saldo anterior, línea y día de pago», y verás cuánto te queda disponible.'},
     ahorro:{t:'Ahorros con TREA',d:'Toma 30 segundos',img:'ahorros',alt:'Cuentas de ahorro con su TREA y ganancia estimada',s:['Toca <kbd>+</kbd>, elige <b>Ahorro</b> y luego <b>Depositar</b>.','Elige la cuenta, escribe el monto y, si quieres, de dónde sale el dinero. La vista previa te muestra cómo quedan los saldos.','Para poner la tasa, en la tarjeta de la cuenta toca «Agregar TREA o TEA».','Elige TREA o TEA, escribe la tasa anual y toca <b>Guardar</b>.','La cuenta muestra cuánto ganarías al mes y al año con ese saldo.'],x:'Usa la TREA cuando el banco te la dé: ya incluye comisiones y es la cifra más real.'},
     cuadrar:{t:'Cuadrar cuentas',d:'Toma 1 minuto',img:'cuadrar',alt:'Ventana para cuadrar cuentas con el saldo real',s:['Entra al mes, toca <b>Cierre de mes</b> y luego <b>Cuadrar cuentas</b>.','Abre la app de tu banco o tu billetera y mira el saldo real de cada cuenta.','Escríbelo al lado de cada una. La app te dice cuánto falta o sobra.','Toca <b>Aplicar ajustes</b> para dejar todo igual que en la realidad.'],x:'Si te falta dinero casi siempre en la misma cuenta, ahí se te escapa algún gasto hormiga.'},

@@ -6,11 +6,11 @@ App web de finanzas personales **en soles**, pensada para cómo se paga en el Pe
 - **App:** https://zzorgh.github.io/mis-finanzas/ (necesitas una invitación; anótate en la lista de espera desde la landing)
 
 ## Qué hace
-- **Registro en segundos:** un botón «+», o escribe «almuerzo 25 yape» y la app llena el resto. Entiende montos como `1,200` o `S/ 12.50`.
+- **Registro en segundos:** un botón «+» que te deja elegir entre **Manual** (formulario) y **Automático** (una frase); o escribe «almuerzo 25 yape» y la app llena el resto. Entiende montos como `1,200` o `S/ 12.50`.
 - **Tu dinero real:** cada gasto se descuenta de la cuenta de donde salió (Yape, Plin, efectivo), y «Cuadrar cuentas» lo iguala con el saldo de tu banco.
 - **Tarjetas de crédito como deuda**, no como gasto doble: línea, deuda, disponible y día de pago.
 - **Ahorros** por cuenta, con TREA o TEA y lo que ganarías al mes y al año; metas y fondo de emergencia.
-- **Presupuesto 50/30/20**, gastos hormiga con alerta, gastos recurrentes y resumen del año con gráficos.
+- **Presupuesto 50/30/20**, gastos cotidianos con alerta, gastos recurrentes y resumen del año con gráficos.
 - **Reportes** en PDF y Excel con formato de estado de cuenta.
 - **Tus datos son tuyos:** cuenta privada, historial de 30 días para volver atrás, copia completa descargable, funciona sin señal y se sincroniza al volver.
 - Español e inglés, tema claro y oscuro, tres estilos, y se instala en el celular como una app.

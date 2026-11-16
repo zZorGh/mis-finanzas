@@ -25,7 +25,7 @@ Nunca subas movimientos, saldos, correos, claves secretas ni el ID de su hoja de
 
 ## Arquitectura
 Todo en un archivo: `index.html` (~300 KB), JavaScript sin framework dentro de una IIFE, Chart.js 4.4.1 por CDN. Sin build ni dependencias: se edita el archivo directamente.
-- **Datos**: `S[año][mes]` (mes 0–11) con secciones `liq` (liquidez), `ing`, `fij`, `hor` (hormiga), `bbva`/`bcp`/`oh` (tarjetas), `aho` (ahorro), `inv`, `eur`. Cada fila: `{c, m, f, k, src, card, cur, t}`.
+- **Datos**: `S[año][mes]` (mes 0–11) con secciones `liq` (liquidez), `ing`, `fij`, `hor` (gastos cotidianos; antes «hormiga»), `bbva`/`bcp`/`oh` (tarjetas), `aho` (ahorro), `inv`, `eur`. Cada fila: `{c, m, f, k, src, card, cur, t}`.
 - Los saldos de ahorro son **acumulados entre meses y años** por nombre de cuenta (`ahoAccts`); el «ahorro del mes» y el progreso de metas cuentan solo los movimientos del mes. Por eso diciembre ya muestra saldos.
 - `localStorage['mis-finanzas-prototipo-v1']` guarda todo; `cfg` es la configuración (incluye `ahoOcultas`, `ahoV` = versión de migración). Con sesión, se sincroniza con Supabase (`estado`, `estado_historial`).
 - **Dueño de los datos locales**: `localStorage[KEY+'-owner']` guarda el id del usuario. Si entra otra cuenta en ese navegador, `sbReady` borra los datos locales (`wipeLocal()`) sin subirlos y recarga; sin marca, los adopta la primera cuenta. Cerrar sesión también llama a `wipeLocal()` (avisa si quedan cambios sin subir). Solo se conservan `-skin` y `-tema`. Toda clave nueva de datos debe empezar con `KEY` para que se borre. Prueba: `dev/t85.js`.
@@ -34,6 +34,7 @@ Todo en un archivo: `index.html` (~300 KB), JavaScript sin framework dentro de u
 - `sw.js`: service worker «red primero» para las páginas.
 - **Gráficos perezosos**: `mkChart` crea cada gráfico recién cuando está a <300 px de la pantalla (IntersectionObserver). Para capturas de página completa (p. ej. `inicio/img/*.jpg`), baja con scroll antes de capturar o los gráficos de abajo saldrán vacíos.
 - **Rutas extra**: `#ajustes` es pantalla propia (antes vivía al fondo del Resumen). En celular (<900 px) hay barra inferior `#bnav` y atajos «Ir a…» (`data-jump`).
+- **Registro («+»)**: `openSheet(true)` abre primero la ventana «¿Cómo quieres registrar?» (`data-mode=ask`): **Manual** (formulario) o **Automático** (una frase en `#smsg` con tarjeta de confirmación `#sapv`; si falta la cuenta, pasa a manual y la pide). Las demás entradas (`+ Agregar…`, editar, pagar tarjeta, ahorro) llaman a `openSheet()` sin ventana. Arriba van los atajos «De siempre» (`#ssug`): los de monto estable se registran con un toque. La clase se elige sola por el historial del concepto (`autoCls`). Pruebas: `dev/t89.js` (atajos) y `dev/t90.js` (ventana y nombre). El nombre visible de la sección `hor` es **«Cotidiano»** (nov. 2026); el código sigue llamándola `hor`.
 - **Estrategia de caché** (se mide con un perfil de CPU antes de cachear: `dev/` no lo trae, se usa CDP `Profiler`; lo caro era rehacer cosas, no los cálculos de dinero):
   - *Cálculo*: un solo `Intl.NumberFormat` (`NF2`, usado por `fmt`/`num2`) y un solo `Intl.DateTimeFormat` de Lima (`LIMA_DF`, usado por `limaD`/`hoyLima`). No vuelvas a `toLocaleString` en bucles.
   - *Colores del tema*: `cv()` y `hmInk()` guardan lo leído de `getComputedStyle`, con clave `themeKey()` (estilo + tema + preferencia del sistema). Si añades otra forma de cambiar colores en pantalla, incluye ese dato en `themeKey()`.
@@ -92,7 +93,7 @@ Ver `dev/README.md`. Resumen: `cd dev && npm install && npx playwright install c
 11. **Visión a futuro (decidida nov. 2026): una sola app** que mezcle MisSoles con CoreFlow (`C:\proyectos\P.CoreFlow\coreflow`: Agenda, Tareas, asistente con IA, resúmenes). Va **después de la beta**, no antes. Idea de base: MisSoles sigue siendo el motor de dinero (saldos reales por cuenta); se le añaden Agenda con gasto previsto vs. saldos, Tareas, asistente con Claude (function calling; la IA nunca calcula dinero) y resumen diario. Se reutilizan las ideas de CoreFlow, no su código Django. Antes de construir, decidir con el dueño la arquitectura (ver la conversación del 11 nov. 2026).
 
 ## Decisiones ya tomadas (no reabrir sin motivo)
-- «Gasto por día» cuenta solo gastos fijos y hormiga (dinero líquido); los consumos de tarjeta no entran, a propósito. Si no hay gastos, el mensaje lo explica.
+- «Gasto por día» cuenta solo gastos fijos y cotidianos (dinero líquido); los consumos de tarjeta no entran, a propósito. Si no hay gastos, el mensaje lo explica.
 - Las cuentas de ahorro en cero se pueden quitar (`cfg.ahoOcultas`); con saldo distinto de cero no se pueden quitar; el historial se conserva.
 - El botón de idioma EN/ES en pantallas de 360 px baja a una segunda fila: aceptado.
 - El objetivo del fondo de emergencia lo define el usuario, no la app.
