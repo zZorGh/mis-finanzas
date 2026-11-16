@@ -22,12 +22,13 @@ const vis=(p,s)=>p.locator(s).first().isVisible();
   T('«+» abre primero la ventana de elección',await p.getAttribute('#sheet','data-mode')==='ask');
   T('ofrece Manual y Automático',await vis(p,'[data-mode="manual"]')&&await vis(p,'[data-mode="auto"]'));
   T('en la elección no se ve el formulario',!(await vis(p,'#sa'))&&!(await vis(p,'#stype')));
-  T('en la elección tampoco se ven los atajos: solo Manual y Automático',await p.locator('#sheet [data-sg2]').evaluateAll(els=>els.every(e=>e.offsetParent===null)));
+  T('en la elección tampoco se ven los atajos: solo Manual y Automático',await p.locator('#sheet [data-rec1]').evaluateAll(els=>els.every(e=>e.offsetParent===null)));
   T('Escape cierra la ventana',await (async()=>{await p.keyboard.press('Escape');await p.waitForTimeout(200);return (await p.locator('#sheet').count())===0;})());
 
   // 2. Manual
   await p.click('#fab');await p.waitForSelector('#sheet');await p.click('[data-mode="manual"]');await p.waitForTimeout(200);
   T('Manual muestra el formulario de siempre',await p.getAttribute('#sheet','data-mode')==='manual'&&await vis(p,'#sa')&&await vis(p,'#stype')&&!(await vis(p,'#smsg')));
+  T('en Gasto, primero va «Fijo» y al costado «Cotidiano»',await p.evaluate(()=>[...document.querySelectorAll('#ssub [data-t]')].map(b=>b.dataset.t).join()==='fij,hor'));
   T('Fijo y Cotidiano vuelven a la vista principal',await vis(p,'#ssub [data-t="hor"]')&&await vis(p,'#ssub [data-t="fij"]')&&/Cotidiano/.test(await p.innerText('#ssub'))&&!/hormiga/i.test(await p.innerText('#sheet')));
   T('hay enlace para cambiar a automático',await vis(p,'#smodesw')&&/automático/i.test(await p.innerText('#smodesw')));
 
@@ -53,9 +54,22 @@ const vis=(p,s)=>p.locator(s).first().isVisible();
   T('avisa con «Deshacer»',await p.locator('#toast [data-undo]').count()===1);
 
   // 5. Las demás entradas no preguntan
+  // cada «+ Agregar …» pregunta Manual o Automático y deja el tipo fijo
   await p.click('[data-new="fij"]');await p.waitForSelector('#sheet');
-  T('«+ Agregar gasto fijo» abre el formulario directo',await p.getAttribute('#sheet','data-mode')==='manual'&&await vis(p,'#sa'));
+  T('«+ Agregar gasto fijo» también pregunta Manual o Automático',await p.getAttribute('#sheet','data-mode')==='ask');
+  await p.click('[data-mode="manual"]');await p.waitForTimeout(200);
+  T('en Manual abre el formulario ya en «Fijo»',await vis(p,'#sa')&&await p.evaluate(()=>!!document.querySelector('#ssub [data-t="fij"][aria-checked=true]')));
   await p.keyboard.press('Escape');await p.waitForTimeout(200);
+  await p.click('[data-new="fij"]');await p.waitForSelector('#sheet');await p.click('[data-mode="auto"]');await p.waitForTimeout(200);await p.fill('#smsg','netflix 30 yape');await p.waitForTimeout(250);
+  T('en Automático desde «Agregar gasto fijo» el tipo queda en Fijo',/Fijo/.test(await p.innerText('#sapv')));
+  const f0=await rows(p,'Netflix',30);await p.click('[data-s="save"]');await p.waitForTimeout(400);
+  T('y se guarda como gasto fijo',(await rows(p,'Netflix',30))===f0+1&&await p.evaluate(k=>JSON.parse(localStorage.getItem(k)).S['2026'][10].fij.some(r=>r.c==='Netflix'),K));
+  await p.click('[data-new="ing"]');await p.waitForSelector('#sheet');
+  T('«+ Agregar ingreso» también pregunta',await p.getAttribute('#sheet','data-mode')==='ask');
+  await p.click('[data-mode="auto"]');await p.waitForTimeout(200);await p.fill('#smsg','bono 300');await p.waitForTimeout(250);
+  T('en Automático desde «Agregar ingreso» el tipo queda en Ingreso',/Ingreso/.test(await p.innerText('#sapv')));
+  await p.click('[data-s="save"]');await p.waitForTimeout(400);
+  T('y se guarda como ingreso',await p.evaluate(k=>JSON.parse(localStorage.getItem(k)).S['2026'][10].ing.some(r=>r.c==='Bono'&&+r.m===300),K));
   await p.click('[data-cid=hor] [data-edit="hor"]');await p.waitForSelector('#sheet');
   T('editar un movimiento abre el formulario directo, sin enlace de cambio',await p.getAttribute('#sheet','data-mode')==='manual'&&!(await vis(p,'#smodesw')));
   await p.keyboard.press('Escape');
