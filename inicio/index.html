@@ -312,10 +312,10 @@ h1,h2,h3{letter-spacing:-.035em}
         <div class="ft">
           <div class="kicker">Registro en segundos</div>
           <h3>Anota mientras pagas</h3>
-          <p>Toca <kbd>+</kbd>, escribe el monto y elige de dónde salió. Se descuenta solo de Yape, Plin o tu efectivo.</p>
-          <ul><li>Escribe «almuerzo 25 yape» y listo</li><li>Gastos cotidianos separados de los fijos</li><li>Gastos en dólares con el tipo de cambio del mes</li></ul>
+          <p>Toca <kbd>+</kbd> y elige cómo registrar: <b>Automático</b> (escribes una frase y la app la llena) o <b>Manual</b> (te va preguntando paso a paso). Se descuenta solo de Yape, Plin o tu efectivo.</p>
+          <ul><li>Escribe «almuerzo 25 yape» y confirma</li><li>Atajos de un toque para tus gastos de siempre</li><li>Gastos cotidianos separados de los fijos</li><li>Gastos en dólares con el tipo de cambio del mes</li></ul>
         </div>
-        <div class="phone"><img src="img/registrar.jpg" width="390" height="844" alt="Formulario para registrar un gasto cotidiano de 12.50 soles pagado con Yape" loading="lazy"></div>
+        <div class="phone"><img src="img/registrar.jpg" width="390" height="844" alt="Tarjeta de confirmación al escribir «almuerzo 25 yape»: 25 soles, gasto cotidiano, sale de Yape" loading="lazy"></div>
       </div>
       <div class="fr">
         <div class="ft">
@@ -419,13 +419,13 @@ h1,h2,h3{letter-spacing:-.035em}
         <h3 id="tt">Registrar un gasto</h3>
         <div class="dur" id="td">Toma 10 segundos</div>
         <ol id="ts">
-          <li><span>Toca el botón <kbd>+</kbd> de abajo a la derecha y elige <b>Manual</b> (llenas el formulario) o <b>Automático</b> (escribes una frase).</span></li>
-          <li><span>En Manual, elige el tipo: <b>Cotidiano</b> para gastos chicos del día, <b>Gasto fijo</b> para alquiler, servicios o estudios.</span></li>
+          <li><span>Toca el botón <kbd>+</kbd> de abajo a la derecha y elige <b>Manual</b> (la app te pregunta paso a paso) o <b>Automático</b> (escribes una frase).</span></li>
+          <li><span>En Manual, elige qué movimiento es y su tipo: <b>Fijo</b> para alquiler, servicios o estudios, o <b>Cotidiano</b> para gastos chicos del día.</span></li>
+          <li><span>Elige de dónde sale: Yape, Plin o efectivo. Se descuenta solo.</span></li>
           <li><span>Escribe el monto y qué fue, por ejemplo «Menú del día».</span></li>
-          <li><span>En «¿De dónde sale este gasto?» elige Yape, Plin o efectivo. Se descuenta solo.</span></li>
           <li><span>Toca <b>Guardar</b>. Si te equivocaste, toca <b>Deshacer</b> en el aviso.</span></li>
         </ol>
-        <p class="tip" id="tx">Atajo: elige <b>Automático</b>, escribe <kbd>almuerzo 25 yape</kbd> y la app llena todo por ti.</p>
+        <p class="tip" id="tx">Atajo: elige <b>Automático</b>, escribe <kbd>almuerzo 25 yape</kbd> y confirma. Si marcas «Repetir cada mes» en «Más detalles», ese gasto queda como atajo de un toque.</p>
       </div>
       <div class="phone"><img id="ti" src="img/registrar.jpg" width="390" height="844" alt="Formulario para registrar un gasto" loading="lazy"></div>
     </div>
@@ -441,6 +441,8 @@ h1,h2,h3{letter-spacing:-.035em}
     <div class="faq">
       <details><summary>¿Tengo que conectar mi cuenta del banco?</summary><p>No. Tú registras tus movimientos y la app los ordena. Nadie entra a tu banca por internet ni te pedimos tus claves.</p></details>
       <details><summary>¿Mis datos están seguros?</summary><p>Se guardan en una base de datos privada protegida con tu inicio de sesión, y nadie más puede verlos desde la app. No los vendemos ni los compartimos. Además, cada día se guarda una versión durante 30 días y puedes descargar una copia completa cuando quieras.</p></details>
+      <details><summary>¿Qué diferencia hay entre Manual y Automático?</summary><p>En Manual la app te pregunta paso a paso: qué movimiento es, su tipo y de dónde sale, y al final escribes el monto. En Automático escribes una sola frase, como «almuerzo 25 yape», y la app la llena; tú solo confirmas.</p></details>
+      <details><summary>¿Puedo dictar en vez de escribir?</summary><p>Sí. En el modo Automático puedes usar el micrófono del teclado de tu celular para decir «almuerzo 25 yape» y luego confirmar.</p></details>
       <details><summary>¿Funciona sin internet?</summary><p>Sí. Lo que registras sin señal queda guardado en tu celular y se sube a tu cuenta cuando vuelve la conexión.</p></details>
       <details><summary>¿Me sirve el reporte para presentarlo en un banco?</summary><p>El reporte ordena tus ingresos, gastos, ahorros y deudas como un estado de cuenta, y cualquier persona lo entiende. Como lo armas con tus propios registros, no reemplaza los documentos oficiales que pide un banco, como tus boletas o estados de cuenta.</p></details>
       <details><summary>¿Puedo usarla en el celular y en la computadora?</summary><p>Sí. Funciona en el navegador de cualquier dispositivo, y en el celular puedes agregarla a tu pantalla de inicio como una app.</p></details>
@@ -501,7 +503,7 @@ h1,h2,h3{letter-spacing:-.035em}
   $('pa').addEventListener('click',()=>setP(true));$('pm').addEventListener('click',()=>setP(false));
   /* Tutoriales */
   const T={
-    gasto:{t:'Registrar un gasto',d:'Toma 10 segundos',img:'registrar',alt:'Formulario para registrar un gasto',s:['Toca el botón <kbd>+</kbd> de la barra de abajo (en computadora, <b>Registrar</b>) y elige <b>Manual</b> o <b>Automático</b>.','En Manual, deja <b>Gasto</b> y elige <b>Cotidiano</b> para gastos chicos del día o <b>Fijo</b> para alquiler, servicios o estudios.','Escribe el monto y qué fue, por ejemplo «Menú del día».','En «¿De dónde sale este gasto?» elige Yape, Plin o efectivo. Se descuenta solo.','Toca <b>Guardar</b>. Si te equivocaste, toca <b>Deshacer</b> en el aviso (dura 10 segundos).'],x:'Atajo: elige <b>Automático</b>, escribe <kbd>almuerzo 25 yape</kbd> y la app llena todo por ti.'},
+    gasto:{t:'Registrar un gasto',d:'Toma 10 segundos',img:'registrar',alt:'Formulario para registrar un gasto',s:['Toca el botón <kbd>+</kbd> de la barra de abajo (en computadora, <b>Registrar</b>) y elige <b>Manual</b> (la app te pregunta paso a paso) o <b>Automático</b> (escribes una frase).','En Manual, elige <b>Gasto</b> y luego <b>Fijo</b> para alquiler, servicios o estudios, o <b>Cotidiano</b> para gastos chicos del día.','Elige de dónde sale: Yape, Plin o efectivo. Se descuenta solo.','Escribe el monto y qué fue, por ejemplo «Menú del día».','Toca <b>Guardar</b>. Si te equivocaste, toca <b>Deshacer</b> en el aviso (dura 10 segundos).'],x:'Atajo: elige <b>Automático</b>, escribe <kbd>almuerzo 25 yape</kbd> y confirma. Si marcas «Repetir cada mes» en «Más detalles», ese gasto queda como atajo de un toque.'},
     tarjeta:{t:'Tarjetas de crédito',d:'Toma 20 segundos',img:'tarjeta',alt:'Formulario de compra con tarjeta de crédito',s:['Toca <kbd>+</kbd>, elige <b>Tarjeta</b> y luego <b>Compra</b>.','Elige la tarjeta, escribe el monto y qué compraste.','Toca <b>Guardar</b>: la compra se suma a la deuda de esa tarjeta, no a tus gastos del mes.','Cuando pagues la tarjeta, toca <b>Pagar</b> en esa tarjeta (o <kbd>+</kbd>, <b>Tarjeta</b>, <b>Pago</b>) y elige de qué cuenta sale el dinero.','El pago baja la deuda y cuenta como gasto del mes. Así no cuentas lo mismo dos veces.'],x:'Pon la línea de crédito en la misma tarjeta, en «Saldo anterior, línea y día de pago», y verás cuánto te queda disponible.'},
     ahorro:{t:'Ahorros con TREA',d:'Toma 30 segundos',img:'ahorros',alt:'Cuentas de ahorro con su TREA y ganancia estimada',s:['Toca <kbd>+</kbd>, elige <b>Ahorro</b> y luego <b>Depositar</b>.','Elige la cuenta, escribe el monto y, si quieres, de dónde sale el dinero. La vista previa te muestra cómo quedan los saldos.','Para poner la tasa, en la tarjeta de la cuenta toca «Agregar TREA o TEA».','Elige TREA o TEA, escribe la tasa anual y toca <b>Guardar</b>.','La cuenta muestra cuánto ganarías al mes y al año con ese saldo.'],x:'Usa la TREA cuando el banco te la dé: ya incluye comisiones y es la cifra más real.'},
     cuadrar:{t:'Cuadrar cuentas',d:'Toma 1 minuto',img:'cuadrar',alt:'Ventana para cuadrar cuentas con el saldo real',s:['Entra al mes, toca <b>Cierre de mes</b> y luego <b>Cuadrar cuentas</b>.','Abre la app de tu banco o tu billetera y mira el saldo real de cada cuenta.','Escríbelo al lado de cada una. La app te dice cuánto falta o sobra.','Toca <b>Aplicar ajustes</b> para dejar todo igual que en la realidad.'],x:'Si te falta dinero casi siempre en la misma cuenta, ahí se te escapa algún gasto hormiga.'},

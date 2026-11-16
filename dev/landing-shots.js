@@ -24,14 +24,16 @@ const hist=[[0,404],[1,401],[2,398],[5,391]].map(([n,f])=>({dia:dia(n),tipo:'dia
 
   await go('#resumen');await shot('resumen');
   await go('#noviembre');await shot('mes');
-  // registrar un gasto cotidiano
-  await abrir();await p.click('#stype [data-g="gasto"]');await p.click('#ssub [data-t="hor"]');await p.fill('#sa','12.50');await p.fill('#sd','Menú del día');await p.click('#ssrc [data-src="liq:0"]');await p.locator('#sd').blur();await shot('registrar');await cerrar();
-  // compra con tarjeta
-  await abrir();await p.click('#stype [data-g="tarjeta"]');await p.click('#ssub [data-t="compra"]');await p.click('#sbank [data-b="bcp"]');await p.fill('#sa','89.90');await p.fill('#sd','Zapatillas');await p.locator('#sd').blur();await shot('tarjeta');await cerrar();
-  // depósito a ahorro
-  await abrir();await p.click('#stype [data-g="ahorro"]');await p.click('#ssub [data-t="aho"]');
-  {const c=p.locator('#sheet [role=radio]').filter({hasText:'PiBank'}).first();if(await c.count())await c.click();}
-  await p.fill('#sa','200');await p.locator('#sa').blur();await shot('ahorro-registro');await cerrar();
+  const pausa=()=>p.waitForTimeout(260);
+  const ask=async()=>{await p.click('#fab');await p.waitForSelector('#sheet');await pausa();};
+  // registrar en modo Automático: la frase y su tarjeta de confirmación
+  await ask();await p.click('[data-mode="auto"]');await pausa();await p.fill('#smsg','almuerzo 25 yape');await pausa();await shot('registrar');await cerrar();
+  // compra con tarjeta (Manual, paso a paso)
+  await ask();await p.click('[data-mode="manual"]');await pausa();await p.click('#stype [data-g="tarjeta"]');await pausa();await p.click('#ssub [data-t="compra"]');await pausa();await p.click('#sbank [data-b="bcp"]');await pausa();await p.fill('#sa','89.90');await p.fill('#sd','Zapatillas');await p.locator('#sd').blur();await shot('tarjeta');await cerrar();
+  // depósito a ahorro (Manual, paso a paso)
+  await ask();await p.click('[data-mode="manual"]');await pausa();await p.click('#stype [data-g="ahorro"]');await pausa();await p.click('#ssub [data-t="aho"]');await pausa();await p.click('#sax [data-ax="dep"]');await pausa();
+  {const c=p.locator('#sfrom [role=radio]').filter({hasText:'PiBank'}).first();if(await c.count())await c.click();else await p.click('#sfrom [data-from^="aho:"]');}
+  await pausa();await p.click('#ssrc [data-src="none"]');await pausa();await p.fill('#sa','200');await p.locator('#sa').blur();await shot('ahorro-registro');await cerrar();
   // cuentas de ahorro con su tasa
   await p.evaluate(()=>{const c=document.querySelector('.bcard[data-cid="aho"]'),h=document.getElementById('hdr').offsetHeight;scrollTo(0,c.getBoundingClientRect().top+scrollY-h-10);});await shot('ahorros');
   await p.evaluate(()=>scrollTo(0,0));

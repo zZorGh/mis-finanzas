@@ -88,3 +88,33 @@ después.
 
 **Consecuencias.** Integridad de datos y confianza: el usuario puede corregirse sin
 miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento.
+
+---
+
+## ADR-006 · Registro en dos modos: Manual por pasos o Automático (nov. 2026)
+
+**Contexto.** En la beta, el formulario de registro abrumaba: muchos botones y grupos de opciones a la vez. A la vez, la gente que registra con prisa necesita una vía rápida (y a futuro, por voz).
+
+**Decisión.** Al tocar «+» (y en cada «+ Agregar…») aparece primero una ventana con dos opciones: **Automático** (una frase como «almuerzo 25 yape», con una tarjeta de confirmación antes de guardar) y **Manual** (un asistente por pasos: una ventana por decisión — movimiento → tipo → tarjeta/cuenta → de dónde sale → monto y concepto). Los botones «+ Agregar …» ya conocen el tipo y se lo saltan. Editar y las acciones de ahorro/tarjeta mantienen el formulario completo.
+
+**Alternativas consideradas.** Un solo formulario con más secciones plegadas (menos pasos, pero seguía abrumando); registrar solo por texto (más rápido, pero menos guiado para quien empieza).
+
+**Consecuencias.** Más toques en Manual (4 o 5), a cambio de claridad; lo rápido queda en Automático y en los atajos. Si Automático no sabe la cuenta, no guarda a ciegas: pasa al formulario completo y la pide.
+
+---
+
+## ADR-007 · «Hormiga» pasa a llamarse «Cotidiano» (nov. 2026)
+
+**Decisión.** La sección `hor` se muestra como **Cotidiano** (gastos del día a día) junto a **Fijo**; en el formulario, «Fijo» va primero. El código y los datos siguen usando `hor`, así que no hay migración. En la landing se conserva «gasto hormiga» solo en la calculadora, porque es el término que la gente conoce y busca.
+
+**Consecuencias.** Textos, gráficos, alertas e inglés cambian; las capturas de la landing se regeneran. La clase (fijo/cotidiano) se elige sola según el historial del concepto, y se puede cambiar a mano.
+
+---
+
+## ADR-008 · Los atajos de un toque salen solo de lo que la persona configura (nov. 2026)
+
+**Contexto.** Una primera versión sugería atajos desde el historial (los conceptos más usados); llenaba la pantalla de botones que nadie había pedido.
+
+**Decisión.** Un atajo aparece únicamente si es un gasto **recurrente** que la persona configuró en Ajustes o creó marcando «Repetir cada mes» en «Más detalles». Un toque lo registra (con «Deshacer»). Sin recurrentes no hay atajos.
+
+**Consecuencias.** El formulario sale limpio por defecto. No se añadió ningún campo nuevo a los datos: se reutiliza la lista de recurrentes (`cfg.rec`).
