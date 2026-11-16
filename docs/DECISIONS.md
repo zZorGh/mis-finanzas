@@ -118,3 +118,13 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 **Decisión.** Un atajo aparece únicamente si es un gasto **recurrente** que la persona configuró en Ajustes o creó marcando «Repetir cada mes» en «Más detalles». Un toque lo registra (con «Deshacer»). Sin recurrentes no hay atajos.
 
 **Consecuencias.** El formulario sale limpio por defecto. No se añadió ningún campo nuevo a los datos: se reutiliza la lista de recurrentes (`cfg.rec`).
+
+---
+
+## ADR-009 · Los ingresos se suman a la cuenta donde se reciben (nov. 2026)
+
+**Contexto.** Los gastos descontaban de la cuenta de origen, pero un ingreso solo se anotaba: los saldos de Yape, Plin o efectivo no cambiaban, y la app no preguntaba dónde se depositaba. Un tester lo notó.
+
+**Decisión.** Al registrar un ingreso se pregunta en qué cuenta se deposita (con la opción «No sumar a ninguna cuenta», que conserva el comportamiento anterior). El monto se suma al saldo y se guarda en la fila con signo negativo en `_d`, de modo que editar, borrar o deshacer lo revierten con la misma lógica que los gastos. Automático entiende «sueldo 500 yape».
+
+**Consecuencias.** Los saldos reflejan los ingresos. Los ingresos ya registrados no cambian (no tenían cuenta).

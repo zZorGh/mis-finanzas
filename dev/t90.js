@@ -54,7 +54,9 @@ const cerrar=async p=>{await p.keyboard.press('Escape');await p.waitForTimeout(2
   await p.click('[data-wz="back"]');await W(p);
   T('«Atrás» desde el primer paso vuelve a Manual/Automático',await p.getAttribute('#sheet','data-mode')==='ask'&&await vis(p,'[data-mode="auto"]'));
   await p.click('[data-mode="manual"]');await W(p);await p.click('#stype [data-g="ing"]');await W(p);
-  T('Ingreso no tiene tipo ni cuenta: va directo a monto y concepto',await step(p)==='form'&&await vis(p,'#sa'));
+  T('Ingreso no tiene tipo: pregunta en qué cuenta se deposita',await step(p)==='src');
+  await p.click('#ssrc [data-src="none"]');await W(p);
+  T('y luego va a monto y concepto',await step(p)==='form'&&await vis(p,'#sa'));
   await p.click('[data-wz="chg"]');await W(p);
   T('«Cambiar» en el resumen vuelve a elegir el movimiento',await step(p)==='type');
   await cerrar(p);
@@ -116,7 +118,7 @@ const cerrar=async p=>{await p.keyboard.press('Escape');await p.waitForTimeout(2
   await p.click('[data-new="ing"]');await p.waitForSelector('#sheet');
   T('«+ Agregar ingreso» también pregunta',await p.getAttribute('#sheet','data-mode')==='ask');
   await p.click('[data-mode="manual"]');await W(p);
-  T('en Manual, un ingreso va directo a monto y concepto',await step(p)==='form');
+  T('en Manual, un ingreso salta el tipo y pregunta la cuenta',await step(p)==='src');
   await cerrar(p);
   await p.click('[data-new="ing"]');await p.waitForSelector('#sheet');await p.click('[data-mode="auto"]');await W(p);await p.fill('#smsg','bono 300');await p.waitForTimeout(250);
   T('en Automático desde «Agregar ingreso» el tipo queda en Ingreso',/Ingreso/.test(await p.innerText('#sapv')));
