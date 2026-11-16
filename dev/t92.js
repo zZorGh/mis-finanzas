@@ -1,4 +1,4 @@
-// t92: métricas anónimas y reporte de errores. Encendidas por defecto (la política de privacidad lo explica); se apagan con cuadra-stats=0.
+// t92: métricas anónimas y reporte de errores. Encendidas por defecto en producción (la política de privacidad lo explica) pero NO en localhost; se fuerzan con cuadra-stats=1 y se apagan con cuadra-stats=0.
 const {chromium}=require('playwright');const fs=require('fs');
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
 const demo=JSON.parse(fs.readFileSync(__dirname+'/demo.json','utf8'));const K='mis-finanzas-prototipo-v1';
@@ -16,11 +16,12 @@ const todos=p=>[].concat(...p.posts);
 (async()=>{
   const b=await chromium.launch();
 
-  // 1. Encendido por defecto: se envía, y Ajustes muestra la tarjeta de privacidad activada
+  // 1. En localhost no se mide por defecto (las pruebas no ensucian las métricas reales); en producción el valor por defecto es «encendido»
   let p=await nueva(b);
   await p.click('#fab');await p.waitForSelector('#sheet');await p.click('[data-mode="manual"]');await W(p);await p.keyboard.press('Escape');await W(p);await flush(p);
-  T('por defecto se envían métricas anónimas',p.posts.length>0);
-  T('y Ajustes muestra la tarjeta de privacidad, activada',await (async()=>{await p.goto('http://127.0.0.1:8765/wrap-repo.html#ajustes');await p.waitForTimeout(700);return (await p.locator('#st-on').count())===1&&await p.isChecked('#st-on');})());
+  T('en localhost, por defecto, no se envía nada',p.posts.length===0);
+  T('en producción el valor por defecto está encendido (TRACK_DEFAULT=true)',/const TRACK_DEFAULT=true,/.test(fs.readFileSync(__dirname+'/../index.html','utf8')));
+  T('Ajustes muestra la tarjeta de privacidad',await (async()=>{await p.goto('http://127.0.0.1:8765/wrap-repo.html#ajustes');await p.waitForTimeout(700);return (await p.locator('#st-on').count())===1;})());
   await p.context().close();
 
   // 2. Apagado por la persona: no se envía nada

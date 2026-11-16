@@ -2058,7 +2058,9 @@ const SB_URL='https://lmjhlghwthydpeismulb.supabase.co',SB_KEY='sb_publishable_C
    solo un id aleatorio del dispositivo (cuadra-sid), el nombre del evento, un dato corto (modo, paso, tipo) y la versión.
    Apagado hasta que exista la tabla (TRACK_DEFAULT); cada persona puede apagarlo en Ajustes (cuadra-stats = 0/1). */
 const TRACK_DEFAULT=true,APPV='2026.11.16.2';
-const statsOn=()=>{let v=null;try{v=localStorage.getItem('cuadra-stats');}catch(e){}return v==='1'?true:v==='0'?false:TRACK_DEFAULT;};
+/* En tu computadora (localhost, file) no se mide por defecto: así las pruebas y el desarrollo no ensucian las métricas reales. */
+const trLocal=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\]|)$/.test(location.hostname);
+const statsOn=()=>{let v=null;try{v=localStorage.getItem('cuadra-stats');}catch(e){}return v==='1'?true:v==='0'?false:(TRACK_DEFAULT&&!trLocal);};
 const sidGet=()=>{try{let s=localStorage.getItem('cuadra-sid');if(!s||s.length<8){const a=new Uint8Array(10);crypto.getRandomValues(a);s=Array.from(a).map(x=>x.toString(16).padStart(2,'0')).join('');localStorage.setItem('cuadra-sid',s);}return s;}catch(e){return '';}};
 let trQ=[],trT=0,trErr=0;
 function track(ev,dato){
