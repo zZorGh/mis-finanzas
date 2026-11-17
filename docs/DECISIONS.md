@@ -143,10 +143,10 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 
 ---
 
-## ADR-011 · La moneda alterna entre soles y la segunda moneda de Ajustes (nov. 2026)
+## ADR-011 · La moneda rota entre soles y las monedas que la persona activa (nov. 2026)
 
-**Contexto.** El botón de moneda junto al monto recorría tres opciones (S/, $, €), aunque casi nadie usa las tres. Se probó preguntar la moneda en el primer paso del asistente y el dueño pidió mantener la opción de siempre junto al monto.
+**Contexto.** El botón de moneda junto al monto recorría siempre tres opciones (S/, $, €). Se probó preguntar la moneda en el primer paso del asistente y luego limitar el botón a una sola «segunda moneda»; el dueño pidió mantener la opción de siempre junto al monto y que **rote por todas las monedas** del usuario.
 
-**Decisión.** El botón de moneda (una píldora a la derecha del recuadro del monto, que resalta junto con su símbolo) alterna entre soles y **una segunda moneda configurable** en Ajustes (dólares o euros, por defecto dólares). El primer paso del asistente no pregunta la moneda. No cambia cómo se guardan ni se convierten los montos.
+**Decisión.** El botón de moneda (una píldora a la derecha del recuadro del monto, que resalta junto con su símbolo) rota entre soles y las monedas marcadas en Ajustes → «Monedas al registrar» (dólares y euros, ambas activas por defecto). Quien no usa una de ellas la desmarca y deja de aparecer; sin ninguna, el botón se oculta. El primer paso del asistente no pregunta la moneda. No cambia cómo se guardan ni se convierten los montos.
 
-**Consecuencias.** Un campo nuevo en la configuración (`monedaAlt`), validado al cargar. Quien usa dólares y euros a la vez debe cambiar la segunda moneda en Ajustes para pasar de una a otra.
+**Consecuencias.** Un campo nuevo en la configuración (`monedas`, lista), validado al cargar; la clave `monedaAlt` de una versión intermedia se descarta. El comportamiento por defecto es el de siempre.

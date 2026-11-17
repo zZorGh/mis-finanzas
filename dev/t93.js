@@ -1,14 +1,15 @@
-// t93: el botón de moneda junto al monto alterna entre soles y la segunda moneda que la persona configuró en Ajustes ($ o €).
+// t93: el botón de moneda junto al monto rota entre soles y las monedas que la persona dejó activas en Ajustes ($ y € por defecto).
 const {chromium}=require('playwright');const fs=require('fs');
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
 const demo=JSON.parse(fs.readFileSync(__dirname+'/demo.json','utf8'));const K='mis-finanzas-prototipo-v1';
 let ok=0,bad=0;const T=(n,c)=>{c?ok++:(bad++,console.log('FALLA',n));};
 const liq0=p=>p.evaluate(k=>JSON.parse(localStorage.getItem(k)).S['2026'][10].liq[0].m,K);
 const fila=(p,c)=>p.evaluate(([k,c])=>{const m=JSON.parse(localStorage.getItem(k)).S['2026'][10];return [].concat(m.hor,m.fij).find(r=>r.c===c)||null;},[K,c]);
-const nueva=async(b,cfgExtra,lang)=>{const ctx=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,locale:'es-PE',timezoneId:'America/Lima'});const p=await ctx.newPage();p.errs=[];p.on('pageerror',e=>p.errs.push(e.message));
+const monedas=p=>p.evaluate(k=>JSON.parse(localStorage.getItem(k)).cfg.monedas,K);
+const nueva=async(b,cfgExtra,lang,extraRow)=>{const ctx=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,locale:'es-PE',timezoneId:'America/Lima'});const p=await ctx.newPage();p.errs=[];p.on('pageerror',e=>p.errs.push(e.message));
   await p.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765')||u.startsWith('https://fonts.g'))return r.continue();if(u.includes('hart'))return r.fulfill({contentType:'application/javascript',headers:{'access-control-allow-origin':'*'},body:chart});return r.abort();});
-  const cfg=Object.assign({},demo.cfg,cfgExtra||{});
-  await p.addInitScript(([d,k,l])=>{if(!sessionStorage.getItem('qa')){sessionStorage.setItem('qa','1');localStorage.setItem(k,d);localStorage.setItem(k+'-skin','cuadre');localStorage.setItem(k+'-tema','light');localStorage.setItem(k+'-instalar','1');if(l)localStorage.setItem('cuadra-lang',l);}},[JSON.stringify({v:1,S:demo.S,cfg}),K,lang||'']);
+  const cfg=Object.assign({},demo.cfg,cfgExtra||{}),S=JSON.parse(JSON.stringify(demo.S));if(extraRow)S['2026'][10].hor.push(extraRow);
+  await p.addInitScript(([d,k,l])=>{if(!sessionStorage.getItem('qa')){sessionStorage.setItem('qa','1');localStorage.setItem(k,d);localStorage.setItem(k+'-skin','cuadre');localStorage.setItem(k+'-tema','light');localStorage.setItem(k+'-instalar','1');if(l)localStorage.setItem('cuadra-lang',l);}},[JSON.stringify({v:1,S,cfg}),K,lang||'']);
   await p.goto('http://127.0.0.1:8765/wrap-repo.html#noviembre');await p.waitForSelector('#app');await p.waitForTimeout(900);return p;};
 const vis=(p,s)=>p.locator(s).first().isVisible();
 const step=p=>p.getAttribute('#sheet','data-step');
@@ -17,15 +18,17 @@ const abrir=async p=>{await p.click('#fab');await p.waitForSelector('#sheet');aw
 const manual=async p=>{await abrir(p);await p.click('[data-mode="manual"]');await W(p);};
 const mon=async p=>(await p.innerText('#scur')).trim();
 const gastoHasta=async p=>{await manual(p);await p.click('#stype [data-g="gasto"]');await W(p);await p.click('#ssub [data-t="hor"]');await W(p);await p.click('#ssrc [data-src="liq:0"]');await W(p);};
+// toca el botón varias veces y devuelve la secuencia de monedas que fue mostrando (desde la inicial)
+const rota=async(p,veces)=>{const s=[await mon(p)];for(let i=0;i<veces;i++){await p.click('#scur');await W(p);s.push(await mon(p));}return s.join(' > ');};
+const ajustes=async p=>{await p.goto('http://127.0.0.1:8765/wrap-repo.html#ajustes');await p.waitForTimeout(800);};
 (async()=>{
   const b=await chromium.launch();let p=await nueva(b);
-  // 1. El primer paso queda como estaba: sin pregunta de moneda
+  // 1. El primer paso queda sin pregunta de moneda y sin botón
   await manual(p);
-  T('el primer paso no pregunta la moneda (solo el movimiento)',await step(p)==='type'&&!/En qué moneda/.test(await p.innerText('#sheet'))&&await p.locator('#smon').count()===0);
-  T('en el primer paso el botón de moneda no se muestra (solo cuando hay monto)',!(await vis(p,'#scur')));
+  T('el primer paso no pregunta la moneda (solo el movimiento) ni muestra el botón',await step(p)==='type'&&!/En qué moneda/.test(await p.innerText('#sheet'))&&!(await vis(p,'#scur')));
   await p.keyboard.press('Escape');await p.waitForTimeout(200);
 
-  // 2. En el monto, el botón alterna soles ↔ segunda moneda (dólares por defecto)
+  // 2. Rotación completa por defecto: S/ > $ > € > S/
   const s0=await liq0(p);
   await gastoHasta(p);
   T('el monto empieza en soles',await step(p)==='form'&&await mon(p)==='S/');
@@ -33,55 +36,69 @@ const gastoHasta=async p=>{await manual(p);await p.click('#stype [data-g="gasto"
     T('el botón de moneda está dentro del recuadro del monto, a la derecha y centrado en vertical',g.dentro&&g.derecha&&g.centrado);
     T('y se ve bien (al menos 44 × 36 px)',g.visible);
     T('el monto es grande (≥ 30 px) y la moneda se ve junto al número (≥ 30 px)',g.fuente>=30&&g.simbolo==='S/'&&g.simboloFuente>=30);}
+  T('el botón rota por todas: S/ > $ > € > S/',await rota(p,3)==='S/ > $ > € > S/');
   await p.click('#scur');await W(p);
-  T('un toque en el botón pasa a dólares ($)',await mon(p)==='$');
-  T('el símbolo grande junto al monto también cambia a $',(await p.innerText('#samtcur')).trim()==='$');
-  await p.click('#scur');await W(p);
-  T('otro toque vuelve a soles',await mon(p)==='S/');
-  await p.click('#scur');await W(p);
+  T('el símbolo grande junto al monto acompaña al botón ($)',(await p.innerText('#samtcur')).trim()==='$');
   await p.fill('#sa','10');await p.fill('#sd','T93 dolares');await p.click('[data-s="save"]');await p.waitForTimeout(400);
-  {const r=await fila(p,'T93 dolares');T('el gasto en dólares se guarda con su moneda',!!r&&r.cur==='$'&&+r.m===10);}
+  {const r=await fila(p,'T93 dolares');T('un gasto en dólares se guarda con su moneda',!!r&&r.cur==='$'&&+r.m===10);}
   T('y el saldo baja por el equivalente en soles (más de 10)',(s0-await liq0(p))>10);
-
-  // 3. En soles: sin moneda en la fila y descuento exacto
+  await gastoHasta(p);await p.click('#scur');await W(p);await p.click('#scur');await W(p);
+  await p.fill('#sa','5');await p.fill('#sd','T93 euros');await p.click('[data-s="save"]');await p.waitForTimeout(400);
+  {const r=await fila(p,'T93 euros');T('un gasto en euros también se guarda con su moneda',!!r&&r.cur==='€'&&+r.m===5);}
   const s1=await liq0(p);
   await gastoHasta(p);await p.fill('#sa','10');await p.fill('#sd','T93 soles');await p.click('[data-s="save"]');await p.waitForTimeout(400);
-  {const r=await fila(p,'T93 soles');T('en soles la fila no guarda moneda',!!r&&!r.cur&&+r.m===10);}
-  T('y descuenta exactamente 10',Math.abs((s1-await liq0(p))-10)<0.005);
+  {const r=await fila(p,'T93 soles');T('en soles la fila no guarda moneda y descuenta exacto',!!r&&!r.cur&&+r.m===10&&Math.abs((s1-await liq0(p))-10)<0.005);}
 
-  // 4. Ajustes: la segunda moneda se configura y el botón la usa
-  await p.goto('http://127.0.0.1:8765/wrap-repo.html#ajustes');await p.waitForTimeout(800);
-  T('Ajustes muestra «Segunda moneda al registrar», en dólares por defecto',await p.locator('#cf-alt').count()===1&&(await p.inputValue('#cf-alt'))==='$');
-  await p.selectOption('#cf-alt','€');await p.waitForTimeout(500);
-  T('al elegir euros se guarda en la configuración',(await p.evaluate(k=>JSON.parse(localStorage.getItem(k)).cfg.monedaAlt,K))==='€');
-  await p.goto('http://127.0.0.1:8765/wrap-repo.html#noviembre');await p.waitForTimeout(700);
-  await gastoHasta(p);
-  await p.click('#scur');await W(p);
-  T('con euros configurados, el botón pasa de soles a euros (€), no a dólares',await mon(p)==='€');
-  await p.click('#scur');await W(p);
-  T('y vuelve a soles',await mon(p)==='S/');
+  // 3. Ajustes: la persona marca qué monedas aparecen
+  await ajustes(p);
+  T('Ajustes ofrece «Monedas al registrar» con dólares y euros marcados',await p.locator('#cm-d').count()===1&&await p.isChecked('#cm-d')&&await p.isChecked('#cm-e'));
+  await p.uncheck('#cm-e');await W(p);
+  T('al desmarcar euros se guarda solo [$]',JSON.stringify(await monedas(p))==='["$"]');
+  await p.goto('http://127.0.0.1:8765/wrap-repo.html#noviembre');await p.waitForTimeout(700);await gastoHasta(p);
+  T('sin euros, el botón rota S/ > $ > S/',await rota(p,2)==='S/ > $ > S/');
   await p.keyboard.press('Escape');await p.waitForTimeout(200);
+  await ajustes(p);await p.check('#cm-e');await p.uncheck('#cm-d');await W(p);
+  T('con solo euros se guarda [€]',JSON.stringify(await monedas(p))==='["€"]');
+  await p.goto('http://127.0.0.1:8765/wrap-repo.html#noviembre');await p.waitForTimeout(700);await gastoHasta(p);
+  T('con solo euros, el botón rota S/ > € > S/',await rota(p,2)==='S/ > € > S/');
+  await p.keyboard.press('Escape');await p.waitForTimeout(200);
+  await ajustes(p);await p.uncheck('#cm-e');await W(p);
+  T('sin monedas extra se guarda []',JSON.stringify(await monedas(p))==='[]');
+  await p.goto('http://127.0.0.1:8765/wrap-repo.html#noviembre');await p.waitForTimeout(700);await gastoHasta(p);
+  T('sin monedas extra, el botón de moneda no se muestra y todo es en soles',!(await vis(p,'#scur'))&&(await p.innerText('#samtcur')).trim()==='S/');
+  await p.keyboard.press('Escape');await p.waitForTimeout(200);
+  await ajustes(p);await p.check('#cm-e');await p.check('#cm-d');await W(p);
+  T('al marcar de nuevo en cualquier orden se guarda [$,€] (orden fijo)',JSON.stringify(await monedas(p))==='["$","€"]');
 
-  // 5. También en el formulario completo («Cambiar a manual») y en «+ Agregar …»
+  // 4. Otras entradas usan la misma rotación
+  await p.goto('http://127.0.0.1:8765/wrap-repo.html#noviembre');await p.waitForTimeout(700);
   await abrir(p);await p.click('[data-mode="auto"]');await W(p);await p.click('#smodesw');await W(p);
-  await p.click('#scur');await W(p);
-  T('el formulario completo usa la misma moneda configurada',await mon(p)==='€');
+  T('el formulario completo (Cambiar a manual) rota igual',await rota(p,3)==='S/ > $ > € > S/');
   await p.keyboard.press('Escape');await p.waitForTimeout(200);
   await p.click('[data-new="fij"]');await p.waitForSelector('#sheet');await p.click('[data-mode="manual"]');await W(p);await p.click('#ssrc [data-src="liq:0"]');await W(p);
-  await p.click('#scur');await W(p);
-  T('desde «+ Agregar gasto fijo» también alterna con la moneda configurada',await step(p)==='form'&&await mon(p)==='€');
+  T('desde «+ Agregar gasto fijo» también rota por todas',await step(p)==='form'&&await rota(p,3)==='S/ > $ > € > S/');
   await p.keyboard.press('Escape');await p.waitForTimeout(200);
   T('sin errores de JavaScript',p.errs.length===0);if(p.errs.length)console.log(p.errs);
   await p.context().close();
 
-  // 6. Un valor inválido en la configuración vuelve a dólares
-  p=await nueva(b,{monedaAlt:'XX'});await gastoHasta(p);await p.click('#scur');await W(p);
-  T('una segunda moneda inválida en los datos se corrige a dólares',await mon(p)==='$');
+  // 5. Datos de otras versiones: una lista inválida se corrige; la configuración vieja (monedaAlt) no estorba
+  p=await nueva(b,{monedas:['XX','$']});await gastoHasta(p);
+  T('una lista de monedas inválida en los datos se filtra (solo $)',await rota(p,2)==='S/ > $ > S/');
+  await p.context().close();
+  p=await nueva(b,{monedas:undefined,monedaAlt:'€'});await gastoHasta(p);
+  T('con la configuración antigua (monedaAlt) rota por las dos de siempre',await rota(p,3)==='S/ > $ > € > S/');
+  await p.context().close();
+
+  // 6. Editar un movimiento en una moneda que ya no está activa: se puede volver a soles
+  p=await nueva(b,{monedas:['$']},null,{c:'T93 euro viejo',m:5,f:'3-nov',k:'',src:'liq:0',cur:'€'});
+  {const i=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)).S['2026'][10].hor.findIndex(r=>r.c==='T93 euro viejo'),K);
+   await p.click('[data-cid=hor] [data-edit="hor"][data-i="'+i+'"]');await p.waitForSelector('#sheet');await p.waitForTimeout(200);
+   T('al editar un gasto en € (desactivado) el botón lo muestra y un toque lo pasa a soles',await mon(p)==='€'&&await rota(p,1)==='€ > S/');}
   await p.context().close();
 
   // 7. Inglés
-  p=await nueva(b,null,'en');await p.goto('http://127.0.0.1:8765/wrap-repo.html#ajustes');await p.reload();await p.waitForTimeout(1000);
-  {const tx=await p.innerText('body');T('en inglés Ajustes traduce la segunda moneda',/Second currency when logging/.test(tx)&&/Dollars \(\$\)/.test(tx)&&!/Segunda moneda/.test(tx));}
+  p=await nueva(b,null,'en');await ajustes(p);await p.reload();await p.waitForTimeout(1000);
+  {const tx=await p.innerText('body');T('en inglés Ajustes traduce «Monedas al registrar»',/Currencies when logging/.test(tx)&&/Dollars \(\$\)/.test(tx)&&/cycles through soles/.test(tx)&&!/Monedas al registrar/.test(tx));}
   await p.context().close();
 
   console.log('Total '+(ok+bad)+' ok '+ok+' fallas '+bad);await b.close();process.exit(bad?1:0);
