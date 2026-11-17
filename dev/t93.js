@@ -22,14 +22,20 @@ const gastoHasta=async p=>{await manual(p);await p.click('#stype [data-g="gasto"
   // 1. El primer paso queda como estaba: sin pregunta de moneda
   await manual(p);
   T('el primer paso no pregunta la moneda (solo el movimiento)',await step(p)==='type'&&!/En qué moneda/.test(await p.innerText('#sheet'))&&await p.locator('#smon').count()===0);
+  T('en el primer paso el botón de moneda no se muestra (solo cuando hay monto)',!(await vis(p,'#scur')));
   await p.keyboard.press('Escape');await p.waitForTimeout(200);
 
   // 2. En el monto, el botón alterna soles ↔ segunda moneda (dólares por defecto)
   const s0=await liq0(p);
   await gastoHasta(p);
   T('el monto empieza en soles',await step(p)==='form'&&await mon(p)==='S/');
+  {const g=await p.evaluate(()=>{const a=document.getElementById('samt').getBoundingClientRect(),c=document.getElementById('scur').getBoundingClientRect(),n=document.getElementById('sa'),sym=document.getElementById('samtcur');return {dentro:c.left>=a.left&&c.right<=a.right+1&&c.top>=a.top&&c.bottom<=a.bottom,derecha:c.left>a.left+a.width/2,centrado:Math.abs((c.top+c.bottom)/2-(a.top+a.bottom)/2)<=4,visible:c.width>=44&&c.height>=36,fuente:parseFloat(getComputedStyle(n).fontSize),simbolo:sym.textContent,simboloFuente:parseFloat(getComputedStyle(sym).fontSize)};});
+    T('el botón de moneda está dentro del recuadro del monto, a la derecha y centrado en vertical',g.dentro&&g.derecha&&g.centrado);
+    T('y se ve bien (al menos 44 × 36 px)',g.visible);
+    T('el monto es grande (≥ 30 px) y la moneda se ve junto al número (≥ 30 px)',g.fuente>=30&&g.simbolo==='S/'&&g.simboloFuente>=30);}
   await p.click('#scur');await W(p);
   T('un toque en el botón pasa a dólares ($)',await mon(p)==='$');
+  T('el símbolo grande junto al monto también cambia a $',(await p.innerText('#samtcur')).trim()==='$');
   await p.click('#scur');await W(p);
   T('otro toque vuelve a soles',await mon(p)==='S/');
   await p.click('#scur');await W(p);
