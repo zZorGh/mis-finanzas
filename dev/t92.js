@@ -64,7 +64,7 @@ const todos=p=>[].concat(...p.posts);
 
   // 6. Inglés
   p=await nueva(b,'1');await p.evaluate(()=>localStorage.setItem('cuadra-lang','en'));await p.goto('http://127.0.0.1:8765/wrap-repo.html#ajustes');await p.reload();await p.waitForTimeout(1000);
-  {const tx=await p.innerText('body');T('en inglés la tarjeta de privacidad está traducida',/Help improve MisSoles with anonymous usage statistics/.test(tx)&&!/Ayudar a mejorar/.test(tx));}
+  {const tx=await p.innerText('body');T('en inglés la tarjeta de privacidad está traducida',/Help improve MiS²oles with anonymous usage statistics/.test(tx)&&!/Ayudar a mejorar/.test(tx));}
   await p.context().close();
 
   console.log('Total '+(ok+bad)+' ok '+ok+' fallas '+bad);await b.close();process.exit(bad?1:0);

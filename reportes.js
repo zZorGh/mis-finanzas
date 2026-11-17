@@ -1,4 +1,4 @@
-/* MisSoles · reportes descargables (Excel y PDF).
+/* MiS²oles · reportes descargables (Excel y PDF).
    Corre en un Web Worker para que la pantalla no se congele mientras se arma el archivo.
    Si el navegador no permite workers, index.html carga este mismo archivo y lo ejecuta en la página.
    Las librerías (ExcelJS, jsPDF) se verifican con SRI antes de ejecutarse. */
@@ -27,7 +27,7 @@ const perOf=(y,i)=>MES[i]+' '+y;
 const dmy=d=>d?String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear():'';
 const repWho=()=>JOB_WHO;
 
-const RNOTE='Documento elaborado por el titular a partir de sus propios registros en MisSoles. No es un documento emitido por una entidad financiera.';
+const RNOTE='Documento elaborado por el titular a partir de sus propios registros en MiS²oles. No es un documento emitido por una entidad financiera.';
 function repResumen(R){return [
   ['Ingresos totales',R.T.ing],['Gastos fijos',R.T.fij],['Gastos variables',R.T.hor],['Total de gastos',R.T.gas],
   ['Ahorro neto del período',R.T.aho],['Inversión',R.T.inv],['Resultado del período (ingresos − gastos − ahorro − inversión)',R.T.res],
@@ -38,7 +38,7 @@ function fxNote(R){if(!R.fx.length)return '';const by=new Map();R.fx.forEach(x=>
 /* ----- Excel ----- */
 async function buildXlsx(R,o){
   await needLib('xlsx');
-  const wb=new ExcelJS.Workbook();wb.creator='MisSoles';wb.created=new Date();wb.calcProperties.fullCalcOnLoad=true;
+  const wb=new ExcelJS.Workbook();wb.creator='MiS²oles';wb.created=new Date();wb.calcProperties.fullCalcOnLoad=true;
   const G='FF0B7A62',W='FFFFFFFF',MON='#,##0.00;[Red]-#,##0.00',who=repWho(),hoy=new Date();
   const hdr=(ws,cols)=>{ws.columns=cols.map(c=>({header:c[0],key:c[1],width:c[2]}));const h=ws.getRow(1);h.font={bold:true,color:{argb:W}};h.fill={type:'pattern',pattern:'solid',fgColor:{argb:G}};h.alignment={vertical:'middle',wrapText:true};h.height=30;ws.views=[{state:'frozen',ySplit:1}];};
   const fmtCols=(ws,keys,f)=>keys.forEach(k=>{ws.getColumn(k).numFmt=f||MON;});
@@ -83,7 +83,7 @@ async function buildPdf(R,o){
   await needLib('pdf');
   const {jsPDF}=window.jspdf,doc=new jsPDF({unit:'mm',format:'a4',compress:true}),W=210,H=297,M=14,who=repWho();
   const G=[11,122,98],INK=[20,32,27],MUT=[92,107,101],LINE=[214,222,218],BAD=[180,35,24];
-  doc.setProperties({title:'Estado de cuenta personal – '+R.label,author:who.nombre||'Titular',creator:'MisSoles'});
+  doc.setProperties({title:'Estado de cuenta personal – '+R.label,author:who.nombre||'Titular',creator:'MiS²oles'});
   doc.setFillColor(...G);doc.rect(0,0,W,30,'F');doc.setTextColor(255,255,255);
   doc.setFont('helvetica','bold');doc.setFontSize(17);doc.text('Estado de cuenta personal',M,13);
   doc.setFont('helvetica','normal');doc.setFontSize(10);doc.text(pdfTxt('Período: '+R.label),M,21);

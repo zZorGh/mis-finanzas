@@ -1,6 +1,7 @@
-# MisSoles — guía para Claude Code
+# MiS²oles — guía para Claude Code
 
-App web de finanzas personales en soles (Lima, Perú), en plan de monetizarse (freemium). Nombre oficial: **MisSoles** (desde nov. 2026; «Cuadra» estaba registrada en Indecopi). Antes: «Cuadra», «Plantilla de Finanzas», «Mis finanzas». La clave `cuadra-lang` y el estilo «Cuadre» conservan su nombre a propósito. Dueño: el autor del repo (habla español).
+App web de finanzas personales en soles (Lima, Perú), en plan de monetizarse (freemium). Nombre oficial: **MiS²oles** (desde nov. 2026; «Cuadra» estaba registrada en Indecopi). Antes: «Cuadra», «Plantilla de Finanzas», «Mis finanzas». La clave `cuadra-lang` y el estilo «Cuadre» conservan su nombre a propósito. Dueño: el autor del repo (habla español).
+- **Nombre y marca (17 nov. 2026):** el nombre es **MiS²oles** (antes MisSoles); el logo «S/» no cambia. En los nombres grandes (encabezado de la app, pantalla de acceso, landing, página legal, imagen para compartir) el «2» es un `<sup class="sq">` dentro de `<span class="sw">S…</span>` colocado sobre la S, sin ocupar espacio entre letras (el CSS `.sw`/`.sq` está repetido en cada página; si cambias la posición, cámbiala en las cuatro y en `dev/og.html`). En texto corrido y en títulos se usa el carácter «²». Para lectores de pantalla y voz el nombre es «MiSoles» (`aria-label`). El dominio candidato es misoles.pe; verifícalo, y la marca en Indecopi, antes de registrar.
 
 - App: https://zzorgh.github.io/mis-finanzas/ (`index.html`, raíz del repo)
 - Landing: `/inicio/` · Legal: `legal.html` (`#privacidad`, `#terminos`)
@@ -49,7 +50,7 @@ Todo en un archivo: `index.html` (~300 KB), JavaScript sin framework dentro de u
 - **Almacenamiento lleno**: `localSave` libera la copia diaria local y reintenta; si aun así no cabe, muestra el cartel permanente `#savewarn` con botón para descargar una copia.
 - **Accesibilidad** (`dev/t88.js`, en `npm test`): `render()` devuelve el foco al elemento que lo tenía (`focusKey`/`restoreFocus`, por id o por atributo `data-*`; solo botones, enlaces, selects y resúmenes); Escape cierra cualquier diálogo (`#sheet`); el aviso «Deshacer» dura 10 s, se detiene al señalarlo y se deshace con Ctrl+Z; los gráficos llevan su descripción en `aria-label` (`chDesc`); hay estilos `forced-colors`, `max-height:520px` (zoom 400 %) y botones de 44 px con `pointer:coarse` (ojo: hay bloques `pointer:coarse` repetidos más abajo en el CSS y el último gana). Para inglés, todo texto nuevo va a `I18N_EN` o `I18N_PAT`; el barrido de t88 comprueba los textos que antes se escapaban.
 - **Pruebas** `dev/t87.js` (datos dañados, montos, almacenamiento lleno, sincronización con Supabase simulado, avisos sobre «Guardar»): corre en `npm test`. Contra la versión anterior al lote 1 falla en 32 comprobaciones; si deja de fallar con un error reintroducido, la prueba está mal.
-- **SEO**: la landing lleva `robots`, Open Graph/Twitter y JSON-LD (Organization, WebSite, WebApplication); la app lleva `noindex` (es una pantalla de acceso) pero sí Open Graph, para la vista previa de las invitaciones por WhatsApp. `robots.txt` y `sitemap.xml` solo cuentan en la raíz de un dominio: funcionarán con `missoles.pe`.
+- **SEO**: la landing lleva `robots`, Open Graph/Twitter y JSON-LD (Organization, WebSite, WebApplication); la app lleva `noindex` (es una pantalla de acceso) pero sí Open Graph, para la vista previa de las invitaciones por WhatsApp. `robots.txt` y `sitemap.xml` solo cuentan en la raíz de un dominio: funcionarán con `misoles.pe (verificar disponibilidad; el nombre cambió a MiS²oles)`.
 
 ### Supabase
 Tablas `estado` y `estado_historial` (RLS por usuario), RPC `delete_my_account()` (SECURITY DEFINER a propósito; el aviso del linter es esperado), `eventos` (métricas anónimas: insert anónimo con freno, sin lectura pública; ver «Métricas»), y `lista_espera` (insert anónimo, nadie puede leerla con la clave pública; los correos se ven en el Table Editor). SQL en `supabase/` (`rls-rapido.sql` ya aplicado en nov. 2026: políticas de `estado` con `(select auth.uid())` y solo para `authenticated`; los índices ya cubren todas las consultas de la app, porque todo se busca por `user_id` y fecha). Pendiente suyo: activar «Leaked password protection» en Authentication.
@@ -80,7 +81,7 @@ Ver `dev/README.md`. Resumen: `cd dev && npm install && npx playwright install c
 - Su meta financiera n.º 1 es el fondo de emergencia (la app lo muestra en escalones).
 
 ## Pendiente (de más a menos valor)
-0. **Del dueño, después del rediseño (nov. 2026):** reservar `missoles.pe`; registrar «MisSoles» en Indecopi (mejor marca mixta); mandar invitaciones con `…/mis-finanzas/#crear` y marcar `aprobado` en `lista_espera`.
+0. **Del dueño, después del rediseño (nov. 2026):** reservar `misoles.pe (verificar disponibilidad; el nombre cambió a MiS²oles)`; registrar «MiS²oles» en Indecopi (mejor marca mixta); mandar invitaciones con `…/mis-finanzas/#crear` y marcar `aprobado` en `lista_espera`.
 1. Beta con 5–10 personas; mensaje de invitación con el link de `/inicio/`.
 2. Activar la protección de contraseñas filtradas en Supabase.
 3. Importar movimientos del banco (CSV/Excel) — pospuesto, sería la función de pago más valiosa.
@@ -89,7 +90,7 @@ Ver `dev/README.md`. Resumen: `cd dev && npm install && npx playwright install c
 6. Sello «Cuadra» en la app cuando las cuentas coinciden con el banco (hoy solo existe en la propuesta visual).
 7. La pantalla de acceso/onboarding aún no usa la piel Cuadre (hereda colores y tipografía, pero no los bordes rectos ni la sombra dura).
 8. ~~Contraste mínimo~~ hecho: BCP, «−33%» y los días del calendario pasan 4.5:1 en los 3 estilos. El escáner ya lee `color-mix`; si salta un aviso nuevo de contraste, es real.
-9. ~~README y docs~~ hecho (nov. 2026): el README describe MisSoles; los documentos de la primera etapa llevan una nota de «histórico».
+9. ~~README y docs~~ hecho (nov. 2026): el README describe MiS²oles; los documentos de la primera etapa llevan una nota de «histórico».
 10. Textos legales y revisión con abogado, cuando haya ingresos.
 11. **Plan de mejoras (propuesto y aceptado el 16 nov. 2026; estilo: una decisión por pantalla, camino rápido para quien tiene prisa, saldos reales en soles).** En este orden, midiendo con los testers antes de cada paso y dejando una semana de uso real tras cualquier cambio que toque dinero:
     1. **Medir y ver errores** (en curso): métricas anónimas y reporte de errores (`track()`, `supabase/eventos.sql`; ver «Métricas» en Arquitectura). Estado (16 nov. 2026): **ENCENDIDO** por defecto (`TRACK_DEFAULT=true`, con interruptor en Ajustes → Privacidad). La tabla `eventos` está aplicada en Supabase (migración `eventos_metricas`, verificada: insert anónimo sí, evento inválido no, lectura pública vacía) y la política de privacidad (`legal.html`, español e inglés) ya lo explica. Para mirar resultados, usa las consultas al final de `supabase/eventos.sql` en el SQL Editor; revisa también los errores. Si alguna vez se amplía lo que se mide, hay que actualizar la política antes.
@@ -102,7 +103,7 @@ Ver `dev/README.md`. Resumen: `cd dev && npm install && npx playwright install c
     8. **Pruebas en paralelo** (la verificación tarda ~15 min; bajarla a ~5).
     9. **Partir `index.html` en módulos** con un paso de compilación pequeño, empezando por el registro; hace falta antes de mezclar con CoreFlow.
     Además: resumen semanal dentro de la app; cargar supabase-js sin bloquear la primera pantalla; activar la protección de contraseñas filtradas. **Tres números para decidir si cobrar:** % de testers que registran ≥3 días por semana, tiempo del primer registro y cuántos pagarían.
-12. **Visión a futuro (decidida nov. 2026): una sola app** que mezcle MisSoles con CoreFlow (`C:\proyectos\P.CoreFlow\coreflow`: Agenda, Tareas, asistente con IA, resúmenes). Va **después de la beta**, no antes. Idea de base: MisSoles sigue siendo el motor de dinero (saldos reales por cuenta); se le añaden Agenda con gasto previsto vs. saldos, Tareas, asistente con Claude (function calling; la IA nunca calcula dinero) y resumen diario. Se reutilizan las ideas de CoreFlow, no su código Django. Antes de construir, decidir con el dueño la arquitectura (ver la conversación del 11 nov. 2026).
+12. **Visión a futuro (decidida nov. 2026): una sola app** que mezcle MiS²oles con CoreFlow (`C:\proyectos\P.CoreFlow\coreflow`: Agenda, Tareas, asistente con IA, resúmenes). Va **después de la beta**, no antes. Idea de base: MiS²oles sigue siendo el motor de dinero (saldos reales por cuenta); se le añaden Agenda con gasto previsto vs. saldos, Tareas, asistente con Claude (function calling; la IA nunca calcula dinero) y resumen diario. Se reutilizan las ideas de CoreFlow, no su código Django. Antes de construir, decidir con el dueño la arquitectura (ver la conversación del 11 nov. 2026).
 
 ## Decisiones ya tomadas (no reabrir sin motivo)
 - «Gasto por día» cuenta solo gastos fijos y cotidianos (dinero líquido); los consumos de tarjeta no entran, a propósito. Si no hay gastos, el mensaje lo explica.

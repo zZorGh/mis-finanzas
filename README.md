@@ -1,4 +1,4 @@
-# MisSoles
+# MiS²oles
 
 App web de finanzas personales **en soles**, pensada para cómo se paga en el Perú: Yape, Plin, efectivo y tarjetas de crédito. Está en **beta cerrada por invitación**.
 

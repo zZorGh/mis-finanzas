@@ -1,4 +1,4 @@
-# MisSoles: rastreo permitido solo en la landing y las páginas legales.
+# MiS²oles: rastreo permitido solo en la landing y las páginas legales.
 # La app (inicio de sesión) lleva noindex; /dev, /supabase y /docs no aportan nada a quien busca.
 User-agent: *
 Allow: /

@@ -1,6 +1,6 @@
 # Registro de decisiones (ADR)
 
-> **Nota (nov. 2026).** Las primeras decisiones son de cuando el proyecto era una plantilla personal sobre Google Sheets; siguen aquí como historia. La web pública de **MisSoles** usa Supabase (ver [ARQUITECTURA](ARQUITECTURA.md)).
+> **Nota (nov. 2026).** Las primeras decisiones son de cuando el proyecto era una plantilla personal sobre Google Sheets; siguen aquí como historia. La web pública de **MiS²oles** usa Supabase (ver [ARQUITECTURA](ARQUITECTURA.md)).
 
 Decisiones de arquitectura y producto de este proyecto, con su contexto, las
 alternativas que descarté y las consecuencias. Formato ADR (Architecture Decision
@@ -150,3 +150,15 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 **Decisión.** El botón de moneda (una píldora a la derecha del recuadro del monto, que resalta junto con su símbolo) rota entre soles y las monedas marcadas en Ajustes → «Monedas al registrar» (dólares y euros, ambas activas por defecto). Quien no usa una de ellas la desmarca y deja de aparecer; sin ninguna, el botón se oculta. El primer paso del asistente no pregunta la moneda. No cambia cómo se guardan ni se convierten los montos.
 
 **Consecuencias.** Un campo nuevo en la configuración (`monedas`, lista), validado al cargar; la clave `monedaAlt` de una versión intermedia se descarta. El comportamiento por defecto es el de siempre.
+
+---
+
+## ADR-012 · El nombre pasa a MiS²oles (nov. 2026)
+
+**Contexto.** El dueño quiso un nombre con juego tipográfico y un guiño a «soles al cuadrado», manteniendo el logo «S/».
+
+**Decisión.** El nombre visible es **MiS²oles**. Los nombres grandes llevan el «2» elevado sobre la S, junto a las letras (sin separarlas); el texto corrido usa el carácter «²». Para lectores de pantalla, voz y buscadores se mantiene «MiSoles» (`aria-label`, `alternateName` en la landing).
+
+**Alternativas consideradas.** Dejar «MisSoles» (gramaticalmente correcto: «mis soles») y cambiar solo el logo a «S²»; se descartó porque el dueño prefería conservar el logo.
+
+**Consecuencias.** Unas 85 menciones cambiadas (app, landing, legal, reportes, documentos); hay que verificar misoles.pe e Indecopi antes de reservar el dominio o registrar la marca, y cambiar el nombre en los correos de Supabase.

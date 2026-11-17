@@ -1,6 +1,6 @@
 # Case study — Plantilla Personal de Finanzas
 
-> **Documento histórico (2025).** Describe la primera etapa del proyecto, cuando era una plantilla personal sobre Google Sheets. Hoy el producto se llama **MisSoles** y usa Supabase; el estado actual está en el [README](../README.md).
+> **Documento histórico (2025).** Describe la primera etapa del proyecto, cuando era una plantilla personal sobre Google Sheets. Hoy el producto se llama **MiS²oles** y usa Supabase; el estado actual está en el [README](../README.md).
 
 > Una herramienta de finanzas personales construida sobre una Google Sheet, que
 > funciona en el navegador y en el celular, con control 50/30/20, liquidez y
