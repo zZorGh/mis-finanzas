@@ -62,8 +62,9 @@ if(found){await p.locator('details.danger summary').scrollIntoViewIfNeeded();awa
 // 5 onboarding cuenta vacía
 p=await mk('',true);await p.waitForTimeout(700);
 T('asistente aparece',await p.locator('#onbox').count()===1);
-await p.fill('#ob-l0','Mi billetera');await p.fill('#ob-b0','Interbank');
-await p.click('#ob-go');await p.waitForTimeout(400);
+await p.fill('#ob-l0','Mi billetera');await p.click('#ob-go');await p.waitForTimeout(200);
+await p.click('#ob-go');await p.waitForTimeout(200);await p.fill('#ob-b0','Interbank');await p.click('#ob-go');await p.waitForTimeout(200);
+await p.click('#ob-go');await p.waitForTimeout(200);await p.click('#ob-go');await p.waitForTimeout(400);
 T('asistente se cierra',await p.locator('#onbg').count()===0);
 await p.evaluate(()=>{location.hash='noviembre'});await p.waitForTimeout(600);const txt=await p.innerText('body');T('cuenta renombrada visible',/Mi billetera/.test(txt));
 await p.waitForTimeout(3600);
