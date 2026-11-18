@@ -222,3 +222,5 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 **Por qué no masonry en la app:** el orden de lectura de columnas CSS salta y rompe el arrastre y el cambio de tamaño de «Personalizar»; en la app se prefiere bento (cuadrícula de 12 con celdas de tamaño variable y `grid-auto-flow:dense`), que conserva ambos.
 
 **Cuidados:** esquinas de 3 px y sombras duras (como Cuadre) en vez de tarjetas redondas iguales; nada de una sola palabra resaltada en el titular; sin etiquetas en mayúsculas encima de cada sección; la numeración solo en los tutoriales (que sí son una secuencia). La página mide ~8,900 px en escritorio y ~12,000 en celular (antes ~8,800 y ~12,400).
+
+**Fase 2 (18 nov. 2026):** el acceso pasa a pantalla partida en escritorio y el Resumen a bento con la cuadrícula de 12 columnas que ya tiene «Personalizar» (anchos 7/5, 8/4, 4/4/4, 7/5), sin masonry y sin tocar el modelo de datos. Quedan para después el hero del mes a pantalla completa y el bento del mes.
