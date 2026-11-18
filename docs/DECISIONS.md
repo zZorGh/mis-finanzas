@@ -186,3 +186,11 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 **Descartado:** clasificar cada movimiento por separado (más trabajo para la persona) y pre-clasificar categorías por nombre (cambiaría números sin avisar).
 
 **Corrección (17 nov. 2026):** la clasificación no debía quedarse solo en Ajustes: se pregunta al registrar el gasto, como los demás pasos (grupo → categoría dentro del grupo). Elegir una categoría sin clasificar la deja en ese grupo. Ajustes sigue sirviendo para revisar o mover categorías.
+
+## ADR-015 · Automático entiende palabras, «ayer» y varios gastos (nov. 2026)
+
+**Decisión:** la frase del modo Automático acepta números en palabras, «lucas/soles», «dos mil», dólares y euros, «ayer/anteayer» y varios gastos separados por coma, «+» o «y». Con varios, la tarjeta de confirmación los lista con su total y avisa si una cuenta no alcanza para todos; un solo Deshacer los revierte.
+
+**Detalle que importa:** en Perú «luca» es un sol ("diez lucas" = S/ 10), no mil como en Argentina o Chile. Se confirmó con fuentes (SpanishDict, Enigma Perú). Por eso «lucas» se ignora como multiplicador.
+
+**Límites a propósito:** varios gastos solo si todos son fijos/cotidianos (un ingreso o un ahorro en la misma frase no se mezcla); si no hay un separador claro entre dos montos, se toma solo el primero, como antes; no se pregunta grupo ni categoría en Automático.
