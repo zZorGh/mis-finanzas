@@ -38,7 +38,7 @@ const cerrar=async p=>{await p.keyboard.press('Escape');await p.waitForTimeout(2
   T('hay botón «Atrás»',await vis(p,'[data-wz="back"]'));
   await p.click('#stype [data-g="gasto"]');await W(p);
   T('tras elegir Gasto, aparece solo «¿Qué tipo de gasto es?»',await step(p)==='sub'&&await vis(p,'#ssub')&&!(await vis(p,'#stype'))&&/tipo de gasto/.test(await p.innerText('#swq')));
-  T('primero «Fijo» y al costado «Cotidiano»',await p.evaluate(()=>[...document.querySelectorAll('#ssub [data-t]')].map(b=>b.dataset.t).join()==='fij,hor')&&/Cotidiano/.test(await p.innerText('#ssub'))&&!/hormiga/i.test(await p.innerText('#sheet')));
+  T('primero «Fijo», al costado «Cotidiano» y luego «Antojo»',await p.evaluate(()=>[...document.querySelectorAll('#ssub [data-t]')].map(b=>b.dataset.t).join()==='fij,hor,ant')&&/Cotidiano/.test(await p.innerText('#ssub'))&&/Antojo/.test(await p.innerText('#ssub'))&&!/hormiga/i.test(await p.innerText('#sheet')));
   await p.click('#ssub [data-t="fij"]');await W(p);
   T('luego pregunta «¿En qué grupo cae este gasto?» con los tres grupos',await step(p)==='grp'&&await vis(p,'#sgrp')&&await p.locator('#sgrp button').count()===3&&/Necesidades/.test(await p.innerText('#sgrp'))&&/Deseos/.test(await p.innerText('#sgrp'))&&/Ahorro e inversión/.test(await p.innerText('#sgrp'))&&!(await vis(p,'#ssub')));
   await p.click('#sgrp [data-sgrp="need"]');await W(p);
