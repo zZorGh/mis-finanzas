@@ -174,3 +174,5 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 **Alternativas consideradas.** Bloquear siempre (frustra a quien no ha actualizado sus saldos); una ventana de confirmación aparte (un paso más sin aportar información que el aviso en línea no dé).
 
 **Consecuencias.** Cubre gastos, pagos de tarjeta, depósitos y movimientos de ahorro; no cubre la edición en línea de montos ni «Cargar recurrentes» (pendiente).
+
+**Ampliación (17 nov. 2026):** si la cuenta tiene saldo parcial, el aviso ofrece dividir el pago: dos filas normales (lo que alcanza + el resto en otra cuenta). Se descartó un campo «pago dividido» en los datos por no tocar la estructura.

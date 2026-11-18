@@ -112,5 +112,25 @@ const aviso=p=>p.evaluate(()=>{const w=document.getElementById('sshort');return 
   {const a=await aviso(p);T("en inglés el aviso y el botón están traducidos",/There isn't enough balance/.test(a)&&/It would be/.test(a)&&/has/.test(a)&&!/No te alcanza|Quedaría|tiene/.test(a)&&await lbl(p)==='Save anyway');}
   await p.context().close();
 
+
+  // 10. Pago dividido: Plin (130) con S/ 150 → 130 de Plin + 20 de otra cuenta
+  p=await nueva(b);await gastoForm(p,1);await p.fill('#sa','150');await W(p);
+  T('ofrece completar el resto con otra cuenta (Yape)',await p.locator('#sshort [data-ssplit="liq:0"]').count()===1&&/O completa el resto con/.test(await aviso(p)));
+  await p.click('#sshort [data-ssplit="liq:0"]');await W(p);
+  T('al elegirla, muestra la división 130 + 20 y el botón dice «Guardar dividido»',/dividido/i.test(await aviso(p))&&/130\.00/.test(await aviso(p))&&/20\.00/.test(await aviso(p))&&await lbl(p)==='Guardar dividido'&&!(await dis(p)));
+  await p.fill('#sd','T94 dividido');await p.click('[data-s="save"]');await p.waitForTimeout(400);
+  T('guarda dos movimientos y deja ambas cuentas sin negativo (Plin 0, Yape 410)',await filas(p,'T94 dividido')===2&&Math.abs(await liq(p,1))<0.005&&Math.abs((await liq(p,0))-410)<0.005);
+  await p.evaluate(()=>{const b=document.querySelector('#toast button');if(b)b.click();});await p.waitForTimeout(400);
+  T('Deshacer revierte los dos movimientos y los saldos (Plin 130, Yape 430)',await filas(p,'T94 dividido')===0&&Math.abs((await liq(p,1))-130)<0.005&&Math.abs((await liq(p,0))-430)<0.005);
+  T('sin errores de JavaScript (dividido)',p.errs.length===0);if(p.errs.length)console.log(p.errs);
+  await p.context().close();
+  // 11. Con «no permitir negativo», dividir sí deja guardar
+  p=await nueva(b,{bloquearNeg:true});await gastoForm(p,1);await p.fill('#sa','150');await W(p);
+  T('bloqueado: el botón está desactivado hasta elegir cómo completar',await dis(p));
+  await p.click('#sshort [data-ssplit="liq:0"]');await W(p);
+  T('bloqueado: al dividir, se puede guardar',!(await dis(p)));
+  await p.click('#sshort [data-ssplit=""]');await W(p);
+  T('«Quitar división» vuelve al aviso',/No te alcanza/.test(await aviso(p))&&await dis(p));
+  await p.context().close();
   console.log('Total '+(ok+bad)+' ok '+ok+' fallas '+bad);await b.close();process.exit(bad?1:0);
 })().catch(e=>{console.log('ERR',e);process.exit(1);});
