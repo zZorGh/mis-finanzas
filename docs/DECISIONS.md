@@ -194,3 +194,13 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 **Detalle que importa:** en Perú «luca» es un sol ("diez lucas" = S/ 10), no mil como en Argentina o Chile. Se confirmó con fuentes (SpanishDict, Enigma Perú). Por eso «lucas» se ignora como multiplicador.
 
 **Límites a propósito:** varios gastos solo si todos son fijos/cotidianos (un ingreso o un ahorro en la misma frase no se mezcla); si no hay un separador claro entre dos montos, se toma solo el primero, como antes; no se pregunta grupo ni categoría en Automático.
+
+## ADR-016 · Dictado por voz con el reconocimiento del navegador (nov. 2026)
+
+**Decisión:** botón de micrófono en el registro Automático usando la Web Speech API del navegador. No se pasa el audio por servidores propios ni de terceros contratados por nosotros: lo procesa el servicio de voz del navegador (en Chrome lo envía a Google; en Safari lo maneja Apple). MiS²oles solo recibe el texto.
+
+**Por qué:** cero costo y cero infraestructura (coherente con la beta sin gastar), y el texto dictado pasa por el mismo analizador que el escrito (números en palabras, «lucas», «ayer», varios gastos).
+
+**Privacidad:** aviso la primera vez, el micrófono solo se activa al tocar, la frase se revisa antes de guardar, y la política (ES y EN) lo declara con una fila nueva en la tabla de encargados. Fecha de la política: 17 nov. 2026.
+
+**Límites:** Firefox no la trae (el botón se oculta); depende de internet en Chrome; la precisión la decide el servicio del navegador. Se descartó Whisper/otro servicio propio por costo y por tener que alojar audio.
