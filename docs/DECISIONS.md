@@ -162,3 +162,15 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 **Alternativas consideradas.** Dejar «MisSoles» (gramaticalmente correcto: «mis soles») y cambiar solo el logo a «S²»; se descartó porque el dueño prefería conservar el logo.
 
 **Consecuencias.** Unas 85 menciones cambiadas (app, landing, legal, reportes, documentos); hay que verificar misoles.pe e Indecopi antes de reservar el dominio o registrar la marca, y cambiar el nombre en los correos de Supabase.
+
+---
+
+## ADR-013 · Saldo insuficiente: avisar, ofrecer otra cuenta y pedir confirmación (nov. 2026)
+
+**Contexto.** Un gasto que superaba el saldo de su cuenta se guardaba y la cuenta quedaba en negativo sin avisar. Existía un aviso, pero estaba en el grupo de cuentas del formulario clásico y se perdió al pasar al asistente por pasos y al modo Automático.
+
+**Decisión.** Un solo aviso (`#sshort`) bajo el monto, visible en todos los modos, con el saldo, lo que falta y otras cuentas a las que sí les alcanza (un toque para cambiar). Por defecto no se impide: el botón pasa a «Guardar igual», porque los saldos los lleva la persona y pueden estar desactualizados. Quien prefiere cero negativos lo activa en Ajustes (`cfg.bloquearNeg`) y el guardado se bloquea. Un atajo de un toque no se guarda sin avisar.
+
+**Alternativas consideradas.** Bloquear siempre (frustra a quien no ha actualizado sus saldos); una ventana de confirmación aparte (un paso más sin aportar información que el aviso en línea no dé).
+
+**Consecuencias.** Cubre gastos, pagos de tarjeta, depósitos y movimientos de ahorro; no cubre la edición en línea de montos ni «Cargar recurrentes» (pendiente).
