@@ -224,3 +224,5 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 **Cuidados:** esquinas de 3 px y sombras duras (como Cuadre) en vez de tarjetas redondas iguales; nada de una sola palabra resaltada en el titular; sin etiquetas en mayúsculas encima de cada sección; la numeración solo en los tutoriales (que sí son una secuencia). La página mide ~8,900 px en escritorio y ~12,000 en celular (antes ~8,800 y ~12,400).
 
 **Fase 2 (18 nov. 2026):** el acceso pasa a pantalla partida en escritorio y el Resumen a bento con la cuadrícula de 12 columnas que ya tiene «Personalizar» (anchos 7/5, 8/4, 4/4/4, 7/5), sin masonry y sin tocar el modelo de datos. Quedan para después el hero del mes a pantalla completa y el bento del mes.
+
+**Fase 3 (18 nov. 2026):** la pantalla del mes en escritorio recibe el encabezado a pantalla completa (papel cuadriculado oscuro de borde a borde, el saldo disponible en tamaño editorial) y su bento sobre la misma cuadrícula de 12 columnas. Con eso los cinco patrones están en la landing y en la app (el masonry solo en la galería de la landing, por lo explicado arriba).

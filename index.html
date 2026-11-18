@@ -412,6 +412,18 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 .hero-main{display:grid;gap:var(--sp-3);min-width:0;align-content:start}
 .hero.with-liq{gap:var(--sp-5)}
 @media (min-width:900px){.hero.with-liq{grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr)}}
+/* Mes en escritorio: el encabezado ocupa todo el ancho de la ventana (papel cuadriculado oscuro) y el contenido se alinea a la misma columna de 1528 px que las tarjetas */
+@media (min-width:900px){
+  #app[data-v=m]{max-width:none;padding-left:0;padding-right:0}
+  #app[data-v=m]>.banner,#app[data-v=m]>.ppcard,#app[data-v=m]>.board,#app[data-v=m]>.ebar{width:min(calc(100% - 32px),1528px);margin-left:auto;margin-right:auto}
+  #app[data-v=m] .hero.with-liq{border-radius:0;box-shadow:none;border-left:0;border-right:0;margin-bottom:var(--sp-5);align-items:center;gap:clamp(24px,4vw,64px);padding:clamp(28px,4vw,60px) max(16px,calc((100% - 1528px)/2));
+    background:linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px) 0 0/40px 40px,linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px) 0 0/40px 40px,radial-gradient(760px 340px at 88% 0%,rgba(255,255,255,.14),transparent 70%),linear-gradient(135deg,var(--hero-a),var(--hero-b))}
+  #app[data-v=m] .board{grid-auto-flow:dense}
+  #app[data-v=m] .bcard>.cb.sbody{flex:1 1 auto;display:flex;flex-direction:column}
+  #app[data-v=m] .cardpay{margin-top:auto}
+  #app[data-v=m] .hero-v{font-size:clamp(52px,6.4vw,96px);letter-spacing:-.035em}
+  #app[data-v=m] .hero h1{font-size:clamp(38px,4.6vw,64px);letter-spacing:-.04em}
+}
 .liq{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:var(--sp-2);min-width:0}
 .liq-v{font:500 26px/1.1 var(--font-num);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .liq-rows{display:grid;gap:2px}
@@ -1591,12 +1603,12 @@ function viewMes(i){
   ${m.tot?'<div class="banner">Este mes trae solo totales de tu registro anterior. Lo que registres se suma a esos totales.</div>':''}
   ${porPagarHtml(i)}<div class="board" id="board"><div class="kpis bcard bare" data-cid="mk">${kp('Ingreso total','kI',fmt(D.ing))}${kp('Total gastado','kG',fmt(D.gas))}${kp('Total invertido','kV',fmt(D.inv))}${kp('Ahorro del mes','kA',fmt(D.aho))}</div>
   <div class="secs">
-    ${sec(m,'ing','Ingresos','h-ing','ing')}
     <section class="card bcard" data-cid="pre" style="--h:var(--h-pre)">${secHead('pre','Presupuesto')}<div class="cb sbody"${isFold('pre')?' hidden':''}><div class="ms" style="margin-bottom:12px">Regla 50/30/20: necesidades, deseos y ahorro, según la categoría de cada gasto.</div>${pr}</div><div class="note" id="psum"></div></section>
     <section class="card bcard" data-cid="dg" style="--h:var(--h-pre)">${secHead('dg','¿Dónde gastas más?')}<div class="cb sbody" id="dgbox">${dgInner(m)}</div></section>
-    ${antojosHtml(m)}
+    ${sec(m,'ing','Ingresos','h-ing','ing')}
     ${sec(m,'fij','Gastos fijos','h-fij','gas','span2')}
     ${sec(m,'hor','Gastos cotidianos','h-hor','gas','span2')}
+    ${antojosHtml(m)}
     ${cardSec(i,'bbva')}
     ${cardSec(i,'bcp')}
     ${cardSec(i,'oh')}
@@ -2318,7 +2330,7 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-undo]')&&lastUn
 
 /* ---------- Tarjetas: orden, tamaño y configuración ---------- */
 const LKEY=KEY+'-layout';
-const DEFW={resumen:{rf:7,rk:5,r1:8,r2:4,r3:4,r4:4,ins:4,r6:7,r7:5,r5:12,mg:12,rm:12,ra:12},mes:{mk:12,tcm:12,mc1:4,mc2:4,mc3:4,hm1:12,ing:6,pre:6,dg:6,ant:6,eur:12,fij:6,hor:6,bbva:4,bcp:4,oh:4,aho:6,inv:6}};
+const DEFW={resumen:{rf:7,rk:5,r1:8,r2:4,r3:4,r4:4,ins:4,r6:7,r7:5,r5:12,mg:12,rm:12,ra:12},mes:{mk:12,tcm:12,mc1:4,mc2:4,mc3:4,hm1:8,ing:4,pre:7,dg:5,ant:12,eur:4,fij:4,hor:4,bbva:4,bcp:4,oh:4,aho:7,inv:5}};
 const TYPES={r1:['bar','line'],r2:['line','bar'],r3:['bar','line'],r4:['doughnut','pie'],r5:['line','bar'],r7:['line','bar'],mc1:['doughnut','pie'],mc2:['bar','line'],mc3:['bar','doughnut']};
 const TNAME={bar:'Barras',line:'Líneas',doughnut:'Dona',pie:'Torta'};
 const CNAME={ins:'En resumen',mg:'Metas de ahorro',rk:'Indicadores',r1:'Ingreso, gastado y ahorrado',r2:'Ahorro sobre el ingreso',r3:'Gastos cotidianos por mes',r4:'En qué se fue el año',r6:'A dónde fue tu ingreso',r7:'Capital acumulado',r5:'Año contra año',rf:'Fondo de emergencia',rm:'Meses',ra:'Ajustes',mk:'Indicadores',mc1:'Distribución del mes',mc2:'Contra el mes anterior',mc3:'Saldo por cuenta',tcm:'Tipo de cambio del mes',hm1:'Gasto por día',ing:'Ingresos',liq:'Liquidez',pre:'Presupuesto',eur:'Apuntes',fij:'Gastos fijos',hor:'Gastos cotidianos',bbva:'BBVA',bcp:'BCP',oh:'oh!',aho:'Ahorros',inv:'Inversiones'};
