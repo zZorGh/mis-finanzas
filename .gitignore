@@ -12,3 +12,6 @@ dev/.sello-pruebas
 # copia generada por build-wrap.js para las pruebas
 dev/reportes.js
 dev/wrap-repo.html
+
+# tiempos de cada prueba (los usa dev/paralelo.js para repartir el trabajo)
+dev/.tiempos-pruebas.json

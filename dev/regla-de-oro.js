@@ -95,8 +95,16 @@ function modoPush(){
   }
 }
 
+// `huella` imprime la huella de la app ahora; `sello <huella>` solo guarda el sello si la app sigue igual que cuando empezaron las pruebas.
+function modoHuella(){raiz();console.log(huellaCarpeta());}
 function modoSello(){
-  raiz();fs.writeFileSync(sello(),huellaCarpeta()+'\n');
+  raiz();const ahora=huellaCarpeta(),esperada=process.argv[3];
+  if(esperada&&esperada!==ahora){
+    console.error('✖ La app cambió mientras corrían las pruebas, así que el sello NO se guardó (no valdría para esta versión).');
+    console.error('   Vuelve a correr:  cd dev && npm run verificar   (y no edites index.html mientras corre)');
+    process.exit(1);
+  }
+  fs.writeFileSync(sello(),ahora+'\n');
   console.log('✔ Pruebas y escáner pasaron. Sello guardado: ya puedes subir esta versión.');
 }
 
@@ -130,4 +138,4 @@ function modoClaude(){
 }
 
 const modo=process.argv[2];
-({commit:modoCommit,push:modoPush,sello:modoSello,todo:modoTodo,claude:modoClaude}[modo]||(()=>{console.error('Uso: node dev/regla-de-oro.js commit|push|sello|todo|claude');process.exit(1);}))();
+({commit:modoCommit,push:modoPush,sello:modoSello,huella:modoHuella,todo:modoTodo,claude:modoClaude}[modo]||(()=>{console.error('Uso: node dev/regla-de-oro.js commit|push|sello|huella|todo|claude');process.exit(1);}))();
