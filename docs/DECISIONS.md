@@ -204,3 +204,11 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 **Privacidad:** aviso la primera vez, el micrófono solo se activa al tocar, la frase se revisa antes de guardar, y la política (ES y EN) lo declara con una fila nueva en la tabla de encargados. Fecha de la política: 17 nov. 2026.
 
 **Límites:** Firefox no la trae (el botón se oculta); depende de internet en Chrome; la precisión la decide el servicio del navegador. Se descartó Whisper/otro servicio propio por costo y por tener que alojar audio.
+
+## ADR-017 · Pestañas en la pantalla del mes en celular (nov. 2026)
+
+**Problema:** en el celular, el mes era una sola columna de ~7,500 px (unas 9 pantallas) con todas las tarjetas al mismo nivel; el panel de cuentas y el presupuesto empujaban lo demás fuera de la vista y los atajos «Ir a…» solo saltaban por la página.
+
+**Decisión:** seis pestañas (Resumen, Movimientos, Tarjetas, Ahorro, Análisis, Todo), con el hero compacto fuera de Resumen. Se eligió esto antes que acordeones (la gente tendría que abrir cada tarjeta) y antes que partir en pantallas distintas (cambiaría las rutas por hash y las pruebas).
+
+**Cuidados:** es presentación pura (mismos datos y mismas tarjetas, ocultas con CSS), «Todo» conserva la vista anterior para quien la prefiera, escritorio no cambia, y la barra es navegación con `aria-current`, botones de 44 px y desplazamiento horizontal.

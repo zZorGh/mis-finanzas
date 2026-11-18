@@ -24,6 +24,7 @@ npx playwright install chromium
 - `t101.js`: historial por cuenta (saldo ahora/partida, movimientos con efecto y saldo, editar desde ahí, otra cuenta, inglés).
 - `t102.js`: alta inicial guiada (5 pasos, validaciones, atrás, terminar/omitir, qué se guarda, Por pagar, inglés).
 - `t103.js`: Antojo (tipo al registrar, tarjeta del mes, ¿Valió la pena?, editar, Automático, 50/30/20, inglés).
+- `t104.js`: pestañas del mes en celular (qué muestra cada una, hero compacto, recordar la pestaña, barra pegada, escritorio sin cambios, inglés). Se abre con `?tabs=on`: el esqueleto de pruebas arranca en «Todo».
 - `npm run capturas` — regenera las capturas de celular de la landing (`inicio/img/*.jpg`) y `og.jpg` con los datos de ejemplo (`landing-shots.js`, plantilla `og.html`). Si cambian, sube también `CACHE` en `sw.js`.
 - `npm run verificar` — `node paralelo.js`: pruebas + escáneres a la vez (~4 min; antes ~13 en serie) y, si todo pasa, guarda el sello `dev/.sello-pruebas` (no se sube). El gancho `pre-push` no deja subir cambios de la app sin un sello de esa versión exacta. Todas las pruebas salen con código 1 si alguna comprobación falla; el escáner, solo si hay errores de JS.
 - `npm run regla` — revisa todo el repo contra la regla de oro (claves secretas, archivos de datos y tu lista privada `~/.cuadra/vigilar.txt`). Ver `regla-de-oro.js`.
