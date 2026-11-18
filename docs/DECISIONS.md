@@ -212,3 +212,13 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 **Decisión:** seis pestañas (Resumen, Movimientos, Tarjetas, Ahorro, Análisis, Todo), con el hero compacto fuera de Resumen. Se eligió esto antes que acordeones (la gente tendría que abrir cada tarjeta) y antes que partir en pantallas distintas (cambiaría las rutas por hash y las pruebas).
 
 **Cuidados:** es presentación pura (mismos datos y mismas tarjetas, ocultas con CSS), «Todo» conserva la vista anterior para quien la prefiera, escritorio no cambia, y la barra es navegación con `aria-current`, botones de 44 px y desplazamiento horizontal.
+
+## ADR-018 · Landing con bento, pantalla partida, masonry, entrada a pantalla completa y columnas editoriales (nov. 2026)
+
+**Pedido del dueño:** llevar estos cinco patrones de layout a la landing y a la app.
+
+**Reparto en la landing:** entrada a pantalla completa (lo más característico: papel cuadriculado y la boleta), bento para las funciones (eran cuatro filas largas de teléfono + texto, la mitad de la página), pantalla partida donde hay dos mitades que se responden (calculadora → boleta; invitación → formulario), columnas editoriales asimétricas donde hay texto que debe respirar (datos, precios, preguntas) y masonry solo para la galería de capturas.
+
+**Por qué no masonry en la app:** el orden de lectura de columnas CSS salta y rompe el arrastre y el cambio de tamaño de «Personalizar»; en la app se prefiere bento (cuadrícula de 12 con celdas de tamaño variable y `grid-auto-flow:dense`), que conserva ambos.
+
+**Cuidados:** esquinas de 3 px y sombras duras (como Cuadre) en vez de tarjetas redondas iguales; nada de una sola palabra resaltada en el titular; sin etiquetas en mayúsculas encima de cada sección; la numeración solo en los tutoriales (que sí son una secuencia). La página mide ~8,900 px en escritorio y ~12,000 en celular (antes ~8,800 y ~12,400).

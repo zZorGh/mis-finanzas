@@ -33,37 +33,39 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
 <style>
 .sw{position:relative;display:inline-block;line-height:1}.sq{position:absolute;left:74%;top:-.75em;font-size:.5em;line-height:1;margin:0;vertical-align:baseline;font-weight:inherit}
-/* Layout: banda oscura de entrada con el teléfono, luego secciones claras en una columna de 1120px; el billete de cuadre (calculadora) es el gesto propio de la marca. */
+/* Layout (nov. 2026): entrada a pantalla completa con el teléfono asomando por abajo, funciones en bento, calculadora y lista de espera en pantalla partida,
+   datos, precios y preguntas en columnas editoriales asimétricas, y una galería en masonry. El gesto de la marca sigue siendo la boleta sobre papel cuadriculado. */
 :root{
-  --bg:#EEF2F0;--surface:#FFFFFF;--surface-2:#F4F7F5;--ink:#14201B;--muted:#56645D;--line:#D8DFDB;
-  --accent:#0B7A62;--accent-ink:#FFFFFF;--accent-soft:#D6ECE5;--deep:#0E1A16;--deep-2:#0C3A30;--on-deep:#E6F2ED;--on-deep-muted:#A9CFC2;
-  --hormiga:#C2570C;--hormiga-soft:#FBE7D6;--good:#1C6B3C;
-  --fd:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;--fb:'Figtree','Segoe UI',system-ui,sans-serif;--fm:'IBM Plex Mono',ui-monospace,Consolas,monospace;
-  --r:18px;
+  --bg:#EEF1EF;--surface:#FFFFFF;--surface-2:#F4F7F5;--ink:#12201C;--muted:#56645D;--line:#D3DBD7;
+  --accent:#0B7A62;--accent-ink:#FFFFFF;--accent-soft:#D6ECE5;--deep:#12201C;--deep-2:#0C3A30;--on-deep:#E6F2ED;--on-deep-muted:#A9CFC2;
+  --hormiga:#C2570C;--hormiga-soft:#FBE7D6;--good:#1C6B3C;--paper:#FBFAF4;--bad:#B3261E;
+  --fd:'Instrument Sans','Segoe UI',system-ui,sans-serif;--fb:'Instrument Sans','Segoe UI',system-ui,sans-serif;--fm:'Geist Mono',ui-monospace,Consolas,monospace;
+  --r:3px;--wrap:1180px;--edge:max(16px,calc((100vw - var(--wrap))/2 + 16px));
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0E1512;--surface:#17211D;--surface-2:#1E2A25;--ink:#E7EEEA;--muted:#9AAAA2;--line:#2C3B35;
-  --accent:#3CC9A6;--accent-ink:#06251D;--accent-soft:#1B3A31;--deep:#08100D;--deep-2:#0B2C24;--on-deep:#E6F2ED;--on-deep-muted:#9CC4B6;
-  --hormiga:#F29A55;--hormiga-soft:#3A2414;--good:#5FD08F;color-scheme:dark}}
+  --bg:#0C1210;--surface:#17211D;--surface-2:#1E2A25;--ink:#E7EEEA;--muted:#9AAAA2;--line:#2C3B35;
+  --accent:#3CC9A6;--accent-ink:#06251D;--accent-soft:#1B3A31;--deep:#0A100E;--deep-2:#0B2C24;--on-deep:#E6F2ED;--on-deep-muted:#9CC4B6;
+  --hormiga:#F29A55;--hormiga-soft:#3A2414;--good:#5FD08F;--bad:#FFB4A8;color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0E1512;--surface:#17211D;--surface-2:#1E2A25;--ink:#E7EEEA;--muted:#9AAAA2;--line:#2C3B35;
-  --accent:#3CC9A6;--accent-ink:#06251D;--accent-soft:#1B3A31;--deep:#08100D;--deep-2:#0B2C24;--on-deep:#E6F2ED;--on-deep-muted:#9CC4B6;
-  --hormiga:#F29A55;--hormiga-soft:#3A2414;--good:#5FD08F;color-scheme:dark}
+  --bg:#0C1210;--surface:#17211D;--surface-2:#1E2A25;--ink:#E7EEEA;--muted:#9AAAA2;--line:#2C3B35;
+  --accent:#3CC9A6;--accent-ink:#06251D;--accent-soft:#1B3A31;--deep:#0A100E;--deep-2:#0B2C24;--on-deep:#E6F2ED;--on-deep-muted:#9CC4B6;
+  --hormiga:#F29A55;--hormiga-soft:#3A2414;--good:#5FD08F;--bad:#FFB4A8;color-scheme:dark}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:calc(72px + env(safe-area-inset-top,0px))}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--fb);-webkit-font-smoothing:antialiased}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--fb);-webkit-font-smoothing:antialiased;overflow-x:clip;
+  background-image:linear-gradient(rgba(11,122,98,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(11,122,98,.06) 1px,transparent 1px);background-size:28px 28px}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--deep)}
 a{color:var(--accent)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
-h1,h2,h3{font-family:var(--fd);line-height:1.08;letter-spacing:-.015em;margin:0;text-wrap:balance}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+h1,h2,h3{font-family:var(--fd);line-height:1.08;letter-spacing:-.035em;margin:0;text-wrap:balance}
 p{margin:0}
-.w{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.w{max-width:var(--wrap);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .num{font-family:var(--fm);font-variant-numeric:tabular-nums}
-.kicker{font:600 12px var(--fm);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 20px;border-radius:12px;font:600 15px var(--fb);text-decoration:none;border:1.5px solid transparent;cursor:pointer;touch-action:manipulation;transition:transform .12s ease,filter .15s ease,background .15s ease}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:3px;font:600 15px var(--fb);text-decoration:none;border:1.5px solid transparent;cursor:pointer;touch-action:manipulation;transition:transform .12s ease,box-shadow .12s ease,filter .15s ease}
 .btn:active{transform:scale(.97)}
-.btn-p{background:var(--accent);color:var(--accent-ink)}
+.btn-p{background:var(--accent);color:var(--accent-ink);border:1.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.btn-p:active{box-shadow:1px 1px 0 var(--ink);transform:translate(2px,2px)}
 .btn-g{background:transparent;color:inherit;border-color:currentColor}
 @media (hover:hover) and (pointer:fine){.btn:hover{filter:brightness(1.06)}}
 
@@ -71,168 +73,222 @@ p{margin:0}
 .nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--deep) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--on-deep);border-bottom:1px solid rgba(255,255,255,.08)}
 .nav .w{display:flex;align-items:center;gap:20px;min-height:64px;padding-block:8px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;font:700 21px var(--fd);letter-spacing:-.02em}
-.mark{width:32px;height:32px;border-radius:9px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:600 13px var(--fm)}
+.mark{width:32px;height:32px;border-radius:5px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:600 13px var(--fm)}
 .links{display:flex;gap:18px;margin-left:auto}
 .links a{color:var(--on-deep-muted);text-decoration:none;font-weight:500;font-size:15px}
 @media (hover:hover){.links a:hover{color:var(--on-deep)}}
 .nav .acts{display:flex;gap:8px}
 .nav .btn{min-height:40px;padding:0 14px;font-size:14px}
 .nav .btn-g{border-color:rgba(255,255,255,.35)}
+.nav .btn-p{border-color:#fff;box-shadow:none}
 @media (max-width:860px){.links{display:none}.nav .acts{margin-left:auto}}
 @media (max-width:420px){.nav .btn-g{display:none}}
 
-/* Entrada */
-.hero{background:radial-gradient(900px 420px at 85% 0%,rgba(60,201,166,.22),transparent 60%),linear-gradient(160deg,var(--deep) 0%,var(--deep-2) 70%,#0B5C4B 140%);color:var(--on-deep);overflow:hidden}
-.hero .w{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:clamp(28px,5vw,64px);align-items:center;padding-block:clamp(44px,7vw,88px) 0}
-.hero .kicker{color:#8FE0C9}
-.hero h1{font-size:clamp(40px,6.6vw,74px);font-weight:800;margin:14px 0 18px;max-width:13ch}
-.hero h1 em{font-style:normal;color:#8FE0C9}
-.hero .lead{font-size:clamp(17px,2vw,20px);color:#CFE3DB;max-width:52ch}
-.hero .cta{display:flex;flex-wrap:wrap;gap:10px;margin:28px 0 22px}
-.hero .btn-g{color:#fff;border-color:rgba(255,255,255,.4)}
-.facts{display:flex;flex-wrap:wrap;gap:8px 18px;padding:0;margin:0 0 clamp(36px,6vw,72px);list-style:none;font:500 13px var(--fm);color:var(--on-deep-muted)}
-.facts li::before{content:"";display:inline-block;width:1em;height:1em;margin-right:.4em;vertical-align:-.15em;background:#8FE0C9;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat}
+/* Entrada a pantalla completa: papel cuadriculado oscuro de borde a borde; el teléfono asoma por el borde de abajo y la boleta cae a su lado */
+.hero{position:relative;overflow:hidden;color:var(--on-deep);background:
+  linear-gradient(rgba(143,224,201,.07) 1px,transparent 1px) 0 0/40px 40px,
+  linear-gradient(90deg,rgba(143,224,201,.07) 1px,transparent 1px) 0 0/40px 40px,
+  radial-gradient(900px 520px at 82% 18%,rgba(60,201,166,.22),transparent 62%),var(--deep)}
+.hero-in{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:clamp(20px,4vw,56px);align-items:end;max-width:1480px;margin:0 auto;min-height:min(calc(100svh - 64px),860px);padding:clamp(36px,6vh,88px) clamp(16px,4.5vw,64px) 0}
+.hero-copy{align-self:center;padding-bottom:clamp(36px,8vh,96px);min-width:0}
+.hero .lead-in{font:500 clamp(15px,1.6vw,18px) var(--fb);color:#8FE0C9;margin-bottom:16px}
+.hero h1{font-size:clamp(46px,7vw,106px);font-weight:700;line-height:.93;letter-spacing:-.05em;margin:0 0 26px;text-wrap:wrap}
+.hero h1 span{display:block}.hero h1 .l2{padding-left:.5em}.hero h1 .l3{padding-left:1em}
+.hero .lead{font-size:clamp(17px,1.9vw,20px);color:#CFE3DB;max-width:50ch}
+.hero .cta{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0 24px}
+.hero .btn-p{border-color:#fff;box-shadow:3px 3px 0 #fff}
+.hero .btn-p:active{box-shadow:1px 1px 0 #fff}
+.hero .btn-g{color:#fff;border-color:rgba(255,255,255,.45)}
+.facts{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0;margin:0;list-style:none;font:500 13px var(--fm);color:var(--on-deep-muted)}
+.facts li::before{content:"";display:inline-block;width:.55em;height:.55em;margin-right:.55em;background:#8FE0C9}
+.hero-vis{position:relative;align-self:end;justify-self:center;width:min(100%,380px)}
 .phone{width:min(300px,78vw);margin:0 auto;border-radius:38px;padding:10px;background:#0A0F0D;box-shadow:0 30px 80px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.08)}
 .phone img{display:block;width:100%;height:auto;border-radius:30px;aspect-ratio:390/844;object-fit:cover;object-position:top}
-.hero .phone{align-self:end;transform:translateY(32px);margin-bottom:-2px}
-@media (max-width:820px){.hero .w{grid-template-columns:1fr}.hero .phone{width:min(270px,72vw)}}
+.hero .phone{width:min(100%,340px);transform:translateY(13%);margin-bottom:-2px}
+.boleta{position:absolute;left:-17%;bottom:12%;width:min(236px,64%);transform:rotate(-3deg);background:var(--paper);color:#12201C;font:500 12.5px/1.35 var(--fm);padding:14px 16px 26px;box-shadow:6px 6px 0 rgba(0,0,0,.45);
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 10px),95% 100%,90% calc(100% - 10px),85% 100%,80% calc(100% - 10px),75% 100%,70% calc(100% - 10px),65% 100%,60% calc(100% - 10px),55% 100%,50% calc(100% - 10px),45% 100%,40% calc(100% - 10px),35% 100%,30% calc(100% - 10px),25% 100%,20% calc(100% - 10px),15% 100%,10% calc(100% - 10px),5% 100%,0 calc(100% - 10px))}
+.boleta b{display:block;font:700 16px var(--fd);letter-spacing:-.02em}
+.boleta .sub{display:block;color:#56645D;margin-bottom:8px}
+.boleta i{display:block;border-top:1.5px dashed #12201C;margin:8px 0}
+.boleta div{display:flex;justify-content:space-between;gap:10px}
+.boleta .tot{font-weight:600;font-size:14px}
+@media (max-width:820px){
+  .hero-in{grid-template-columns:1fr;min-height:0;padding-top:clamp(32px,6vh,56px)}
+  .hero-copy{padding-bottom:12px}
+  .hero-vis{width:min(100%,300px)}
+  .hero .phone{width:min(100%,270px);transform:translateY(10%)}
+  .boleta{left:-14%;bottom:36%;width:min(200px,70%)}
+}
+@media (max-width:520px){.boleta{display:none}.hero h1 .l2{padding-left:.35em}.hero h1 .l3{padding-left:.7em}}
 
 /* Secciones */
 section{padding-block:clamp(64px,9vw,112px)}
 .sh{max-width:680px;margin-bottom:clamp(28px,4vw,44px)}
-.sh h2{font-size:clamp(30px,4.4vw,46px);margin:10px 0 14px}
+.sh h2{font-size:clamp(30px,4.4vw,46px);margin:0 0 14px}
 .sh p{color:var(--muted);font-size:18px}
 
-/* Calculadora hormiga: el «voucher» */
-.calc-wrap{padding-top:clamp(72px,9vw,120px)}
-.calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
-.calc-in{padding:clamp(22px,4vw,40px);display:grid;gap:18px;align-content:start}
-.calc-in h2{font-size:clamp(26px,3.4vw,36px)}
+/* Calculadora: pantalla partida. Mitad papel con los controles, mitad boleta color ámbar; las dos llegan al borde de la ventana */
+.split-calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding:0;border-bottom:1.5px solid var(--ink)}
+.calc-in{padding:clamp(40px,7vw,96px) clamp(20px,5vw,72px) clamp(40px,7vw,96px) var(--edge);display:grid;gap:18px;align-content:center}
+.calc-in h2{font-size:clamp(28px,3.8vw,48px)}
 .calc-in p{color:var(--muted)}
 .f{display:grid;gap:6px;font-weight:600;font-size:14px}
 .f .row{display:flex;align-items:center;gap:10px}
 .f input[type=range]{flex:1;accent-color:var(--hormiga);min-width:0}
 .f output{min-width:84px;text-align:right;font:600 18px var(--fm)}
 .chipset{display:flex;flex-wrap:wrap;gap:6px}
-.chipset button{font:500 14px var(--fb);padding:7px 12px;border-radius:99px;border:1.5px solid var(--line);background:var(--surface-2);color:var(--ink);cursor:pointer;touch-action:manipulation}
-.chipset button[aria-pressed=true]{border-color:var(--hormiga);background:var(--hormiga-soft)}
-.ticket{background:var(--hormiga-soft);padding:clamp(22px,4vw,40px);display:grid;gap:4px;align-content:center;position:relative;font-family:var(--fm)}
-.ticket::before{content:"";position:absolute;left:-1px;top:0;bottom:0;width:2px;background:repeating-linear-gradient(to bottom,var(--line) 0 8px,transparent 8px 16px)}
-.ticket .tl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.ticket .tr{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px dashed color-mix(in srgb,var(--hormiga) 45%,transparent);font-size:15px}
+.chipset button{font:500 14px var(--fb);padding:8px 14px;border-radius:3px;border:1.5px solid var(--ink);background:var(--surface);color:var(--ink);cursor:pointer;touch-action:manipulation}
+.chipset button[aria-pressed=true]{background:var(--hormiga-soft);box-shadow:2px 2px 0 var(--ink)}
+.ticket{background:var(--hormiga-soft);padding:clamp(40px,7vw,96px) var(--edge) clamp(40px,7vw,96px) clamp(20px,5vw,72px);display:grid;gap:4px;align-content:center;position:relative;font-family:var(--fm);color:var(--ink)}
+.ticket::before{content:"";position:absolute;left:-1px;top:0;bottom:0;width:2px;background:repeating-linear-gradient(to bottom,var(--ink) 0 8px,transparent 8px 16px)}
+.ticket .tl{font-size:13px;color:var(--muted)}
+.ticket .tr{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px dashed color-mix(in srgb,var(--hormiga) 55%,transparent);font-size:15px}
 .ticket .tr b{font-weight:600}
-.ticket .big{font:800 clamp(38px,5.4vw,58px)/1.05 var(--fd);color:var(--hormiga);letter-spacing:-.02em;margin:8px 0 4px}
-.ticket .note{font:15px/1.5 var(--fb);color:var(--ink);margin-top:10px}
+.ticket .big{font:700 clamp(54px,8vw,112px)/.95 var(--fd);color:var(--hormiga);letter-spacing:-.05em;margin:12px 0 4px}
+.ticket .note{font:16px/1.5 var(--fb);margin-top:12px;max-width:44ch}
 .ticket .note b{color:var(--good)}
-@media (max-width:760px){.calc{grid-template-columns:1fr}.ticket::before{left:0;right:0;top:-1px;bottom:auto;width:auto;height:2px;background:repeating-linear-gradient(to right,var(--line) 0 8px,transparent 8px 16px)}}
+@media (max-width:760px){.split-calc{grid-template-columns:1fr}.calc-in{padding:48px 16px 36px}.ticket{padding:36px 16px 48px}.ticket::before{left:0;right:0;top:-1px;bottom:auto;width:auto;height:2px;background:repeating-linear-gradient(to right,var(--ink) 0 8px,transparent 8px 16px)}}
 
-/* Funciones */
-.feat{display:grid;gap:clamp(48px,7vw,88px)}
-.fr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,5vw,72px);align-items:center}
-.fr:nth-child(even) .ft{order:2}
-.ft h3{font-size:clamp(24px,3vw,32px);margin:8px 0 12px}
-.ft p{color:var(--muted);font-size:17px;max-width:46ch}
-.ft ul{margin:16px 0 0;padding:0;list-style:none;display:grid;gap:8px}
-.ft li{padding-left:24px;position:relative}
-.ft li::before{content:"";position:absolute;left:2px;top:.62em;width:10px;height:10px;border-radius:3px;background:var(--accent)}
-.fr .phone{width:min(280px,74vw)}
-@media (max-width:820px){.fr{grid-template-columns:1fr}.fr:nth-child(even) .ft{order:0}}
+/* Funciones: bento. Una celda grande con el registro, dos medianas y tres altas; cada una con su capa de color */
+.bh{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(16px,5vw,72px);align-items:end;margin-bottom:clamp(28px,4vw,48px)}
+.bh h2{font-size:clamp(36px,5.8vw,78px);line-height:.98;letter-spacing:-.045em}
+.bh p{color:var(--muted);font-size:18px;max-width:38ch}
+.bento{display:grid;gap:14px;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:236px 236px 350px;
+  grid-template-areas:"a a a a a a a b b b b b" "a a a a a a a c c c c c" "d d d d e e e e f f f f"}
+.cell{position:relative;overflow:hidden;border:1.5px solid var(--ink);border-radius:var(--r);padding:clamp(18px,2.4vw,30px);background:var(--surface);color:var(--ink);display:flex;flex-direction:column;min-width:0}
+.cell h3{font-size:clamp(21px,2.1vw,31px);line-height:1.06;margin:0 0 10px}
+.cell p{font-size:15.5px;line-height:1.5;max-width:36ch}
+.cell ul{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:14.5px;max-width:36ch}
+.cell li{padding-left:18px;position:relative}
+.cell li::before{content:"";position:absolute;left:0;top:.62em;width:8px;height:8px;background:currentColor;opacity:.75}
+.cell kbd{font:500 12.5px var(--fm);border:1px solid currentColor;border-bottom-width:2px;border-radius:3px;padding:0 5px}
+.cimg{position:absolute;display:block;height:auto;border:6px solid #0A0F0D;border-bottom:0;border-radius:24px 24px 0 0;box-shadow:0 24px 50px rgba(0,0,0,.28)}
+.c-a{grid-area:a;background:var(--deep);color:var(--on-deep);box-shadow:7px 7px 0 var(--ink)}
+.c-a .ct{max-width:52%}.c-a h3{font-size:clamp(28px,3.6vw,52px);line-height:1}
+.c-a p{color:#CFE3DB}
+.c-a .cimg{right:7%;bottom:-90px;width:min(300px,38%)}
+.c-b{grid-area:b}.c-c{grid-area:c;background:var(--accent-soft)}
+.c-b .ct,.c-c .ct{max-width:58%}.c-b .cimg,.c-c .cimg{right:18px;bottom:-130px;width:min(168px,32%)}
+.c-d{grid-area:d;background:var(--hormiga-soft)}.c-e{grid-area:e}.c-f{grid-area:f;background:var(--deep-2);color:var(--on-deep)}
+.c-f p{color:#CFE3DB}
+.c-d .cimg,.c-e .cimg,.c-f .cimg{left:50%;transform:translateX(-50%);bottom:-292px;width:min(200px,54%)}
+@media (max-width:1000px){
+  .bh{grid-template-columns:1fr}
+  .bento{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;grid-template-areas:"a a" "b c" "d e" "f f"}
+  .cell{min-height:0}
+  .cell .ct{max-width:none!important}
+  .cimg{position:static!important;transform:none!important;width:min(230px,64%)!important;height:210px!important;object-fit:cover;object-position:top;margin:18px auto -2px}
+  .c-a .cimg{height:270px!important}
+  .c-a h3{font-size:clamp(28px,5vw,40px)}
+}
+@media (max-width:620px){.bento{grid-template-columns:1fr;grid-template-areas:"a" "b" "c" "d" "e" "f"}.c-a{box-shadow:5px 5px 0 var(--ink)}}
 
-/* Seguridad */
-.safe{background:var(--surface);border-block:1px solid var(--line)}
-.sg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
-.sc{background:var(--surface-2);border-radius:14px;padding:20px;min-width:0}
-.sc .ic{width:38px;height:38px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;margin-bottom:12px}
-.sc h3{font-size:18px;margin-bottom:6px}
-.sc p{font-size:15px;color:var(--muted)}
-@media (max-width:900px){.sg{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:520px){.sg{grid-template-columns:1fr}}
+/* Galería: masonry. Mismas capturas, recortes de alturas distintas */
+.gal{padding-top:0}
+.mas{columns:3;column-gap:14px}
+.mas figure{margin:0 0 14px;break-inside:avoid;border:1.5px solid var(--ink);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.mas img{display:block;width:100%;height:auto;object-fit:cover;object-position:top}
+.mas .r1{aspect-ratio:4/5}.mas .r2{aspect-ratio:1/1}.mas .r3{aspect-ratio:3/5}.mas .r4{aspect-ratio:4/6}.mas .r5{aspect-ratio:5/4}
+.mas figcaption{padding:10px 12px 12px;font-size:14px;border-top:1.5px solid var(--ink);line-height:1.35}
+.mas figcaption b{display:block;font-weight:600}
+.mas figcaption span{color:var(--muted)}
+@media (max-width:900px){.mas{columns:2}}
+@media (max-width:480px){.mas{column-gap:10px}.mas figure{margin-bottom:10px}.mas figcaption{padding:8px 10px 10px;font-size:13px}}
 
-/* Precios */
-.toggle{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:4px;margin-bottom:22px}
-.toggle button{font:600 14px var(--fb);border:0;background:none;color:var(--muted);padding:8px 16px;border-radius:99px;cursor:pointer;touch-action:manipulation}
+/* Datos: columnas editoriales asimétricas */
+.safe{border-top:1.5px solid var(--ink)}
+.ed-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(28px,7vw,112px);align-items:start}
+.ed-t{position:sticky;top:96px}
+.ed-t h2{font-size:clamp(36px,5.8vw,78px);line-height:.98;letter-spacing:-.045em}
+.ed-b article{padding:22px 0 28px;border-top:1.5px solid var(--ink)}
+.ed-b article:first-child{border-top:0;padding-top:6px}
+.ed-b article:nth-child(even){margin-left:clamp(0px,7vw,96px)}
+.ed-b h3{display:flex;align-items:center;gap:12px;font-size:clamp(22px,2.4vw,30px);margin-bottom:8px}
+.ed-b svg{color:var(--accent);flex:none}
+.ed-b p{font-size:17px;color:var(--muted);max-width:46ch}
+@media (max-width:820px){.ed-grid{grid-template-columns:1fr}.ed-t{position:static}.ed-b article:nth-child(even){margin-left:0}}
+
+/* Precios: el plan gratis va sin caja y el Premium sube y se carga con sombra dura */
+.pr-head{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(16px,5vw,72px);align-items:end;margin-bottom:clamp(28px,4vw,44px)}
+.pr-head h2{font-size:clamp(36px,5.8vw,78px);line-height:.98;letter-spacing:-.045em}
+.pr-head p{color:var(--muted);font-size:18px;max-width:40ch}
+.toggle{display:inline-flex;background:var(--surface);border:1.5px solid var(--ink);border-radius:3px;padding:3px;margin-bottom:34px}
+.toggle button{font:600 14px var(--fb);border:0;background:none;color:var(--muted);padding:9px 16px;border-radius:2px;cursor:pointer;touch-action:manipulation}
 .toggle button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
 .toggle small{font:600 11px var(--fm);margin-left:6px}
-.plans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.plan{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:clamp(22px,3.5vw,32px);display:grid;gap:16px;align-content:start;min-width:0}
-.plan.pro{border:2px solid var(--accent);position:relative}
-.plan .tag{position:absolute;top:-13px;left:24px;background:var(--accent);color:var(--accent-ink);font:600 12px var(--fm);padding:4px 10px;border-radius:99px;letter-spacing:.04em}
-.plan h3{font-size:22px}
-.price{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
-.price b{font:800 46px/1 var(--fd);letter-spacing:-.02em}
-.price span{color:var(--muted);font-size:15px}
+.plans{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);align-items:start}
+.plan{padding:clamp(22px,3.5vw,40px);display:grid;gap:16px;align-content:start;min-width:0}
+.plan.free{border-top:1.5px solid var(--ink);padding-left:0;padding-right:clamp(16px,4vw,56px)}
+.plan.pro{background:var(--surface);border:1.5px solid var(--ink);box-shadow:8px 8px 0 var(--ink);position:relative;margin-top:-30px}
+.plan .tag{position:absolute;top:-14px;left:24px;background:var(--accent);color:var(--accent-ink);font:600 12px var(--fm);padding:4px 10px;border:1.5px solid var(--ink);border-radius:3px}
+.plan h3{font-size:24px}
+.price{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.price b{font:600 clamp(56px,8vw,104px)/.9 var(--fm);letter-spacing:-.05em}
+.price span{color:var(--muted);font-size:16px}
 .plan .eq{font:500 13px var(--fm);color:var(--muted);min-height:1.4em}
 .plan ul{margin:0;padding:0;list-style:none;display:grid;gap:9px;font-size:15.5px}
-.plan li{padding-left:26px;position:relative}
-.plan li::before{content:"";position:absolute;left:2px;top:.3em;width:16px;height:16px;background:var(--accent);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat}
-.plan li.soon::before{background:var(--muted);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E") center/contain no-repeat}
+.plan li{padding-left:22px;position:relative}
+.plan li::before{content:"";position:absolute;left:0;top:.55em;width:9px;height:9px;background:var(--accent)}
+.plan li.soon::before{background:none;border:1.5px solid var(--muted)}
 .plan li.soon{color:var(--muted)}
-.plan li.soon em{font:500 11px var(--fm);font-style:normal;background:var(--surface-2);border:1px solid var(--line);padding:1px 6px;border-radius:6px;margin-left:4px}
+.plan li.soon em{font:500 11px var(--fm);font-style:normal;background:var(--surface-2);border:1px solid var(--line);padding:1px 6px;border-radius:3px;margin-left:4px}
 .plan .btn{width:100%}
-.beta{margin-top:18px;display:flex;gap:12px;align-items:flex-start;background:var(--accent-soft);border-radius:14px;padding:16px 18px;font-size:15.5px}
+.beta{margin-top:34px;display:flex;gap:12px;align-items:flex-start;background:var(--accent-soft);border:1.5px solid var(--ink);border-radius:var(--r);padding:16px 18px;font-size:15.5px;max-width:760px}
 .beta b{font-family:var(--fd)}
-@media (max-width:720px){.plans{grid-template-columns:1fr}}
+@media (max-width:900px){.pr-head{grid-template-columns:1fr}.plans{grid-template-columns:1fr}.plan.free{padding-right:0}.plan.pro{margin-top:18px;box-shadow:5px 5px 0 var(--ink)}}
 
 /* Tutoriales */
 .tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:26px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
 @media (min-width:900px){.tabs{flex-wrap:wrap;overflow:visible}}
-.tabs button{flex:none;font:600 14.5px var(--fb);padding:10px 16px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;touch-action:manipulation;white-space:nowrap}
+.tabs button{flex:none;font:600 14.5px var(--fb);padding:10px 16px;border-radius:3px;border:1.5px solid var(--ink);background:var(--surface);color:var(--ink);cursor:pointer;touch-action:manipulation;white-space:nowrap}
 .tabs button .tn{font:600 12px var(--fm);color:var(--muted);margin-right:6px}
-.tabs button[aria-selected=true]{border-color:var(--accent);background:var(--accent-soft)}
-.tut{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:clamp(24px,5vw,64px);align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:clamp(22px,4vw,44px)}
+.tabs button[aria-selected=true]{background:var(--accent-soft);box-shadow:2px 2px 0 var(--ink)}
+.tut{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:clamp(24px,5vw,64px);align-items:start;background:var(--surface);border:1.5px solid var(--ink);border-radius:var(--r);padding:clamp(22px,4vw,44px);box-shadow:6px 6px 0 var(--ink)}
 .tut h3{font-size:clamp(24px,3vw,30px);margin-bottom:8px}
 .tut .dur{font:500 13px var(--fm);color:var(--muted)}
 .tut ol{counter-reset:s;list-style:none;margin:22px 0 0;padding:0;display:grid;gap:14px}
 .tut ol li{counter-increment:s;display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;align-items:start}
-.tut ol li::before{content:counter(s);width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:600 14px var(--fm);margin-top:1px}
-.tut kbd{font:500 13px var(--fm);background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 6px}
-.tip{margin-top:20px;padding:12px 14px;border-left:3px solid var(--hormiga);background:var(--hormiga-soft);border-radius:0 10px 10px 0;font-size:15px}
+.tut ol li::before{content:counter(s);width:30px;height:30px;border-radius:3px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:600 14px var(--fm);margin-top:1px}
+.tut kbd{font:500 13px var(--fm);background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:3px;padding:1px 6px}
+.tip{margin-top:20px;padding:12px 14px;border-left:3px solid var(--hormiga);background:var(--hormiga-soft);border-radius:0 3px 3px 0;font-size:15px}
 .tut .phone{width:min(270px,72vw)}
 @media (max-width:820px){.tut{grid-template-columns:1fr}}
 
-/* Preguntas */
-.faq{display:grid;gap:10px;max-width:820px}
-.faq details{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px 20px}
-.faq summary{cursor:pointer;list-style:none;font:600 17px var(--fb);padding:14px 28px 14px 0;position:relative}
+/* Preguntas: título fijo a la izquierda, respuestas en líneas a la derecha */
+.faq-grid{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);gap:clamp(24px,6vw,96px);align-items:start}
+.faq-t{position:sticky;top:96px}
+.faq-t h2{font-size:clamp(34px,4.8vw,62px);line-height:1;letter-spacing:-.045em;margin-bottom:16px}
+.faq-t p{color:var(--muted);max-width:30ch}
+.faq details{border-top:1.5px solid var(--ink)}
+.faq details:last-child{border-bottom:1.5px solid var(--ink)}
+.faq summary{cursor:pointer;list-style:none;font:600 clamp(17px,1.6vw,20px) var(--fb);padding:18px 40px 18px 0;position:relative}
 .faq summary::-webkit-details-marker{display:none}
-.faq summary::after{content:"+";position:absolute;right:0;top:10px;font:500 22px var(--fm);color:var(--accent)}
+.faq summary::after{content:"+";position:absolute;right:4px;top:12px;font:500 26px var(--fm);color:var(--accent)}
 .faq details[open] summary::after{content:"–"}
-.faq details p{color:var(--muted);padding:0 0 16px;max-width:66ch}
+.faq details p{color:var(--muted);padding:0 40px 20px 0;max-width:62ch}
+@media (max-width:820px){.faq-grid{grid-template-columns:1fr}.faq-t{position:static}}
 
-/* Lista de espera */
-.join{background:linear-gradient(160deg,var(--deep) 0%,var(--deep-2) 100%);color:var(--on-deep)}
-.join .w{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,5vw,64px);align-items:center}
-.join h2{font-size:clamp(30px,4.4vw,46px);margin:10px 0 14px}
-.join .kicker{color:#8FE0C9}
-.join p{color:#CFE3DB;font-size:18px}
-.form{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:var(--r);padding:clamp(20px,3.5vw,30px);display:grid;gap:14px}
-.form label{display:grid;gap:6px;font-weight:600;font-size:14px;color:var(--on-deep)}
-.form input,.form select{height:48px;border-radius:10px;border:1px solid rgba(255,255,255,.22);background:rgba(0,0,0,.25);color:#fff;padding:0 14px;font:16px var(--fb);width:100%}
-.form select option{color:#14201B}
+/* Lista de espera: pantalla partida. Mitad oscura con la invitación, mitad clara con el formulario */
+.join{padding:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);background:var(--deep);color:var(--on-deep)}
+.join .jl{padding:clamp(56px,9vw,120px) clamp(20px,5vw,72px) clamp(56px,9vw,120px) var(--edge);display:grid;align-content:center;gap:14px}
+.join h2{font-size:clamp(38px,5.6vw,76px);line-height:.98;letter-spacing:-.045em}
+.join p{color:#CFE3DB;font-size:18px;max-width:44ch}
+.join .jr{background:var(--accent-soft);color:var(--ink);padding:clamp(40px,7vw,96px) var(--edge) clamp(40px,7vw,96px) clamp(20px,5vw,72px);display:grid;align-items:center}
+.form{background:var(--surface);border:1.5px solid var(--ink);border-radius:var(--r);box-shadow:6px 6px 0 var(--ink);padding:clamp(20px,3.5vw,32px);display:grid;gap:14px}
+.form label{display:grid;gap:6px;font-weight:600;font-size:14px;color:var(--ink)}
+.form input,.form select{height:48px;border-radius:3px;border:1.5px solid var(--ink);background:var(--surface);color:var(--ink);padding:0 14px;font:16px var(--fb);width:100%}
 .form .btn{width:100%}
-.form .fine{font-size:13px;color:var(--on-deep-muted)}
-.form .ok{background:rgba(60,201,166,.16);border:1px solid rgba(60,201,166,.5);border-radius:10px;padding:12px 14px;font-size:15px}
-.form .err{color:#FFB4A8;font-size:14px}
-@media (max-width:820px){.join .w{grid-template-columns:1fr}}
+.form .fine{font-size:13px;color:var(--muted)}
+.form .ok{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:3px;padding:12px 14px;font-size:15px}
+.form .err{color:var(--bad);font-size:14px}
+@media (max-width:820px){.join{grid-template-columns:1fr}.join .jl{padding:56px 16px 40px}.join .jr{padding:36px 16px 56px}}
 
 footer{padding-block:36px 44px;color:var(--muted);font-size:14px}
 footer .w{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between;align-items:center}
 footer nav{display:flex;flex-wrap:wrap;gap:8px 20px}
 footer a{color:var(--muted)}
-.demo-flag{font:600 11px var(--fm);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:6px;padding:2px 6px}
 img{max-width:100%}
-/* cuadra-cuadre v13 */
-:root{--bg:#EEF1EF;--ink:#12201C;--line:#D3DBD7;--r:6px;--deep:#12201C;--deep-2:#12201C;--fd:'Instrument Sans','Segoe UI',system-ui,sans-serif;--fb:'Instrument Sans','Segoe UI',system-ui,sans-serif;--fm:'Geist Mono',ui-monospace,Consolas,monospace}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0C1210;--deep:#0A100E;--deep-2:#0A100E}}
-:root[data-theme="dark"]{--bg:#0C1210;--deep:#0A100E;--deep-2:#0A100E}
-body{background-image:linear-gradient(rgba(11,122,98,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(11,122,98,.06) 1px,transparent 1px);background-size:28px 28px}
-h1,h2,h3{letter-spacing:-.035em}
-.btn{border-radius:3px;min-height:48px}
-.btn-p{border:1.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
-.btn-p:active{box-shadow:1px 1px 0 var(--ink);transform:translate(2px,2px)}
-.kicker{letter-spacing:.02em;text-transform:none;font-family:var(--fb)}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
-.skip{position:absolute;left:12px;top:-60px;z-index:50;background:var(--surface);color:var(--ink);padding:10px 14px;border-radius:6px;font-weight:600}
+.skip{position:absolute;left:12px;top:-60px;z-index:50;background:var(--surface);color:var(--ink);padding:10px 14px;border-radius:3px;font-weight:600}
 .skip:focus{top:12px}
 </style>
 </head>
@@ -254,10 +310,10 @@ h1,h2,h3{letter-spacing:-.035em}
 <main id="inicio">
 <span id="contenido" tabindex="-1"></span>
 <div class="hero">
-  <div class="w">
-    <div>
-      <div class="kicker">Finanzas personales en soles</div>
-      <h1>Tus cuentas, <em>cuadradas</em> al céntimo.</h1>
+  <div class="hero-in">
+    <div class="hero-copy">
+      <div class="lead-in">Finanzas personales en soles</div>
+      <h1><span class="l1">Tus cuentas,</span> <span class="l2">cuadradas</span> <span class="l3">al céntimo.</span></h1>
       <p class="lead">Anota un gasto en segundos, mira cuánto tienes de verdad en Yape, Plin y efectivo, sigue tus ahorros con su TREA y descarga un estado de cuenta que entiende cualquiera.</p>
       <div class="cta">
         <a class="btn btn-p" href="#beta">Unirme a la beta gratis</a>
@@ -267,107 +323,136 @@ h1,h2,h3{letter-spacing:-.035em}
         <li>Yape, Plin y efectivo</li><li>Soles y dólares</li><li>Funciona sin señal</li><li>Reportes PDF y Excel</li>
       </ul>
     </div>
-    <div class="phone"><img src="img/resumen.jpg" width="390" height="844" alt="Pantalla de resumen del año: saldo ahorrado, fondo de emergencia y gasto anual"></div>
+    <div class="hero-vis">
+      <div class="phone"><img src="img/resumen.jpg" width="390" height="844" alt="Pantalla de resumen del año: saldo ahorrado, fondo de emergencia y gasto anual"></div>
+      <div class="boleta" aria-hidden="true">
+        <b>Mi<span class="sw">S<sup class="sq">2</sup></span>oles</b><span class="sub">Noviembre, datos de ejemplo</span>
+        <i></i>
+        <div><span>Sueldo</span><span>+5,300.00</span></div>
+        <div><span>Almuerzo</span><span>−25.00</span></div>
+        <div><span>Menú del día</span><span>−18.00</span></div>
+        <i></i>
+        <div class="tot"><span>Tienes</span><span>S/ 778.00</span></div>
+      </div>
+    </div>
   </div>
 </div>
 
-<div class="w calc-wrap">
-  <div class="calc" id="calculadora">
-    <div class="calc-in">
-      <div class="kicker" style="color:var(--hormiga)">Calculadora de gasto hormiga</div>
-      <h2>¿Cuánto se te va en «solo un café»?</h2>
-      <p>Mueve los valores. Los gastos chicos casi nunca se anotan, y al año suman más de lo que parece.</p>
-      <div class="f">
-        <span id="lb-q">¿En qué?</span>
-        <div class="chipset" role="group" aria-labelledby="lb-q">
-          <button type="button" data-p="6" aria-pressed="true">Café</button><button type="button" data-p="3.5" aria-pressed="false">Golosina</button><button type="button" data-p="14" aria-pressed="false">Delivery chico</button><button type="button" data-p="9" aria-pressed="false">Taxi corto</button>
-        </div>
+<section class="split-calc" id="calculadora" aria-labelledby="h-calc">
+  <div class="calc-in">
+    <h2 id="h-calc">¿Cuánto se te va en «solo un café»?</h2>
+    <p>Mueve los valores. Los gastos chicos casi nunca se anotan, y al año suman más de lo que parece.</p>
+    <div class="f">
+      <span id="lb-q">¿En qué?</span>
+      <div class="chipset" role="group" aria-labelledby="lb-q">
+        <button type="button" data-p="6" aria-pressed="true">Café</button><button type="button" data-p="3.5" aria-pressed="false">Golosina</button><button type="button" data-p="14" aria-pressed="false">Delivery chico</button><button type="button" data-p="9" aria-pressed="false">Taxi corto</button>
       </div>
-      <label class="f" for="c-m">Cuánto cuesta cada vez
-        <span class="row"><input type="range" id="c-m" min="1" max="40" step="0.5" value="6"><output id="o-m" class="num" for="c-m">S/ 6.00</output></span>
-      </label>
-      <label class="f" for="c-v">Veces por semana
-        <span class="row"><input type="range" id="c-v" min="1" max="14" step="1" value="5"><output id="o-v" class="num" for="c-v">5</output></span>
-      </label>
     </div>
-    <div class="ticket" aria-live="polite">
-      <div class="tl">Tu boleta de gasto hormiga</div>
-      <div class="tr"><span>Al mes</span><b id="t-mes">S/ 130.00</b></div>
-      <div class="tr"><span>Al año</span><b id="t-ano">S/ 1,560.00</b></div>
-      <div class="big" id="t-big">S/ 1,560</div>
-      <div class="tl">se van en un año</div>
-      <p class="note">Si en vez de eso lo depositaras cada mes en una cuenta con <b>5.5% TREA</b>, en un año tendrías <b id="t-aho">S/ 1,595.93</b>.</p>
-    </div>
+    <label class="f" for="c-m">Cuánto cuesta cada vez
+      <span class="row"><input type="range" id="c-m" min="1" max="40" step="0.5" value="6"><output id="o-m" class="num" for="c-m">S/ 6.00</output></span>
+    </label>
+    <label class="f" for="c-v">Veces por semana
+      <span class="row"><input type="range" id="c-v" min="1" max="14" step="1" value="5"><output id="o-v" class="num" for="c-v">5</output></span>
+    </label>
   </div>
-</div>
+  <div class="ticket" aria-live="polite">
+    <div class="tl">Tu boleta de gasto hormiga</div>
+    <div class="tr"><span>Al mes</span><b id="t-mes">S/ 130.00</b></div>
+    <div class="tr"><span>Al año</span><b id="t-ano">S/ 1,560.00</b></div>
+    <div class="big" id="t-big">S/ 1,560</div>
+    <div class="tl">se van en un año</div>
+    <p class="note">Si en vez de eso lo depositaras cada mes en una cuenta con <b>5.5% TREA</b>, en un año tendrías <b id="t-aho">S/ 1,595.93</b>.</p>
+  </div>
+</section>
 
 <section id="funciones">
   <div class="w">
-    <div class="sh">
-      <div class="kicker">Funciones</div>
+    <div class="bh">
       <h2>Hecha para cómo se paga en Perú</h2>
       <p>No necesitas conectar tu banco. Tú anotas, la app ordena y cuadra.</p>
     </div>
-    <div class="feat">
-      <div class="fr">
-        <div class="ft">
-          <div class="kicker">Registro en segundos</div>
+    <div class="bento">
+      <article class="cell c-a">
+        <div class="ct">
           <h3>Anota mientras pagas</h3>
-          <p>Toca <kbd>+</kbd> y elige cómo registrar: <b>Automático</b> (escribes una frase y la app la llena) o <b>Manual</b> (te va preguntando paso a paso). Se descuenta solo de Yape, Plin o tu efectivo.</p>
-          <ul><li>Escribe «almuerzo 25 yape» y confirma</li><li>Atajos de un toque para tus gastos de siempre</li><li>Gastos cotidianos separados de los fijos</li><li>Gastos en dólares con el tipo de cambio del mes</li></ul>
+          <p>Toca <kbd>+</kbd> y elige <b>Automático</b>: escribes o dictas «almuerzo 25 yape» y la app lo llena. O <b>Manual</b>, que te va preguntando paso a paso. Se descuenta solo de Yape, Plin o tu efectivo.</p>
+          <ul><li>Atajos de un toque para tus gastos de siempre</li><li>Gastos cotidianos, fijos y antojos por separado</li><li>Gastos en dólares con el tipo de cambio del mes</li></ul>
         </div>
-        <div class="phone"><img src="img/registrar.jpg" width="390" height="844" alt="Tarjeta de confirmación al escribir «almuerzo 25 yape»: 25 soles, gasto cotidiano, sale de Yape" loading="lazy"></div>
-      </div>
-      <div class="fr">
-        <div class="ft">
-          <div class="kicker">Tu mes de un vistazo</div>
+        <img class="cimg" src="img/registrar.jpg" width="390" height="844" alt="Tarjeta de confirmación al escribir «almuerzo 25 yape»: 25 soles, gasto cotidiano, sale de Yape" loading="lazy">
+      </article>
+      <article class="cell c-b">
+        <div class="ct">
           <h3>Sabes cuánto te queda, no cuánto crees</h3>
-          <p>Cada mes muestra lo que entró, lo que salió, lo que ahorraste y lo que te queda, con tu liquidez real al lado.</p>
-          <ul><li>Alerta cuando tus gastos cotidianos pasan tu límite</li><li>Tarjetas de crédito como deuda real, no como gasto doble</li><li>Cuadra tus cuentas con el saldo de tu app del banco</li></ul>
+          <p>Lo que entró, lo que salió y lo que ahorraste, con tu liquidez real al lado.</p>
         </div>
-        <div class="phone"><img src="img/mes.jpg" width="390" height="844" alt="Vista del mes de noviembre con lo que queda, barra de gastos y liquidez disponible" loading="lazy"></div>
-      </div>
-      <div class="fr">
-        <div class="ft">
-          <div class="kicker">Ahorros con TREA</div>
+        <img class="cimg" src="img/mes.jpg" width="390" height="844" alt="Vista del mes de noviembre con lo que queda, barra de gastos y liquidez disponible" loading="lazy">
+      </article>
+      <article class="cell c-c">
+        <div class="ct">
           <h3>Mira cuánto ganan tus ahorros</h3>
-          <p>Lleva cada cuenta de ahorro por separado, escribe su TREA o TEA y ve cuánto ganarías al mes y al año.</p>
-          <ul><li>Depósitos, retiros y traspasos entre cuentas</li><li>Metas de ahorro con su avance</li><li>Fondo de emergencia según tus gastos fijos</li></ul>
+          <p>Cada cuenta por separado, con su TREA o TEA: ve cuánto ganarías al mes y al año.</p>
         </div>
-        <div class="phone"><img src="img/ahorros.jpg" width="390" height="844" alt="Cuentas de ahorro con saldo y ganancia estimada según su TREA" loading="lazy"></div>
-      </div>
-      <div class="fr">
-        <div class="ft">
-          <div class="kicker">Reportes</div>
+        <img class="cimg" src="img/ahorros.jpg" width="390" height="844" alt="Cuentas de ahorro con saldo y ganancia estimada según su TREA" loading="lazy">
+      </article>
+      <article class="cell c-d">
+        <div class="ct">
+          <h3>Tarjetas como deuda real</h3>
+          <p>Una compra sube tu deuda y el pago cuenta como gasto: nada se cuenta dos veces.</p>
+        </div>
+        <img class="cimg" src="img/tarjeta.jpg" width="390" height="844" alt="Formulario de compra con tarjeta de crédito" loading="lazy">
+      </article>
+      <article class="cell c-e">
+        <div class="ct">
           <h3>Un estado de cuenta que entiende cualquiera</h3>
-          <p>Descarga en PDF o Excel tu resumen, gastos por categoría, ahorros, tarjetas y el detalle de cada movimiento, del mes o del año.</p>
-          <ul><li>PDF listo para enviar o imprimir</li><li>Excel con totales y filtros para revisar las cifras</li><li>Elige el período que necesites</li></ul>
+          <p>Descarga en PDF o Excel tu resumen, ahorros, tarjetas y cada movimiento, del mes o del año.</p>
         </div>
-        <div class="phone"><img src="img/reporte.jpg" width="390" height="844" alt="Ventana para descargar el reporte en PDF o Excel eligiendo el período" loading="lazy"></div>
-      </div>
+        <img class="cimg" src="img/reporte.jpg" width="390" height="844" alt="Ventana para descargar el reporte en PDF o Excel eligiendo el período" loading="lazy">
+      </article>
+      <article class="cell c-f">
+        <div class="ct">
+          <h3>Cuadra con el saldo de tu banco</h3>
+          <p>Escribe lo que ves en tu app del banco y la app te dice cuánto falta o sobra en cada cuenta.</p>
+        </div>
+        <img class="cimg" src="img/cuadrar.jpg" width="390" height="844" alt="Ventana para cuadrar cuentas con el saldo real" loading="lazy">
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="gal" id="galeria" aria-labelledby="h-gal">
+  <div class="w">
+    <div class="sh">
+      <h2 id="h-gal">Así se ve por dentro</h2>
+      <p>Capturas reales de la app, hechas con datos de ejemplo.</p>
+    </div>
+    <div class="mas">
+      <figure><img class="r1" src="img/resumen.jpg" width="390" height="844" alt="Resumen del año: saldo ahorrado y fondo de emergencia" loading="lazy"><figcaption><b>Tu año de un vistazo</b><span>Ahorro, fondo de emergencia y gasto anual.</span></figcaption></figure>
+      <figure><img class="r2" src="img/mes.jpg" width="390" height="844" alt="El mes con lo que te queda y la liquidez disponible" loading="lazy"><figcaption><b>Tu mes</b><span>Lo que entró, salió y te queda.</span></figcaption></figure>
+      <figure><img class="r3" src="img/tarjeta.jpg" width="390" height="844" alt="Registro de una compra con tarjeta de crédito" loading="lazy"><figcaption><b>Tarjetas</b><span>Deuda y línea disponible.</span></figcaption></figure>
+      <figure><img class="r4" src="img/ahorros.jpg" width="390" height="844" alt="Cuentas de ahorro con su ganancia estimada" loading="lazy"><figcaption><b>Ahorros con TREA</b><span>Cuánto ganas al mes y al año.</span></figcaption></figure>
+      <figure><img class="r5" src="img/registrar.jpg" width="390" height="844" alt="Confirmación de un gasto escrito en una frase" loading="lazy"><figcaption><b>Una frase y listo</b><span>«almuerzo 25 yape».</span></figcaption></figure>
+      <figure><img class="r1" src="img/cuadrar.jpg" width="390" height="844" alt="Cuadrar cuentas con el saldo real del banco" loading="lazy"><figcaption><b>Cuadrar cuentas</b><span>Lo que falta o sobra, al céntimo.</span></figcaption></figure>
+      <figure><img class="r2" src="img/historial.jpg" width="390" height="844" alt="Historial de versiones de los últimos días" loading="lazy"><figcaption><b>Historial</b><span>Vuelve a cualquiera de los últimos 30 días.</span></figcaption></figure>
+      <figure><img class="r3" src="img/reporte.jpg" width="390" height="844" alt="Descargar el reporte en PDF o Excel" loading="lazy"><figcaption><b>Reportes</b><span>PDF o Excel, del período que elijas.</span></figcaption></figure>
     </div>
   </div>
 </section>
 
 <section class="safe" aria-labelledby="h-safe">
-  <div class="w">
-    <div class="sh">
-      <div class="kicker">Tus datos</div>
-      <h2 id="h-safe">Tus datos son tuyos y están protegidos</h2>
-    </div>
-    <div class="sg">
-      <div class="sc"><div class="ic" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><h3>Privados</h3><p>Se guardan con tu inicio de sesión y nadie más puede verlos desde la app. No los vendemos ni los compartimos.</p></div>
-      <div class="sc"><div class="ic" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg></div><h3>Historial de 30 días</h3><p>Cada día se guarda una versión. Si algo sale mal, vuelves atrás con un toque. Es parte de Premium, gratis durante la beta.</p></div>
-      <div class="sc"><div class="ic" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8.8a15 15 0 0 1 20 0"/><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r="1"/></svg></div><h3>Sin señal, sin problema</h3><p>Lo que registras queda en tu celular y se sube solo cuando vuelve la conexión.</p></div>
-      <div class="sc"><div class="ic" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></div><h3>Te los llevas cuando quieras</h3><p>Descarga una copia completa o tus reportes en cualquier momento.</p></div>
+  <div class="w ed-grid">
+    <div class="ed-t"><h2 id="h-safe">Tus datos son tuyos y están protegidos</h2></div>
+    <div class="ed-b">
+      <article><h3><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Privados</h3><p>Se guardan con tu inicio de sesión y nadie más puede verlos desde la app. No los vendemos ni los compartimos.</p></article>
+      <article><h3><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>Historial de 30 días</h3><p>Cada día se guarda una versión. Si algo sale mal, vuelves atrás con un toque. Es parte de Premium, gratis durante la beta.</p></article>
+      <article><h3><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 8.8a15 15 0 0 1 20 0"/><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r="1"/></svg>Sin señal, sin problema</h3><p>Lo que registras queda en tu celular y se sube solo cuando vuelve la conexión.</p></article>
+      <article><h3><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Te los llevas cuando quieras</h3><p>Descarga una copia completa o tus reportes en cualquier momento.</p></article>
     </div>
   </div>
 </section>
 
 <section id="precios">
   <div class="w">
-    <div class="sh">
-      <div class="kicker">Precios</div>
+    <div class="pr-head">
       <h2>Empieza gratis. Paga solo si te sirve.</h2>
       <p>El plan gratis alcanza para llevar tus cuentas todos los días. Premium suma los reportes y la tranquilidad del historial.</p>
     </div>
@@ -375,7 +460,7 @@ h1,h2,h3{letter-spacing:-.035em}
       <button type="button" id="pm" aria-pressed="false">Mensual</button><button type="button" id="pa" aria-pressed="true">Anual <small>−33%</small></button>
     </div>
     <div class="plans">
-      <article class="plan">
+      <article class="plan free">
         <h3>Gratis</h3>
         <div class="price"><b class="num">S/ 0</b><span>para siempre</span></div>
         <div class="eq">&nbsp;</div>
@@ -403,7 +488,6 @@ h1,h2,h3{letter-spacing:-.035em}
 <section id="tutoriales" style="padding-top:0">
   <div class="w">
     <div class="sh">
-      <div class="kicker">Tutoriales</div>
       <h2>Aprende en un minuto</h2>
       <p>Guías cortas con capturas reales de la app, hechas con datos de ejemplo.</p>
     </div>
@@ -434,16 +518,16 @@ h1,h2,h3{letter-spacing:-.035em}
 </section>
 
 <section id="preguntas" style="padding-top:0">
-  <div class="w">
-    <div class="sh">
-      <div class="kicker">Preguntas frecuentes</div>
+  <div class="w faq-grid">
+    <div class="faq-t">
       <h2>Lo que nos suelen preguntar</h2>
+      <p>¿Tienes otra duda? Cuéntanosla al <a href="#beta">unirte a la beta</a>.</p>
     </div>
     <div class="faq">
       <details><summary>¿Tengo que conectar mi cuenta del banco?</summary><p>No. Tú registras tus movimientos y la app los ordena. Nadie entra a tu banca por internet ni te pedimos tus claves.</p></details>
       <details><summary>¿Mis datos están seguros?</summary><p>Se guardan en una base de datos privada protegida con tu inicio de sesión, y nadie más puede verlos desde la app. No los vendemos ni los compartimos. Además, cada día se guarda una versión durante 30 días y puedes descargar una copia completa cuando quieras.</p></details>
       <details><summary>¿Qué diferencia hay entre Manual y Automático?</summary><p>En Manual la app te pregunta paso a paso: qué movimiento es, su tipo y de dónde sale, y al final escribes el monto. En Automático escribes una sola frase, como «almuerzo 25 yape», y la app la llena; tú solo confirmas.</p></details>
-      <details><summary>¿Puedo dictar en vez de escribir?</summary><p>Sí. En el modo Automático puedes usar el micrófono del teclado de tu celular para decir «almuerzo 25 yape» y luego confirmar.</p></details>
+      <details><summary>¿Puedo dictar en vez de escribir?</summary><p>Sí. En el modo Automático toca el micrófono y di, por ejemplo, «almuerzo veinticinco yape»; la app entiende números en palabras y también «ayer» o varios gastos en una frase. El audio lo transcribe el servicio de voz de tu navegador (en Chrome, el de Google) y MiS²oles solo recibe el texto, que tú revisas antes de guardar. Si tu navegador no lo permite, usa el micrófono del teclado de tu celular.</p></details>
       <details><summary>¿Funciona sin internet?</summary><p>Sí. Lo que registras sin señal queda guardado en tu celular y se sube a tu cuenta cuando vuelve la conexión.</p></details>
       <details><summary>¿Me sirve el reporte para presentarlo en un banco?</summary><p>El reporte ordena tus ingresos, gastos, ahorros y deudas como un estado de cuenta, y cualquier persona lo entiende. Como lo armas con tus propios registros, no reemplaza los documentos oficiales que pide un banco, como tus boletas o estados de cuenta.</p></details>
       <details><summary>¿Puedo usarla en el celular y en la computadora?</summary><p>Sí. Funciona en el navegador de cualquier dispositivo, y en el celular puedes agregarla a tu pantalla de inicio como una app.</p></details>
@@ -454,12 +538,11 @@ h1,h2,h3{letter-spacing:-.035em}
 </section>
 
 <section class="join" id="beta">
-  <div class="w">
-    <div>
-      <div class="kicker">Beta abierta</div>
-      <h2>Únete a la beta</h2>
-      <p>Estamos buscando a las primeras personas que quieran ordenar sus finanzas con nosotros. Durante la beta todo es gratis, y tus comentarios deciden lo que construimos después.</p>
-    </div>
+  <div class="jl">
+    <h2>Únete a la beta</h2>
+    <p>Estamos buscando a las primeras personas que quieran ordenar sus finanzas con nosotros. Durante la beta todo es gratis, y tus comentarios deciden lo que construimos después.</p>
+  </div>
+  <div class="jr">
     <form class="form" id="wf" novalidate>
       <label for="w-n">Tu nombre<input id="w-n" name="nombre" type="text" autocomplete="given-name" required></label>
       <label for="w-e">Tu correo<input id="w-e" name="correo" type="email" autocomplete="email" inputmode="email" required></label>
