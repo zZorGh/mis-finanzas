@@ -85,9 +85,11 @@ const liq=(p,i)=>p.evaluate(([k,i])=>JSON.parse(localStorage.getItem(k)).S['2026
 
   // 9. Sin cuenta: se pide al pasar a manual
   p=await nueva(b);await abrir(p);await frase(p,'almuerzo 25 y taxi 12');c=await campos(p);
-  T('sin cuenta dicha ni usada antes, avisa que falta',/Falta la cuenta/.test(c.prev));
+  T('sin cuenta dicha ni usada antes, la tarjeta ofrece elegir la cuenta de los que no la dicen',/Cuenta de los que no la dicen/.test(c.prev)&&/Elige la cuenta/.test(c.prev));
   await p.click('[data-s="save"]');await W(p);
-  T('al guardar pasa a manual con el primer gasto para elegir la cuenta',await p.getAttribute('#sheet','data-mode')==='manual'&&(await p.inputValue('#sa'))==='25');
+  T('al guardar sin elegir cuenta se queda en Automático y lo avisa (no pasa a manual ni guarda)',await p.getAttribute('#sheet','data-mode')==='auto'&&/Elige de qué cuenta sale/.test(await p.innerText('#sheet')));
+  await p.click('#sapv [data-aacct="liq:0"]');await W(p);await p.click('[data-s="save"]');await p.waitForTimeout(450);
+  T('al elegir la cuenta con una ficha, se guardan los dos gastos',(await filas(p,'Almuerzo')).some(x=>x.src==='liq:0')&&(await filas(p,'Taxi')).some(x=>x.src==='liq:0'));
   await p.context().close();
 
   // 10. Inglés

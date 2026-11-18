@@ -90,11 +90,11 @@ const cerrar=async p=>{await p.keyboard.press('Escape');await p.waitForTimeout(2
   await abrir(p);await p.click('[data-mode="auto"]');await W(p);
   T('Automático muestra solo la frase y la confirmación',await p.getAttribute('#sheet','data-mode')==='auto'&&await vis(p,'#smsg')&&!(await vis(p,'#sa'))&&!(await vis(p,'#stype')));
   await p.fill('#smsg','almuerzo');await p.waitForTimeout(150);
-  T('sin monto, la tarjeta explica qué escribir',/monto/i.test(await p.innerText('#sapv')));
+  T('sin monto, la tarjeta explica qué decir (concepto, precio, moneda y cuenta)',/precio/i.test(await p.innerText('#sapv'))&&/moneda/i.test(await p.innerText('#sapv'))&&/cuenta/i.test(await p.innerText('#sapv')));
   await p.fill('#smsg','cafe 5');await p.waitForTimeout(150);
   const n0=await rows(p,'Cafe',null);
   await p.click('[data-s="save"]');await p.waitForTimeout(300);
-  T('si falta la cuenta, pasa al formulario completo y la pide (no guarda a ciegas)',await p.locator('#sheet').count()===1&&await p.getAttribute('#sheet','data-mode')==='manual'&&(await rows(p,'Cafe',null))===n0&&/Elige de dónde sale/.test(await p.innerText('#sheet')));
+  T('si falta la cuenta, se queda en Automático, la pide en la propia tarjeta y no guarda a ciegas',await p.locator('#sheet').count()===1&&await p.getAttribute('#sheet','data-mode')==='auto'&&(await rows(p,'Cafe',null))===n0&&/Elige de qué cuenta sale/.test(await p.innerText('#sheet')));
   await cerrar(p);
   await abrir(p);await p.click('[data-mode="auto"]');await W(p);
   await p.fill('#smsg','almuerzo 25 yape');await p.waitForTimeout(200);

@@ -57,7 +57,7 @@ const ingreso=async(p,monto,concepto,cuenta)=>{await abrir(p);await p.click('[da
   await p.click('[data-s="save"]');await p.waitForTimeout(400);
   T('y la suma a Yape',igual(await liq0(p),s0+500));
   await abrir(p);await p.click('[data-mode="auto"]');await W(p);await p.fill('#smsg','sueldo extra 20');await p.waitForTimeout(250);
-  T('sin cuenta en la frase, la tarjeta dice que no se suma a ninguna',/No se suma a ninguna cuenta/.test(await p.innerText('#sapv')));
+  T('sin cuenta en la frase, la tarjeta ofrece las cuentas y «No sumar a ninguna cuenta» (sin ninguna marcada)',/Entra a/.test(await p.innerText('#sapv'))&&await p.locator('#sapv [data-aacct="none"]').count()===1&&await p.locator('#sapv [data-aacct][aria-checked=true]').count()===0);
   await p.click('[data-s="save"]');await p.waitForTimeout(400);
   T('y no toca los saldos',igual(await liq0(p),s0+500));
 

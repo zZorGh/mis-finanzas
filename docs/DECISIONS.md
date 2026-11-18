@@ -228,3 +228,13 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 **Fase 3 (18 nov. 2026):** la pantalla del mes en escritorio recibe el encabezado a pantalla completa (papel cuadriculado oscuro de borde a borde, el saldo disponible en tamaño editorial) y su bento sobre la misma cuadrícula de 12 columnas. Con eso los cinco patrones están en la landing y en la app (el masonry solo en la galería de la landing, por lo explicado arriba).
 
 **Fase 4 (18 nov. 2026):** Ajustes pasa de una tarjeta de ~2,600 px a tarjetas por tema en bento (con título propio y sin tocar el sistema de «Personalizar»), y el alta inicial usa el mismo panel partido que el acceso, con el recorrido de pasos a la vista. Se descartó reutilizar `.bcard` en Ajustes porque comparte el grupo de diseño `resumen` con el Resumen y mezclaría el orden que la persona guardó.
+
+## ADR-019 · Dictado con estructura: concepto, precio, moneda y cuenta (nov. 2026)
+
+**Pedido del dueño:** al dictar, la frase debe llevar concepto, precio, tipo de moneda (puede gastar en dólares o euros) y la cuenta de donde se descontará.
+
+**Decisión:** el analizador reconoce cualquier cuenta por su nombre y la moneda dicha por cada gasto, y la tarjeta de confirmación muestra los cuatro datos con fichas para corregir moneda y cuenta con un toque. Si falta la cuenta, se pide ahí mismo en vez de pasar al formulario manual: así quien dicta no pierde la frase ni cambia de modo.
+
+**Por qué fichas y no solo reconocer:** el reconocimiento de voz se equivoca con nombres propios y con «dólares/soles»; una ficha corrige en un toque y la persona siempre ve qué se va a guardar.
+
+**Límites:** la moneda hablada no se infiere por la cuenta; con varios gastos las fichas solo fijan la cuenta de los que no la dicen; aho/inv siguen con su flujo.

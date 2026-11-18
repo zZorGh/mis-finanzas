@@ -25,6 +25,10 @@ npx playwright install chromium
 - `t102.js`: alta inicial guiada (5 pasos, validaciones, atrás, terminar/omitir, qué se guarda, Por pagar, inglés).
 - `t103.js`: Antojo (tipo al registrar, tarjeta del mes, ¿Valió la pena?, editar, Automático, 50/30/20, inglés).
 - `t104.js`: pestañas del mes en celular (qué muestra cada una, hero compacto, recordar la pestaña, barra pegada, escritorio sin cambios, inglés). Se abre con `?tabs=on`: el esqueleto de pruebas arranca en «Todo».
+- `t105.js`: acceso en pantalla partida y Resumen en bento (filas, 1280/1100/390 px, inglés).
+- `t106.js`: mes en escritorio (encabezado a pantalla completa alineado a las tarjetas, bento sin huecos, «Personalizar», 3 estilos).
+- `t107.js`: Ajustes en bento (tarjetas por tema, filas, ids de los controles, tablet y celular) y alta inicial en pantalla partida con el recorrido.
+- `t108.js`: dictado con «concepto, precio, moneda y cuenta» (cuenta por nombre, moneda por gasto, fichas, sin cuenta, varios gastos, voz simulada, inglés).
 - `npm run capturas` — regenera las capturas de celular de la landing (`inicio/img/*.jpg`) y `og.jpg` con los datos de ejemplo (`landing-shots.js`, plantilla `og.html`). Si cambian, sube también `CACHE` en `sw.js`.
 - `npm run verificar` — `node paralelo.js`: pruebas + escáneres a la vez (~4 min; antes ~13 en serie) y, si todo pasa, guarda el sello `dev/.sello-pruebas` (no se sube). El gancho `pre-push` no deja subir cambios de la app sin un sello de esa versión exacta. Todas las pruebas salen con código 1 si alguna comprobación falla; el escáner, solo si hay errores de JS.
 - `npm run regla` — revisa todo el repo contra la regla de oro (claves secretas, archivos de datos y tu lista privada `~/.cuadra/vigilar.txt`). Ver `regla-de-oro.js`.
