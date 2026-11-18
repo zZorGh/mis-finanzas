@@ -176,3 +176,11 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 **Consecuencias.** Cubre gastos, pagos de tarjeta, depósitos y movimientos de ahorro; no cubre la edición en línea de montos ni «Cargar recurrentes» (pendiente).
 
 **Ampliación (17 nov. 2026):** si la cuenta tiene saldo parcial, el aviso ofrece dividir el pago: dos filas normales (lo que alcanza + el resto en otra cuenta). Se descartó un campo «pago dividido» en los datos por no tocar la estructura.
+
+## ADR-014 · Tres grupos de categorías: Necesidades, Deseos y Ahorro e inversión (nov. 2026)
+
+**Decisión:** la persona clasifica sus categorías de gasto en uno de tres grupos (Ajustes → Categorías de gastos) y el mes muestra «¿Dónde gastas más?»: el total y el porcentaje por grupo, y dentro de cada uno sus categorías de mayor a menor. La regla 50/30/20 usa la misma clasificación.
+
+**Cómo:** `cfg.catGrupo` = {nombre en minúscula: need|want|ai|-} (`saneCfg` descarta lo inválido). Sin clasificar, el gasto sigue su sección (fijos → necesidades, cotidianos → deseos) y los nombres «Necesidad…»/«Deseo…» de siempre: así los números de quien no clasifica no cambian. El grupo «Ahorro e inversión» recibe automáticamente lo ahorrado e invertido del mes y también los gastos de categorías que la persona ponga ahí. Sin campos nuevos en los movimientos ni en Supabase (la clasificación va en la configuración, que ya se sincroniza).
+
+**Descartado:** clasificar cada movimiento por separado (más trabajo para la persona) y pre-clasificar categorías por nombre (cambiaría números sin avisar).
