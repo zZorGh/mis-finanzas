@@ -226,3 +226,5 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 **Fase 2 (18 nov. 2026):** el acceso pasa a pantalla partida en escritorio y el Resumen a bento con la cuadrícula de 12 columnas que ya tiene «Personalizar» (anchos 7/5, 8/4, 4/4/4, 7/5), sin masonry y sin tocar el modelo de datos. Quedan para después el hero del mes a pantalla completa y el bento del mes.
 
 **Fase 3 (18 nov. 2026):** la pantalla del mes en escritorio recibe el encabezado a pantalla completa (papel cuadriculado oscuro de borde a borde, el saldo disponible en tamaño editorial) y su bento sobre la misma cuadrícula de 12 columnas. Con eso los cinco patrones están en la landing y en la app (el masonry solo en la galería de la landing, por lo explicado arriba).
+
+**Fase 4 (18 nov. 2026):** Ajustes pasa de una tarjeta de ~2,600 px a tarjetas por tema en bento (con título propio y sin tocar el sistema de «Personalizar»), y el alta inicial usa el mismo panel partido que el acceso, con el recorrido de pasos a la vista. Se descartó reutilizar `.bcard` en Ajustes porque comparte el grupo de diseño `resumen` con el Resumen y mezclaría el orden que la persona guardó.
