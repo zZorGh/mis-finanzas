@@ -17,7 +17,7 @@ const W=p=>p.waitForTimeout(220);
 const abrir=async p=>{await p.click('#fab');await p.waitForSelector('#sheet');await p.waitForTimeout(150);};
 const manual=async p=>{await abrir(p);await p.click('[data-mode="manual"]');await W(p);};
 const mon=async p=>(await p.innerText('#scur')).trim();
-const gastoHasta=async p=>{await manual(p);await p.click('#stype [data-g="gasto"]');await W(p);await p.click('#ssub [data-t="hor"]');await W(p);await p.click('#ssrc [data-src="liq:0"]');await W(p);};
+const gastoHasta=async p=>{await manual(p);await p.click('#stype [data-g="gasto"]');await W(p);await p.click('#ssub [data-t="hor"]');await W(p);await p.click('#sgrp [data-sgrp="need"]');await p.waitForTimeout(230);await p.click('[data-scatskip]');await p.waitForTimeout(230);await p.click('#ssrc [data-src="liq:0"]');await W(p);};
 // toca el botón varias veces y devuelve la secuencia de monedas que fue mostrando (desde la inicial)
 const rota=async(p,veces)=>{const s=[await mon(p)];for(let i=0;i<veces;i++){await p.click('#scur');await W(p);s.push(await mon(p));}return s.join(' > ');};
 const ajustes=async p=>{await p.goto('http://127.0.0.1:8765/wrap-repo.html#ajustes');await p.waitForTimeout(800);};
@@ -75,7 +75,7 @@ const ajustes=async p=>{await p.goto('http://127.0.0.1:8765/wrap-repo.html#ajust
   await abrir(p);await p.click('[data-mode="auto"]');await W(p);await p.click('#smodesw');await W(p);
   T('el formulario completo (Cambiar a manual) rota igual',await rota(p,3)==='S/ > $ > € > S/');
   await p.keyboard.press('Escape');await p.waitForTimeout(200);
-  await p.click('[data-new="fij"]');await p.waitForSelector('#sheet');await p.click('[data-mode="manual"]');await W(p);await p.click('#ssrc [data-src="liq:0"]');await W(p);
+  await p.click('[data-new="fij"]');await p.waitForSelector('#sheet');await p.click('[data-mode="manual"]');await W(p);await p.click('#sgrp [data-sgrp="need"]');await W(p);await p.click('[data-scatskip]');await W(p);await p.click('#ssrc [data-src="liq:0"]');await W(p);
   T('desde «+ Agregar gasto fijo» también rota por todas',await step(p)==='form'&&await rota(p,3)==='S/ > $ > € > S/');
   await p.keyboard.press('Escape');await p.waitForTimeout(200);
   T('sin errores de JavaScript',p.errs.length===0);if(p.errs.length)console.log(p.errs);

@@ -184,3 +184,5 @@ miedo. A cambio, más lógica de reconciliación y un campo extra por movimiento
 **Cómo:** `cfg.catGrupo` = {nombre en minúscula: need|want|ai|-} (`saneCfg` descarta lo inválido). Sin clasificar, el gasto sigue su sección (fijos → necesidades, cotidianos → deseos) y los nombres «Necesidad…»/«Deseo…» de siempre: así los números de quien no clasifica no cambian. El grupo «Ahorro e inversión» recibe automáticamente lo ahorrado e invertido del mes y también los gastos de categorías que la persona ponga ahí. Sin campos nuevos en los movimientos ni en Supabase (la clasificación va en la configuración, que ya se sincroniza).
 
 **Descartado:** clasificar cada movimiento por separado (más trabajo para la persona) y pre-clasificar categorías por nombre (cambiaría números sin avisar).
+
+**Corrección (17 nov. 2026):** la clasificación no debía quedarse solo en Ajustes: se pregunta al registrar el gasto, como los demás pasos (grupo → categoría dentro del grupo). Elegir una categoría sin clasificar la deja en ese grupo. Ajustes sigue sirviendo para revisar o mover categorías.

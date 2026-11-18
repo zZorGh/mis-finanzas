@@ -40,6 +40,10 @@ const cerrar=async p=>{await p.keyboard.press('Escape');await p.waitForTimeout(2
   T('tras elegir Gasto, aparece solo «¿Qué tipo de gasto es?»',await step(p)==='sub'&&await vis(p,'#ssub')&&!(await vis(p,'#stype'))&&/tipo de gasto/.test(await p.innerText('#swq')));
   T('primero «Fijo» y al costado «Cotidiano»',await p.evaluate(()=>[...document.querySelectorAll('#ssub [data-t]')].map(b=>b.dataset.t).join()==='fij,hor')&&/Cotidiano/.test(await p.innerText('#ssub'))&&!/hormiga/i.test(await p.innerText('#sheet')));
   await p.click('#ssub [data-t="fij"]');await W(p);
+  T('luego pregunta «¿En qué grupo cae este gasto?» con los tres grupos',await step(p)==='grp'&&await vis(p,'#sgrp')&&await p.locator('#sgrp button').count()===3&&/Necesidades/.test(await p.innerText('#sgrp'))&&/Deseos/.test(await p.innerText('#sgrp'))&&/Ahorro e inversión/.test(await p.innerText('#sgrp'))&&!(await vis(p,'#ssub')));
+  await p.click('#sgrp [data-sgrp="need"]');await W(p);
+  T('después pregunta «¿En qué categoría?» y deja omitirla',await step(p)==='cat'&&/categoría/.test(await p.innerText('#swq'))&&await vis(p,'[data-scatskip]')&&!(await vis(p,'#sgrp')));
+  await p.click('[data-scatskip]');await W(p);
   T('luego pregunta de dónde sale el dinero',await step(p)==='src'&&await vis(p,'#ssrc')&&!(await vis(p,'#ssub')));
   await p.click('#ssrc [data-src="liq:0"]');await W(p);
   T('y por último pide monto y concepto, con un resumen de lo elegido',await step(p)==='form'&&await vis(p,'#sa')&&await vis(p,'#sd')&&!(await vis(p,'#stype'))&&/Gasto/.test(await p.innerText('#swsum'))&&/Fijo/.test(await p.innerText('#swsum'))&&/Yape/.test(await p.innerText('#swsum')));
@@ -104,11 +108,15 @@ const cerrar=async p=>{await p.keyboard.press('Escape');await p.waitForTimeout(2
   await p.click('[data-new="fij"]');await p.waitForSelector('#sheet');
   T('«+ Agregar gasto fijo» también pregunta Manual o Automático',await p.getAttribute('#sheet','data-mode')==='ask');
   await p.click('[data-mode="manual"]');await W(p);
-  T('en Manual salta el tipo y pregunta solo de dónde sale',await step(p)==='src');
+  T('en Manual salta el tipo y empieza por el grupo del gasto',await step(p)==='grp');
+  await p.click('#sgrp [data-sgrp="need"]');await W(p);await p.click('[data-scatskip]');await W(p);
+  T('y luego pregunta de dónde sale',await step(p)==='src');
   await p.click('#ssrc [data-src="liq:0"]');await W(p);
   T('y luego pide monto y concepto, ya como «Fijo»',await step(p)==='form'&&/Fijo/.test(await p.innerText('#swsum')));
   await p.click('[data-wz="back"]');await W(p);
   T('«Atrás» desde «Fijo» vuelve a su paso de cuenta',await step(p)==='src');
+  await p.click('[data-wz="back"]');await W(p);await p.click('[data-wz="back"]');await W(p);
+  T('«Atrás» atraviesa categoría y grupo hasta su primer paso',await step(p)==='grp');
   await p.click('[data-wz="back"]');await W(p);
   T('«Atrás» desde su primer paso vuelve a Manual/Automático',await p.getAttribute('#sheet','data-mode')==='ask');
   await p.click('[data-mode="auto"]');await W(p);await p.fill('#smsg','netflix 30 yape');await p.waitForTimeout(250);

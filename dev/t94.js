@@ -15,7 +15,7 @@ const vis=(p,s)=>p.locator(s).first().isVisible();
 const W=p=>p.waitForTimeout(230);
 const step=p=>p.getAttribute('#sheet','data-step');
 const manual=async p=>{await p.click('#fab');await p.waitForSelector('#sheet');await p.waitForTimeout(150);await p.click('[data-mode="manual"]');await W(p);};
-const gastoForm=async(p,i)=>{await manual(p);await p.click('#stype [data-g="gasto"]');await W(p);await p.click('#ssub [data-t="hor"]');await W(p);await p.click('#ssrc [data-src="liq:'+i+'"]');await W(p);};
+const gastoForm=async(p,i)=>{await manual(p);await p.click('#stype [data-g="gasto"]');await W(p);await p.click('#ssub [data-t="hor"]');await W(p);await p.click('#sgrp [data-sgrp="need"]');await p.waitForTimeout(230);await p.click('[data-scatskip]');await p.waitForTimeout(230);await p.click('#ssrc [data-src="liq:'+i+'"]');await W(p);};
 const lbl=p=>p.evaluate(()=>document.querySelector('#sheet [data-s="save"]').textContent.trim());
 const dis=p=>p.evaluate(()=>document.querySelector('#sheet [data-s="save"]').disabled);
 const aviso=p=>p.evaluate(()=>{const w=document.getElementById('sshort');return w&&w.classList.contains('on')&&w.offsetParent!==null&&getComputedStyle(w).display!=='none'?w.innerText:'';});

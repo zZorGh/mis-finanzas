@@ -67,7 +67,7 @@ const ingreso=async(p,monto,concepto,cuenta)=>{await abrir(p);await p.click('[da
   await p.keyboard.press('Escape');await p.waitForTimeout(200);
 
   // 7. Los gastos siguen descontando igual
-  await abrir(p);await p.click('[data-mode="manual"]');await W(p);await p.click('#stype [data-g="gasto"]');await W(p);await p.click('#ssub [data-t="hor"]');await W(p);await p.click('#ssrc [data-src="liq:0"]');await W(p);
+  await abrir(p);await p.click('[data-mode="manual"]');await W(p);await p.click('#stype [data-g="gasto"]');await W(p);await p.click('#ssub [data-t="hor"]');await W(p);await p.click('#sgrp [data-sgrp="need"]');await p.waitForTimeout(230);await p.click('[data-scatskip]');await p.waitForTimeout(230);await p.click('#ssrc [data-src="liq:0"]');await W(p);
   await p.fill('#sa','10');await p.fill('#sd','T91 gasto');await p.click('[data-s="save"]');await p.waitForTimeout(400);
   T('un gasto sigue descontando del saldo',igual(await liq0(p),s0+490));
 
