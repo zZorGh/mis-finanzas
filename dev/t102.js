@@ -26,7 +26,9 @@ const st=p=>p.evaluate(k=>{const o=JSON.parse(localStorage.getItem(k)||'{}');ret
   await p.click('#ob-back');await W(p);
   T('«← Atrás» vuelve al paso 2 y conserva lo escrito',/Paso 2 de 5/.test(await dlg(p))&&(await p.inputValue('#ob-s2'))==='1,200.50'&&(await p.inputValue('#ob-s0'))==='430');
   await p.click('#ob-go');await W(p);
-  await p.fill('#ob-b0','Interbank');await p.fill('#ob-c0','5000');await p.fill('#ob-d0','1200');await p.click('#ob-go');await W(p);
+  await p.fill('#ob-b0','Interbank');await p.fill('#ob-c0','5000');await p.fill('#ob-d0','1200');await p.fill('#ob-k0','40');await p.click('#ob-go');await W(p);
+  T('un día de corte fuera de 1–31 se rechaza',/del 1 al 31/.test(await p.innerText('#ob-err')));
+  await p.fill('#ob-k0','15');await p.fill('#ob-p0','5');await p.click('#ob-go');await W(p);
   T('paso 4: gasto fijo con concepto, monto, día y cuenta',/Paso 4 de 5/.test(await dlg(p))&&await p.locator('#ob-fc,#ob-fm,#ob-fd,#ob-fs').count()===4&&/BCP ahorro/.test(await p.innerText('#ob-fs')));
   await p.fill('#ob-fc','Alquiler');await p.click('#ob-more');await W(p);
   T('concepto sin monto: lo pide y no agrega',/Escribe el monto/.test(await p.innerText('#ob-err')));
@@ -37,6 +39,7 @@ const st=p=>p.evaluate(k=>{const o=JSON.parse(localStorage.getItem(k)||'{}');ret
   await p.click('#ob-go');await p.waitForTimeout(500);
   T('«Ir a mi mes» cierra el asistente y abre noviembre',await p.locator('#onbg').count()===0&&/noviembre/.test(await p.evaluate(()=>location.hash)));
   {const s=await st(p),m=s.S['2026'][10];
+   T('guarda el día de corte (15) y de pago (5) de la tarjeta',(s.cfg.corteDia||{}).bbva===15&&(s.cfg.pagoDia||{}).bbva===5);
    T('guarda nombres y saldos del mes actual (Yape 430, BCP ahorro 130, billetes 1,200.50)',s.cfg.liqNames[1]==='BCP ahorro'&&m.liq[0].m===430&&m.liq[1].m===130&&m.liq[2].m===1200.5);
    T('guarda la tarjeta: nombre, línea 5000 y deuda anterior 1200',s.cfg.bancos.bbva==='Interbank'&&s.cfg.credito.bbva===5000&&m.copen.bbva===1200);
    T('guarda los dos gastos fijos como recurrentes con su cuenta y su día',s.cfg.rec.length===2&&s.cfg.rec.some(r=>r.c==='Alquiler'&&r.m===800&&r.f===5&&r.src==='liq:0')&&s.cfg.rec.some(r=>r.c==='Internet'&&r.f===10&&r.src==='liq:1'));
