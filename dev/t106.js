@@ -26,7 +26,7 @@ const sinDesborde=p=>p.evaluate(()=>document.documentElement.scrollWidth<=docume
     T(w+' px: sin desborde horizontal',await sinDesborde(p));
     T(w+' px: sin errores de JavaScript',p.errs.length===0);if(p.errs.length)console.log(p.errs);
     if(w===1280){
-      const g={};for(const id of ['pre','dg','ing','fij','hor','bbva','bcp','oh','aho','inv','mc1','mc2','mc3','hm1','eur','tcm'])g[id]=await card(p,id);
+      const g={};for(const id of ['pre','dg','sem','ing','fij','hor','bbva','bcp','oh','aho','inv','mc1','mc2','mc3','hm1','eur','tcm'])g[id]=await card(p,id);
       T('todas las tarjetas del mes se ven',Object.values(g).every(Boolean));
       const fila=(...ids)=>ids.every(i=>Math.abs(g[i].y-g[ids[0]].y)<4);
       T('fila: presupuesto (7) y «¿Dónde gastas más?» (5)',fila('pre','dg')&&Math.abs(g.pre.w/g.dg.w-7/5)<0.15);
@@ -36,7 +36,7 @@ const sinDesborde=p=>p.evaluate(()=>document.documentElement.scrollWidth<=docume
       T('fila: los tres gráficos del mes',fila('mc1','mc2','mc3'));
       T('fila: gasto por día (8) y apuntes (4); el tipo de cambio es una franja entera debajo',fila('hm1','eur')&&g.hm1.w>g.eur.w&&g.tcm.w>g.hm1.w*1.4&&g.tcm.y>g.hm1.y+g.hm1.h-2);
       T('las tarjetas de una misma fila tienen la misma altura (sin escalones)',[['pre','dg'],['ing','fij','hor'],['bbva','bcp','oh'],['aho','inv'],['mc1','mc2','mc3']].every(f=>f.every(i=>Math.abs(g[i].h-g[f[0]].h)<4)));
-      T('cada fila empieza donde termina la anterior (sin huecos grandes)',(g.ing.y-(g.pre.y+g.pre.h))<40&&(g.bbva.y-(g.ing.y+g.ing.h))<40&&(g.aho.y-(g.bbva.y+g.bbva.h))<40&&(g.mc1.y-(g.aho.y+g.aho.h))<40&&(g.hm1.y-(g.mc1.y+g.mc1.h))<40);
+      T('cada fila empieza donde termina la anterior (sin huecos grandes)',(g.sem?(g.sem.y-(g.pre.y+g.pre.h))<40&&(g.ing.y-(g.sem.y+g.sem.h))<40:(g.ing.y-(g.pre.y+g.pre.h))<40)&&(g.bbva.y-(g.ing.y+g.ing.h))<40&&(g.aho.y-(g.bbva.y+g.bbva.h))<40&&(g.mc1.y-(g.aho.y+g.aho.h))<40&&(g.hm1.y-(g.mc1.y+g.mc1.h))<40);
       T('el botón «Pagar» de cada tarjeta queda abajo, alineado en las tres',await p.evaluate(()=>{const r=['bbva','bcp','oh'].map(k=>{const c=document.querySelector('[data-cid="'+k+'"]').getBoundingClientRect(),bt=document.querySelector('[data-cid="'+k+'"] .cardpay').getBoundingClientRect();return Math.round(c.bottom-bt.bottom);});return Math.max(...r)-Math.min(...r)<=3&&r[0]<40;}));
       // Personalizar sigue funcionando
       await p.click('button:has-text("Personalizar")');await p.waitForTimeout(500);

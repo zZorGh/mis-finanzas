@@ -33,9 +33,9 @@ const solo=async(p,grupo)=>{const v=await visibles(p,todas);return todas.every((
   T('los gráficos se dibujan al mostrarse (tienen tamaño)',await p.evaluate(()=>['mc1','mc2','mc3'].every(id=>{const c=document.getElementById(id);return c&&c.clientWidth>50&&c.clientHeight>50;})));
   await p.click('#mtabs [data-mtab="todo"]');await W(p);
   T('Todo: muestra todas las tarjetas, como la pantalla larga de siempre',(await visibles(p,todas)).every(Boolean));
-  T('en «Todo» la página vuelve a ser larga (más de 4,000 px) y en «Resumen» es corta (menos de 2,800 px)',await p.evaluate(()=>document.documentElement.scrollHeight)>4000);
+  T('en «Todo» la página vuelve a ser larga (más de 4,000 px) y en «Resumen» es corta (menos de 3,000 px)',await p.evaluate(()=>document.documentElement.scrollHeight)>4000);
   await p.click('#mtabs [data-mtab="resumen"]');await W(p);
-  T('en «Resumen» la página es corta (menos de 2,800 px; con la tarjeta de avisos suma ≈130 px)',await p.evaluate(()=>document.documentElement.scrollHeight)<2800);
+  T('en «Resumen» la página es corta (menos de 3,000 px; con la tarjeta de avisos y la de «Tu semana» suman ≈330 px)',await p.evaluate(()=>document.documentElement.scrollHeight)<3000);
 
   // Recordar la pestaña y mantenerla al cambiar de mes y al guardar
   await p.click('#mtabs [data-mtab="mov"]');await W(p);
