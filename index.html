@@ -2188,7 +2188,7 @@ function updateAuto(){
 }
 function closeSheet(){
   vozStop();
-  {const sh=document.getElementById('sheet');if(sh&&sh.dataset.mode&&ent&&!ent.saved)track('reg_abandono',sh.dataset.mode==='ask'?'elegir':sh.dataset.mode==='auto'?'auto':'manual:'+(sh.dataset.step||'completo'));}
+  {const sh=document.getElementById('sheet');if(sh&&sh.dataset.mode&&ent&&!ent.saved){const sa0=document.getElementById('sa'),con=sa0&&parseMonto(sa0.value)>0?':monto':':vacio',base=sh.dataset.mode==='ask'?'elegir':sh.dataset.mode==='auto'?'auto':'manual:'+(sh.dataset.step||'completo');track('reg_abandono',(base==='auto'||base==='manual:form')?base+con:base);}}
   ['sheet','sheetbg'].forEach(id=>{const e=document.getElementById(id);if(e)e.remove();});
   if(sheetFrom&&sheetFrom.focus&&document.body.contains(sheetFrom))sheetFrom.focus();sheetFrom=null;
 }
@@ -2196,8 +2196,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElement
 function saveSheet(more){
   if(!document.getElementById('sa')||!ent)return;
   {const sh0=document.getElementById('sheet');if(sh0&&sh0.dataset.mode==='auto'&&ent.multi&&ent.multi.length>1){saveMulti();return;}}
-  {const sh0=document.getElementById('sheet');if(sh0&&sh0.dataset.mode==='auto'&&(ent.t==='hor'||ent.t==='fij')&&!ent.src&&!(ent.multi&&ent.multi.length>1)&&parseMonto(document.getElementById('sa').value)>0){const d=document.getElementById('sdest');if(d){d.textContent='Elige de qué cuenta sale.';d.classList.add('err');}return;}}
-  {const sh0=document.getElementById('sheet');if(sh0&&sh0.dataset.mode==='auto'){const t0=ent.t;if(((t0==='hor'||t0==='fij')&&!ent.src)||(t0==='aho'&&!ent.from)||!(parseMonto(document.getElementById('sa').value)>0)){track('auto_fallback');setMode('manual');}}}
+  {const sh0=document.getElementById('sheet');if(sh0&&sh0.dataset.mode==='auto'&&(ent.t==='hor'||ent.t==='fij')&&!ent.src&&!(ent.multi&&ent.multi.length>1)&&parseMonto(document.getElementById('sa').value)>0){const d=document.getElementById('sdest');if(d){d.textContent='Elige de qué cuenta sale.';d.classList.add('err');}track('auto_fallback','sin_cuenta');return;}}
+  {const sh0=document.getElementById('sheet');if(sh0&&sh0.dataset.mode==='auto'){const t0=ent.t;if(((t0==='hor'||t0==='fij')&&!ent.src)||(t0==='aho'&&!ent.from)||!(parseMonto(document.getElementById('sa').value)>0)){track('auto_fallback',!(parseMonto(document.getElementById('sa').value)>0)?'sin_monto':'sin_cuenta');setMode('manual');}}}
   const g=id=>document.getElementById(id),amt=parseMonto(g('sa').value);
   const t=ent.t,gasto=t==='hor'||t==='fij',compra=t==='compra',pago=t==='pago';
   const err=t2=>{g('sdest').textContent=t2;g('sdest').classList.add('err');};
@@ -2605,7 +2605,7 @@ const SB_URL='https://lmjhlghwthydpeismulb.supabase.co',SB_KEY='sb_publishable_C
    Cuentan qué pantallas se usan y dónde se traba la gente. NUNCA llevan montos, conceptos, cuentas ni correo:
    solo un id aleatorio del dispositivo (cuadra-sid), el nombre del evento, un dato corto (modo, paso, tipo) y la versión.
    Apagado hasta que exista la tabla (TRACK_DEFAULT); cada persona puede apagarlo en Ajustes (cuadra-stats = 0/1). */
-const TRACK_DEFAULT=true,APPV='2026.11.16.2';
+const TRACK_DEFAULT=true,APPV='2026.11.19.1';
 /* En tu computadora (localhost, file) no se mide por defecto: así las pruebas y el desarrollo no ensucian las métricas reales. */
 const trLocal=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\]|)$/.test(location.hostname);
 const statsOn=()=>{let v=null;try{v=localStorage.getItem('cuadra-stats');}catch(e){}return v==='1'?true:v==='0'?false:(TRACK_DEFAULT&&!trLocal);};

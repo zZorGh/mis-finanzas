@@ -67,5 +67,16 @@ const todos=p=>[].concat(...p.posts);
   {const tx=await p.innerText('body');T('en inglés la tarjeta de privacidad está traducida',/Help improve MiS²oles with anonymous usage statistics/.test(tx)&&!/Ayudar a mejorar/.test(tx));}
   await p.context().close();
 
+  // 5. Por qué se abandona: Automático sin cuenta y último paso del manual, con o sin monto (solo un sí/no, nunca el monto)
+  p=await nueva(b,'1');
+  await p.click('#fab');await p.waitForSelector('#sheet');await p.click('[data-mode="auto"]');await W(p);await p.fill('#smsg','pan 8');await p.waitForTimeout(250);await p.click('[data-s="save"]');await p.waitForTimeout(400);await p.keyboard.press('Escape');await W(p);
+  await p.click('#fab');await p.waitForSelector('#sheet');await p.click('[data-mode="manual"]');await W(p);await p.click('#stype [data-g="gasto"]');await W(p);await p.click('#ssub [data-t="hor"]');await W(p);await p.click('#sgrp [data-sgrp="want"]');await p.waitForTimeout(230);await p.click('[data-scatskip]');await p.waitForTimeout(230);await p.click('#ssrc [data-src="liq:0"]');await p.waitForTimeout(300);await p.keyboard.press('Escape');await W(p);
+  await flush(p);{const e5=todos(p),d5=(ev,d)=>e5.some(x=>x.ev===ev&&x.dato===d);
+   T('Automático sin cuenta se anota como auto_fallback:sin_cuenta',d5('auto_fallback','sin_cuenta'));
+   T('abandonar Automático con monto: auto:monto',d5('reg_abandono','auto:monto'));
+   T('abandonar el último paso del manual sin monto: manual:form:vacio',d5('reg_abandono','manual:form:vacio'));
+   T('sigue sin viajar el monto ni el concepto',!/8|pan/i.test(JSON.stringify(e5)));}
+  await p.context().close();
+
   console.log('Total '+(ok+bad)+' ok '+ok+' fallas '+bad);await b.close();process.exit(bad?1:0);
 })().catch(e=>{console.log('ERR',e);process.exit(1);});
