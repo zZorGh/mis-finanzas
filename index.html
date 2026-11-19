@@ -1780,7 +1780,15 @@ function refreshMonth1(anim){
 }
 
 /* ---------- Registro rápido ---------- */
-const RULES=[['ing',/sueldo|ingreso|dep[oó]sito|pago recibido/],['aho',/ahorro|ahorr[eé]/],['inv',/inversi[oó]n|xtb|crypto|cripto/],['fij',/alquiler|luz|agua|internet|pensi[oó]n|universidad|usil|celular|servicio/],['hor',/.*/]];
+const RULES=[['ing',/sueldo|ingreso|dep[oó]sito|pago recibido|(?:^|\s)(?:cobr[eé]|recib[ií])(?=\s|$)|\bcobro\b|\bme\s+(?:lleg[oó]|pagaron|abonaron|depositaron|transfirieron)\b/],['aho',/ahorro|ahorr[eé]/],['inv',/inversi[oó]n|(?:^|\s)invert[ií](?=\s|$)|xtb|crypto|cripto/],['fij',/alquiler|luz|agua|internet|pensi[oó]n|universidad|usil|celular|servicio|\b(?:netflix|spotify|disney|hbo|cable|seguro|cuota|mensualidad|colegio|hipoteca|wifi)\b|suscripci[oó]n/],['hor',/.*/]];
+/* Quita del concepto lo que sobra al hablar («gasté en taxi» → taxi, «compré una polera por» → polera, «me llegó el sueldo de» → sueldo). */
+function limpiarConcepto(d){
+  d=String(d||'').trim();
+  d=d.replace(/^(?:me\s+)?almorc[eé](?=\s|$)/,'almuerzo').replace(/^(?:me\s+)?cen[eé](?=\s|$)/,'cena').replace(/^(?:me\s+)?desayun[eé](?=\s|$)/,'desayuno');
+  d=d.replace(/^(?:me\s+)?(?:gast[eé]|pagu[eé]|pago|pagar|compr[eé]|com[ií]|cobr[eé]|recib[ií]|invert[ií]|ahorr[eé]|deposit[eé]|llev[eé]|saqu[eé]|lleg[oó]|pagaron|abonaron|depositaron|transfirieron)(?:\s+|$)/,'');
+  for(let i=0;i<4;i++)d=d.replace(/^(?:el|la|los|las|un|una|unos|unas|de|del|en|por|para|al|a)\s+/,'').replace(/\s+(?:de|del|en|por|para|con|a|al|y|e|un|una|el|la|los|las)$/,'');
+  return d.trim();
+}
 const NAMES={ing:'Ingresos',aho:'Ahorros',inv:'Inversiones',fij:'Gastos fijos',hor:'Gastos cotidianos'};
 const todayStr=()=>now.getDate()+'-'+ABR[now.getMonth()].toLowerCase();
 /* Números en palabras («veinticinco», «treinta y cinco», «dos mil») → cifras. «un/una/uno» solo cuenta si va con una moneda («una luca»);
@@ -1858,9 +1866,16 @@ function parseUna(seg,accts){
     if(m&&(!best||nn.length>best.nlen))best={name:a.trim(),idx:m.index,len:m[0].length,nlen:nn.length};});
   if(best){w=best.name;rest=seg.slice(0,best.idx)+' '+seg.slice(best.idx+best.len);}
   else{const g=new RegExp(PREP_CTA+'\\b(yape|plin|efectivo)\\b','i').exec(seg);if(g){w=g[1].toLowerCase();rest=seg.slice(0,g.index)+' '+seg.slice(g.index+g[0].length);}}
+  let card='';
+  {const nt=normTxt(seg);Object.keys(BANKN).forEach(k=>{const n=normTxt(BANKN[k]).replace(/[^a-z0-9]/g,'');if(!card&&n.length>=2&&new RegExp('(?<![a-z0-9])'+escRe(n)+'(?![a-z0-9])').test(nt.replace(/!/g,'')))card=k;});
+    if(!card&&/\btarjeta\b/.test(seg)){const m=/tarjeta\s+(?:de\s+cr[eé]dito\s+)?([a-z0-9!]+)/i.exec(normTxt(seg)),nm=m&&m[1].replace(/[^a-z0-9]/g,'');if(nm)Object.keys(BANKN).forEach(k=>{if(!card&&normTxt(BANKN[k]).replace(/[^a-z0-9]/g,'')===nm)card=k;});}
+    /* si la persona tiene una cuenta con el mismo nombre que la tarjeta, gana la cuenta */
+    if(card&&best&&normTxt(best.name).replace(/[^a-z0-9]/g,'')===normTxt(BANKN[card]).replace(/[^a-z0-9]/g,''))card='';}
+  const pagoT=card&&/(?:^|\s)(?:pagu[eé]|pago|pagar|cancel[eé]|abon[eé])(?=\s|$)/.test(seg);
   const ant=/\b(antojos?|antojito|caprichos?)\b/.test(seg);
-  const desc=rest.replace(mt[0],'').replace(/\b(tarjeta|antojos?|antojito|caprichos?)\b/g,'').replace(/\s+/g,' ').replace(/^(?:y|e|de|en|por|con|desde|a)\s+|\s+(?:y|e|de|en|por|con|desde|a)$/g,'').trim();
-  return{amt,sec:ant?'hor':RULES.find(r=>r[1].test(seg))[0],name:desc?desc.charAt(0).toUpperCase()+desc.slice(1):'',pay:w,ant,cur};
+  if(card){rest=rest.replace(new RegExp('(?:\\b(?:la|mi|de|con|en|a)\\s+)*(?:\\btarjeta\\s+(?:de\\s+cr[eé]dito\\s+)?)?'+escRe(BANKN[card].replace(/!/g,''))+'!?','i'),' ').replace(/\btarjeta\b/g,' ');}
+  const desc=limpiarConcepto(rest.replace(mt[0],'').replace(/\b(tarjeta|antojos?|antojito|caprichos?)\b/g,'').replace(/\s+/g,' ').replace(/^(?:y|e|de|en|por|con|desde|a)\s+|\s+(?:y|e|de|en|por|con|desde|a)$/g,'').trim());
+  return{amt,sec:card?(pagoT?'pago':'compra'):ant?'hor':RULES.find(r=>r[1].test(seg))[0],name:desc?desc.charAt(0).toUpperCase()+desc.slice(1):'',pay:w,ant,cur,card};
 }
 /* Devuelve el primer gasto de la frase (como siempre) y, si la frase trae varios, la lista en \`multi\`; también «ayer/anteayer» (ago) y la moneda dicha (cur: S/, $ o €). */
 function parseMsg(text,accts){
@@ -1874,7 +1889,7 @@ function parseMsg(text,accts){
   for(let k=items.length-1;k>=0;k--)if(!items[k].pay)items[k].pay=(items[k+1]&&items[k+1].pay)||'';
   const gastos=items.length>1&&items.every(x=>x.sec==='hor'||x.sec==='fij');
   const p=items[0];cur=p.cur||'';
-  return{amt:p.amt,sec:p.sec,name:p.name,pay:p.pay,ant:p.ant,ago,cur,multi:gastos?items:null};
+  return{amt:p.amt,sec:p.sec,name:p.name,pay:p.pay,ant:p.ant,card:p.card||'',ago,cur,multi:gastos?items:null};
 }
 function addRow(yr,mi,sec,r){
   const arr=S[yr][mi][sec],k=arr.findIndex(x=>!x.c&&!x.m);
@@ -2181,8 +2196,9 @@ function updateAuto(){
   const fchH=ent.ago?'<div class="pvm"><span>'+(ent.ago===1?'Ayer':'Anteayer')+'</span> · <span class="k">'+ent.day+' '+ABR[+ent.mo].toLowerCase()+'</span></div>':'';
   if(ent.multi&&ent.multi.length>1){pv.innerHTML=multiHtml()+fchH;return;}
   const esIngGasto=ent.t==='hor'||ent.t==='fij'||ent.t==='ing',cur=entCur();
-  const chips=esIngGasto?'<div class="pvf"><span class="k">Moneda</span><div class="grp" role="radiogroup" aria-label="Moneda">'+chipH([['S/','Soles (S/)'],['$','Dólares ($)'],['€','Euros (€)']],cur,'acur',true)+'</div></div>'
-    +'<div class="pvf"><span class="k">'+(ent.t==='ing'?'Entra a':'Sale de')+'</span><div class="grp" role="radiogroup" aria-label="Cuenta">'+chipH(srcList(ent.t==='ing'?'No sumar a ninguna cuenta':'No descontar').map(x=>[x[0],x[1].split(' · ')[0]]),ent.src||'','aacct',true)+'</div>'+(!ent.src&&ent.t!=='ing'?'<div class="ms err" role="status">Elige de qué cuenta sale.</div>':'')+'</div>':'';
+  const chipsPago=ent.t==='pago'?'<div class="pvf"><span class="k">Sale de</span><div class="grp" role="radiogroup" aria-label="Cuenta">'+chipH(srcList(false).filter(x=>x[0].slice(0,4)==='liq:').map(x=>[x[0],x[1].split(' · ')[0]]),ent.src||'','aacct',true)+'</div>'+(!ent.src?'<div class="ms err" role="status">Elige de qué cuenta sale.</div>':'')+'</div>':'';
+  const chips=chipsPago||(esIngGasto?'<div class="pvf"><span class="k">Moneda</span><div class="grp" role="radiogroup" aria-label="Moneda">'+chipH([['S/','Soles (S/)'],['$','Dólares ($)'],['€','Euros (€)']],cur,'acur',true)+'</div></div>'
+    +'<div class="pvf"><span class="k">'+(ent.t==='ing'?'Entra a':'Sale de')+'</span><div class="grp" role="radiogroup" aria-label="Cuenta">'+chipH(srcList(ent.t==='ing'?'No sumar a ninguna cuenta':'No descontar').map(x=>[x[0],x[1].split(' · ')[0]]),ent.src||'','aacct',true)+'</div>'+(!ent.src&&ent.t!=='ing'?'<div class="ms err" role="status">Elige de qué cuenta sale.</div>':'')+'</div>':'');
   const conv=(esIngGasto&&cur!=='S/')?'<div class="pvm"><span class="k">Equivale a</span> <b>'+esc(fmt(Math.round(amt*rateC(cur,S[ent.yr][+ent.mo])*100)/100))+'</b> <span class="k">al tipo de cambio del mes</span></div>':'';
   pv.innerHTML='<div class="k">Se guardará así</div><div class="pvl"><b>'+esc(cur+' '+num2(amt))+'</b><span>'+esc(g('sd').value.trim()||'Sin descripción')+'</span></div>'+conv+chips+'<div class="pvm"><span>'+esc((ent.t==='hor'&&ent.ant?'Antojo':(SUBN[ent.t]||['Movimiento'])[0]))+'</span>'+((ent.t==='compra'||ent.t==='pago')&&ent.card?' · <span>'+esc(BANKN[ent.card]||'')+'</span>':'')+'</div>'+fchH;
 }
@@ -2196,7 +2212,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElement
 function saveSheet(more){
   if(!document.getElementById('sa')||!ent)return;
   {const sh0=document.getElementById('sheet');if(sh0&&sh0.dataset.mode==='auto'&&ent.multi&&ent.multi.length>1){saveMulti();return;}}
-  {const sh0=document.getElementById('sheet');if(sh0&&sh0.dataset.mode==='auto'&&(ent.t==='hor'||ent.t==='fij')&&!ent.src&&!(ent.multi&&ent.multi.length>1)&&parseMonto(document.getElementById('sa').value)>0){const d=document.getElementById('sdest');if(d){d.textContent='Elige de qué cuenta sale.';d.classList.add('err');}track('auto_fallback','sin_cuenta');return;}}
+  {const sh0=document.getElementById('sheet');if(sh0&&sh0.dataset.mode==='auto'&&(ent.t==='hor'||ent.t==='fij'||ent.t==='pago')&&!ent.src&&!(ent.multi&&ent.multi.length>1)&&parseMonto(document.getElementById('sa').value)>0){const d=document.getElementById('sdest');if(d){d.textContent='Elige de qué cuenta sale.';d.classList.add('err');}track('auto_fallback','sin_cuenta');return;}}
   {const sh0=document.getElementById('sheet');if(sh0&&sh0.dataset.mode==='auto'){const t0=ent.t;if(((t0==='hor'||t0==='fij')&&!ent.src)||(t0==='aho'&&!ent.from)||!(parseMonto(document.getElementById('sa').value)>0)){track('auto_fallback',!(parseMonto(document.getElementById('sa').value)>0)?'sin_monto':'sin_cuenta');setMode('manual');}}}
   const g=id=>document.getElementById(id),amt=parseMonto(g('sa').value);
   const t=ent.t,gasto=t==='hor'||t==='fij',compra=t==='compra',pago=t==='pago';
@@ -2312,10 +2328,10 @@ function sheetInput(e){
   const t=e.target,g=id=>document.getElementById(id);
   if(t.id==='smsg'){if(!g('sa')||!g('sd'))return;/* el dictado puede llegar cuando la ventana ya cambió de modo o se cerró */const mm=(S[ent.yr]||[])[+ent.mo]||{liq:[]},p=parseMsg(t.value,(mm.liq||[]).map(r=>(r.c||'').trim()));ent.multi=null;
     if(!p){g('sa').value='';g('sd').value='';aplicarFecha(0);syncSheet();}
-    if(p){const sec0=ent.lock||p.sec;g('sa').value=String(p.amt);g('sd').value=p.name;ent.t=sec0;ent.ant=(sec0==='hor'&&p.ant)?1:0;
+    if(p){const sec0=ent.lock||p.sec;if((sec0==='compra'||sec0==='pago')&&p.card)ent.card=p.card;g('sa').value=String(p.amt);g('sd').value=p.name;ent.t=sec0;ent.ant=(sec0==='hor'&&p.ant)?1:0;
       if(sec0==='aho'){g('sd').value='';ent.ax=ent.ax||'dep';const low=t.value.toLowerCase(),ac=ahoAccts(ent.yr,+ent.mo).find(x=>low.indexOf(x.c.toLowerCase())>=0);if(ac)ent.from='aho:'+ac.c;}
       const srcId=w=>{if(!w)return'';const wl=normTxt(w),ls=srcList().filter(x=>x[0].slice(0,4)==='liq:'),nm=x=>normTxt(x[1].split(' · ')[0]);const li=ls.find(x=>nm(x)===wl)||ls.find(x=>nm(x).indexOf(wl)===0);return li?li[0]:'';};
-      const sid=srcId(p.pay);if(sid&&(sec0==='hor'||sec0==='fij'||sec0==='ing'))ent.src=sid;
+      const sid=srcId(p.pay);if(sec0==='hor'||sec0==='fij'||sec0==='ing'||sec0==='pago')ent.src=sid;
       if(p.cur){ent.cur=p.cur;ent.autoCur=1;}else if(ent.autoCur){ent.cur='';ent.autoCur=0;}
       aplicarFecha(p.ago);
       if(p.multi&&!ent.lock){ent.multi=p.multi.map(it=>Object.assign({},it,{src:srcId(it.pay)}));ent.cur='';ent.autoCur=0;}
