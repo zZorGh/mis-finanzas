@@ -72,5 +72,15 @@ const guardar=async p=>{await p.click('[data-s="save"]');await p.waitForTimeout(
   {const x=await p.innerText('[data-cid="ant"]');T('en inglés se traduce («Impulse buys», «Worth it», «Not worth it»)',/Impulse buys/.test(x)&&/Worth it/.test(x)&&/Not worth it/.test(x)&&/1 impulse buy/.test(x));}
   await p.context().close();
 
+  // 5. Aviso «¿Valió la pena?» justo al guardar un antojo
+  p=await nueva(b);await auto(p,'antojo galleta 8 yape');await guardar(p);
+  T('al guardar un antojo, el aviso pregunta «¿Valió la pena?» con Sí y No',/¿Valió la pena\?/.test(await p.innerText('#toast'))&&(await p.locator('#toast [data-vpq]').count())===2);
+  await p.click('#toast [data-vpq="0"]');await p.waitForTimeout(300);
+  T('responder «No» guarda v=0 en la fila y lo confirma',(await fila(p,'Galleta')).v===0&&/no valió la pena/.test(await p.innerText('#toast')));
+  await p.keyboard.press('Control+z');await p.waitForTimeout(300);
+  T('Deshacer sigue funcionando tras responder (la fila se quita)',(await fila(p,'Galleta'))===null);
+  await auto(p,'almuerzo 15 yape');await guardar(p);
+  T('un gasto que no es antojo no pregunta nada',(await p.locator('#toast [data-vpq]').count())===0);
+  await p.context().close();
   console.log('Total '+(ok+bad)+' ok '+ok+' fallas '+bad);await b.close();process.exit(bad?1:0);
 })().catch(e=>{console.log('ERR',e);process.exit(1);});
