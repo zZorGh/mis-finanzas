@@ -2310,7 +2310,7 @@ function aplicarFecha(ago){
 }
 function sheetInput(e){
   const t=e.target,g=id=>document.getElementById(id);
-  if(t.id==='smsg'){const mm=(S[ent.yr]||[])[+ent.mo]||{liq:[]},p=parseMsg(t.value,(mm.liq||[]).map(r=>(r.c||'').trim()));ent.multi=null;
+  if(t.id==='smsg'){if(!g('sa')||!g('sd'))return;/* el dictado puede llegar cuando la ventana ya cambió de modo o se cerró */const mm=(S[ent.yr]||[])[+ent.mo]||{liq:[]},p=parseMsg(t.value,(mm.liq||[]).map(r=>(r.c||'').trim()));ent.multi=null;
     if(!p){g('sa').value='';g('sd').value='';aplicarFecha(0);syncSheet();}
     if(p){const sec0=ent.lock||p.sec;g('sa').value=String(p.amt);g('sd').value=p.name;ent.t=sec0;ent.ant=(sec0==='hor'&&p.ant)?1:0;
       if(sec0==='aho'){g('sd').value='';ent.ax=ent.ax||'dep';const low=t.value.toLowerCase(),ac=ahoAccts(ent.yr,+ent.mo).find(x=>low.indexOf(x.c.toLowerCase())>=0);if(ac)ent.from='aho:'+ac.c;}
