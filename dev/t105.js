@@ -39,14 +39,14 @@ const vis=(p,s)=>p.locator(s).first().isVisible();
 
   // Resumen en bento
   p=await resumen(b,1280);
-  const g={};for(const id of ['rf','rk','r1','r2','r3','r4','ins','r6','r7','r5','mg','rm']){g[id]=await box(p,id);}
+  const g={};for(const id of ['rf','rk','r1','r2','r3','r4','ins','dga','r6','r7','r5','mg','rm']){g[id]=await box(p,id);}
   T('todas las tarjetas del Resumen se ven',Object.values(g).every(Boolean));
   const mismaFila=(...ids)=>ids.every(i=>Math.abs(g[i].y-g[ids[0]].y)<4);
   T('fila 1: fondo de emergencia (7) e indicadores (5) lado a lado',mismaFila('rf','rk')&&g.rf.w>g.rk.w&&Math.abs(g.rf.w/g.rk.w-7/5)<0.15);
   T('fila 2: gráfico principal (8) y ahorro sobre el ingreso (4)',mismaFila('r1','r2')&&Math.abs(g.r1.w/g.r2.w-2)<0.2);
   T('fila 3: tres tarjetas en fila (cotidianos, en qué se fue, en resumen)',mismaFila('r3','r4','ins')&&Math.abs(g.r3.w-g.r4.w)<4&&Math.abs(g.r4.w-g.ins.w)<4);
   T('fila 4: a dónde fue (7) y capital acumulado (5)',mismaFila('r6','r7')&&g.r6.w>g.r7.w);
-  T('cada fila empieza donde termina la anterior, con «Metas de ahorro» como franja entera (sin huecos grandes)',g.r1.y>g.rf.y&&g.r3.y>g.r1.y&&g.r6.y>g.r3.y&&(g.r1.y-(g.mg.y+g.mg.h))<40&&(g.mg.y-(g.rf.y+Math.max(g.rf.h,g.rk.h)))<40&&(g.r3.y-(g.r1.y+Math.max(g.r1.h,g.r2.h)))<40&&(g.r6.y-(g.r3.y+Math.max(g.r3.h,g.r4.h,g.ins.h)))<40);
+  T('cada fila empieza donde termina la anterior, con «Metas de ahorro» y «¿Dónde gastaste más?» como franjas enteras (sin huecos grandes)',g.r1.y>g.rf.y&&g.r3.y>g.r1.y&&g.dga.y>g.r3.y&&g.r6.y>g.dga.y&&(g.r1.y-(g.mg.y+g.mg.h))<40&&(g.mg.y-(g.rf.y+Math.max(g.rf.h,g.rk.h)))<40&&(g.r3.y-(g.r1.y+Math.max(g.r1.h,g.r2.h)))<40&&(g.dga.y-(g.r3.y+Math.max(g.r3.h,g.r4.h,g.ins.h)))<40&&(g.r6.y-(g.dga.y+g.dga.h))<40);
   T('los indicadores van en dos columnas (2×2)',await p.evaluate(()=>{const k=[...document.querySelectorAll('[data-cid="rk"] .kpi')].map(e=>Math.round(e.getBoundingClientRect().x));return k.length===4&&new Set(k).size===2;}));
   T('el número del fondo de emergencia es grande (editorial)',await p.evaluate(()=>parseFloat(getComputedStyle(document.querySelector('[data-cid="rf"] .fond b')).fontSize)>=54));
   {const w=await p.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth);T('sin desborde horizontal a 1280 px',w);}
