@@ -3369,9 +3369,9 @@ function repData(a,b){
 function repWho(){return {nombre:(cfg.titular||'').trim(),correo:(typeof sbUser!=='undefined'&&sbUser&&sbUser.email)||''};}
 /* Reportes en segundo plano: el armado de PDF y Excel (lo pesado) corre en un Web Worker (reportes.js)
    y la pantalla sigue respondiendo. Si el navegador no permite workers, se carga el mismo archivo y corre aquí. */
-const REP_JS='reportes.js?v=3';
+const REP_JS='reportes.js?v=4';
 function mkReport(fmt,R,o){
-  const ctx={MES,who:repWho()},job={fmt,R,o:{det:o.det},ctx};
+  const ctx={MES,who:repWho(),lang:LANG},job={fmt,R,o:{det:o.det},ctx};
   const viaMain=()=>new Promise((res,rej)=>{
     if(window.MSRep)return res();
     const s=document.createElement('script');s.src=REP_JS;s.onload=()=>res();s.onerror=()=>{s.remove();rej(new Error('No pude cargar lo necesario para crear el reporte. Revisa tu conexión e intenta otra vez.'));};document.head.appendChild(s);
@@ -3429,8 +3429,8 @@ function openReport(){
     if(b.dataset.s==='rep'){const R=repData(st.a,st.b);if(!R)return;const msg=document.getElementById('rp-m');
       b.disabled=true;const t0=b.textContent;b.textContent='Preparando…';msg.textContent='';
       try{const blob=await mkReport(st.f,R,st);
-        const f0=R.first,f1=R.last,tag=f0.y+'-'+String(f0.i+1).padStart(2,'0')+(f0===f1?'':'_a_'+f1.y+'-'+String(f1.i+1).padStart(2,'0'));
-        const name='estado-de-cuenta_'+tag+'.'+(st.f==='pdf'?'pdf':'xlsx');
+        const f0=R.first,f1=R.last,tag=f0.y+'-'+String(f0.i+1).padStart(2,'0')+(f0===f1?'':(LANG==='en'?'_to_':'_a_')+f1.y+'-'+String(f1.i+1).padStart(2,'0'));
+        const name=(LANG==='en'?'account-statement_':'estado-de-cuenta_')+tag+'.'+(st.f==='pdf'?'pdf':'xlsx');
         await dlBlob(name,blob);msg.textContent='Listo: '+name;toast('Reporte listo: '+name);}
       catch(err){msg.textContent=err&&err.code==='user_declined'?'Cancelaste la descarga.':((err&&err.message)||'No pude crear el reporte.');msg.style.color='var(--bad)';}
       finally{b.disabled=false;b.textContent=t0;}}
