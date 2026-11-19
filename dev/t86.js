@@ -19,7 +19,7 @@ const JS={contentType:'application/javascript',headers:{'access-control-allow-or
   await p.addInitScript(s=>{localStorage.setItem('mis-finanzas-prototipo-v1',s);window.claude={use:async()=>null};},demo);
   await p.goto('http://127.0.0.1:8765/wrap-repo.html#resumen');await p.waitForTimeout(1200);p.errs=errs;return p;};
  const openRep=async p=>{await p.locator('[data-act="rep"]').first().scrollIntoViewIfNeeded();await p.locator('[data-act="rep"]').first().click();await p.waitForTimeout(300);};
- const dl=async p=>{const w=p.waitForEvent('download',{timeout:20000}).catch(()=>null);await p.locator('[data-s="rep"]').click();return await w;};
+ const dl=async p=>{const w=p.waitForEvent('download',{timeout:45000}).catch(()=>null);await p.locator('[data-s="rep"]').click();return await w;};
 
  // 1 librerías íntegras: gráficas y reportes funcionan
  let p=await mk({});

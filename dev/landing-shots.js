@@ -23,7 +23,7 @@ const hist=[[0,404],[1,401],[2,398],[5,391]].map(([n,f])=>({dia:dia(n),tipo:'dia
   const abrir=async()=>{await p.click('#fab');await p.waitForSelector('#sheet');await man(p);};
 
   await go('#resumen');await shot('resumen');
-  await go('#noviembre');await shot('mes');
+  await go('?tabs=on#noviembre');await shot('mes');await go('#noviembre');
   const pausa=()=>p.waitForTimeout(260);
   const ask=async()=>{await p.click('#fab');await p.waitForSelector('#sheet');await pausa();};
   // registrar en modo Automático: la frase y su tarjeta de confirmación
