@@ -59,6 +59,15 @@ async function buildXlsx(R,o){
   /* Categorías */
   const ca=wb.addWorksheet('Gastos por categoría');hdr(ca,[['Categoría','c',30],['Monto (S/)','v',16],['% del gasto','p',12]]);
   R.cat.forEach(x=>ca.addRow({c:x.c,v:x.v,p:R.T.gas?x.v/R.T.gas:0}));fmtCols(ca,['v']);fmtCols(ca,['p'],'0.0%');total(ca,'Total',['v'],R.cat.length,{v:R.cat.reduce((a,x)=>a+x.v,0)});setup(ca,false);
+  /* Gastos por grupo */
+  if(R.grupos&&R.grupos.length){const gr=wb.addWorksheet('Gastos por grupo');hdr(gr,[['Grupo','g',24],['Categoría','c',28],['Monto (S/)','v',16],['% del total','p',12]]);
+    R.grupos.forEach(g=>{const x=gr.addRow({g:g.n,c:'Subtotal del grupo',v:g.t,p:R.gT?g.t/R.gT:0});x.font={bold:true};g.l.forEach(e=>gr.addRow({g:'',c:e.c,v:e.v,p:R.gT?e.v/R.gT:0}));});
+    const tr=gr.addRow({g:'Total',c:'',v:R.gT,p:R.gT?1:0});tr.font={bold:true};tr.eachCell(c=>{c.border={top:{style:'thin'}};});fmtCols(gr,['v']);fmtCols(gr,['p'],'0.0%');setup(gr,false);
+    const nx=gr.addRow({});nx.getCell(1).value='Incluye gastos fijos, variables, ahorro e inversión. Una categoría sin clasificar cuenta como necesidad (fijos) o deseo (variables); los antojos cuentan como deseo.';nx.getCell(1).alignment={wrapText:true};gr.mergeCells(nx.number,1,nx.number,4);nx.height=30;}
+  /* Antojos */
+  if(R.ant&&R.ant.list.length){const an=wb.addWorksheet('Antojos');hdr(an,[['Fecha','fecha',12],['Mes','per',16],['Concepto','concepto',34],['Monto (S/)','sol',14],['¿Valió la pena?','vp',16]]);
+    R.ant.list.forEach(x=>an.addRow(x));fmtCols(an,['sol']);an.getColumn('fecha').numFmt='dd/mm/yyyy';total(an,'Total',['sol'],R.ant.list.length,{sol:R.ant.tot});
+    const nx=an.addRow({});nx.getCell(1).value='No valieron la pena: S/ '+R.ant.no.toFixed(2)+' (lo que habrías ahorrado). Valieron la pena: '+R.ant.si+'. Sin responder: '+R.ant.pend+'.';nx.getCell(1).alignment={wrapText:true};an.mergeCells(nx.number,1,nx.number,5);nx.height=30;setup(an,false);}
   /* Ahorros */
   const ah=wb.addWorksheet('Ahorros');hdr(ah,[['Cuenta','c',30],['Saldo inicial','ini',14],['Depósitos','dep',13],['Retiros','ret',13],['Ajustes','aj',12],['Traspasos','tr',12],['Saldo final','fin',14],['Tasa','tasa',14],['Ganancia estimada 12 meses','gana',16]]);
   R.ahorros.forEach(x=>ah.addRow(x));fmtCols(ah,['ini','dep','ret','aj','tr','fin','gana']);
@@ -110,6 +119,9 @@ async function buildPdf(R,o){
   AT('Resumen mensual',['Mes','Ingresos','Gastos fijos','Gastos variables','Total gastos','Ahorro neto','Inversión','Resultado'],R.mens.map(x=>[x.per,n2(x.ing),n2(x.fij),n2(x.hor),n2(x.gas),n2(x.aho),n2(x.inv),n2(x.res)]),
     ['Total',n2(R.T.ing),n2(R.T.fij),n2(R.T.hor),n2(R.T.gas),n2(R.T.aho),n2(R.T.inv),n2(R.T.res)],R5,{styles:{fontSize:8,cellPadding:1.6,font:'helvetica',textColor:INK,lineColor:LINE}});
   if(R.cat.length)AT('Gastos por categoría',['Categoría','Monto (S/)','% del gasto'],R.cat.map(x=>[x.c,n2(x.v),R.T.gas?(x.v/R.T.gas*100).toFixed(1)+'%':'']),['Total',n2(R.cat.reduce((a,x)=>a+x.v,0)),R.T.gas?'100.0%':''],{1:{halign:'right'},2:{halign:'right'}});
+  if(R.grupos&&R.grupos.length){const rows=[];R.grupos.forEach(g=>{rows.push([g.n,'Subtotal del grupo',n2(g.t),R.gT?(g.t/R.gT*100).toFixed(1)+'%':'']);g.l.forEach(e=>rows.push(['',e.c,n2(e.v),R.gT?(e.v/R.gT*100).toFixed(1)+'%':'']));});
+    AT('Gastos por grupo',['Grupo','Categoría','Monto (S/)','% del total'],rows,['Total','',n2(R.gT),R.gT?'100.0%':''],{2:{halign:'right'},3:{halign:'right'}},{didParseCell:h=>{if(h.section==='body'&&h.row.raw[1]==='Subtotal del grupo')h.cell.styles.fontStyle='bold';if((h.section==='head'||h.section==='foot'||h.section==='body')&&(h.column.index===2||h.column.index===3))h.cell.styles.halign='right';}});}
+  if(R.ant&&R.ant.list.length)AT('Antojos',['Fecha','Concepto','Monto (S/)','¿Valió la pena?'],R.ant.list.map(x=>[x.fecha?dmy(x.fecha):x.per,x.concepto,n2(x.sol),x.vp||'Sin responder']),['Total','',n2(R.ant.tot),''],{2:{halign:'right'}});
   if(R.ahorros.length)AT('Cuentas de ahorro',['Cuenta','Saldo inicial','Depósitos','Retiros','Ajustes','Traspasos','Saldo final','Tasa'],R.ahorros.map(x=>[x.c,n2(x.ini),n2(x.dep),n2(x.ret),n2(x.aj),n2(x.tr),n2(x.fin),x.tasa]),
     ['Total',n2(R.ahorros.reduce((a,x)=>a+x.ini,0)),n2(R.ahorros.reduce((a,x)=>a+x.dep,0)),n2(R.ahorros.reduce((a,x)=>a+x.ret,0)),n2(R.ahorros.reduce((a,x)=>a+x.aj,0)),n2(R.ahorros.reduce((a,x)=>a+x.tr,0)),n2(R.ahoTot),''],R5,{styles:{fontSize:8,cellPadding:1.6,font:'helvetica',textColor:INK,lineColor:LINE}});
   if(R.tarjetas.length)AT('Tarjetas de crédito',['Tarjeta','Moneda','Consumos','Pagos','Deuda al cierre','Deuda en S/'],R.tarjetas.map(x=>[x.n,ISO[x.cur]||x.cur,n2(x.cons),n2(x.pag),n2(x.deuda),n2(x.deudaS)]),['Total','','','','',n2(R.deudaTot)],{2:{halign:'right'},3:{halign:'right'},4:{halign:'right'},5:{halign:'right'}});
@@ -119,7 +131,7 @@ async function buildPdf(R,o){
     {0:{cellWidth:19},1:{cellWidth:30},5:{cellWidth:10},6:{halign:'right',cellWidth:19},7:{halign:'right',cellWidth:19}},{styles:{fontSize:7.3,cellPadding:1.4,font:'helvetica',textColor:INK,lineColor:LINE,overflow:'linebreak'}});
   /* Notas */
   const notes=['Gastos = gastos fijos (incluye pagos de tarjeta) + gastos variables. Las compras con tarjeta figuran en el detalle como «Cargo a tarjeta» y se cuentan como gasto cuando se pagan.',
-    'En el detalle, «Monto S/» es negativo cuando es un cargo (gastos, compras con tarjeta, inversión, depósitos a ahorro) y positivo cuando es un abono (ingresos, retiros de ahorro).',fxNote(R)].filter(Boolean);
+    'En el detalle, «Monto S/» es negativo cuando es un cargo (gastos, compras con tarjeta, inversión, depósitos a ahorro) y positivo cuando es un abono (ingresos, retiros de ahorro).',fxNote(R),R.ant&&R.ant.list.length?'Antojos: no valieron la pena S/ '+n2(R.ant.no)+' (lo que habrias ahorrado); valieron la pena '+R.ant.si+'; sin responder '+R.ant.pend+'.':'',R.grupos&&R.grupos.length?'Gastos por grupo: incluye gastos fijos y variables, ahorro e inversion. Los antojos cuentan como deseo.':''].filter(Boolean);
   if(y>H-45){doc.addPage();y=18;}
   doc.setFont('helvetica','bold');doc.setFontSize(9.5);doc.setTextColor(...INK);doc.text('Notas',M,y);y+=4.5;doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...MUT);
   notes.forEach(t=>{const ls=doc.splitTextToSize(pdfTxt('• '+t),W-2*M);if(y+ls.length*3.6>H-20){doc.addPage();y=18;}doc.text(ls,M,y);y+=ls.length*3.6+1.2;});

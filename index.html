@@ -3326,7 +3326,7 @@ function repData(a,b){
     };
     (m.ing||[]).forEach(r=>{if(usedRow(r))push('ing',r,'Ingreso','Entrada',r.c,liqN(r),r.k,1);});
     (m.fij||[]).forEach(r=>{if(usedRow(r))push('fij',r,r.card?'Pago de tarjeta '+SECN[r.card]:'Gasto fijo','Salida',r.c,liqN(r),r.card?'Pago de tarjetas':(r.k||'Sin categoría'),-1);});
-    (m.hor||[]).forEach(r=>{if(usedRow(r))push('hor',r,'Gasto variable','Salida',r.c,liqN(r),r.k||'Sin categoría',-1);});
+    (m.hor||[]).forEach(r=>{if(usedRow(r)){const an=r.t==='ant',o=push('hor',r,an?'Antojo':'Gasto variable','Salida',r.c,liqN(r),r.k||'Sin categoría',-1);if(an){o.ant=1;o.vp=r.v===1?'Sí':r.v===0?'No':'';}}});
     (m.inv||[]).forEach(r=>{if(usedRow(r))push('inv',r,'Inversión','Salida',r.c,liqN(r),r.k,-1);});
     (m.aho||[]).forEach(r=>{if(!usedRow(r))return;const k=ahoKind(r);
       const tipo={dep:'Depósito a ahorro',ret:'Retiro de ahorro',aj:'Ajuste de saldo de ahorro',tr:'Traspaso entre cuentas de ahorro'}[k];
@@ -3339,6 +3339,11 @@ function repData(a,b){
   /* Gastos por categoría (gastos fijos + variables, igual que «Total gastado») */
   const cm=new Map();mov.filter(x=>x.sec==='fij'||x.sec==='hor').forEach(x=>{const k=x.cat||'Sin categoría';cm.set(k,(cm.get(k)||0)+x.sol);});
   const cat=[...cm.entries()].map(([c,v])=>({c,v:r2(v)})).filter(x=>Math.abs(x.v)>=.005).sort((p,q)=>q.v-p.v);
+  /* Gastos por grupo (Necesidades, Deseos, Ahorro e inversión), igual que «¿Dónde gastas más?» */
+  const gm=gruposMes(ms.map(x=>x.m)),grupos=gm.G.map(g=>({n:g.n,t:r2(g.t),l:[...g.l.values()].map(e=>({c:e.n,v:r2(e.v)})).filter(e=>e.v>0).sort((p,q)=>q.v-p.v)})).filter(g=>g.t>0).sort((p,q)=>q.t-p.t),gT=r2(gm.total);
+  /* Antojos y si valieron la pena */
+  const antL=mov.filter(x=>x.ant).map(x=>({fecha:x.fecha,per:x.per,concepto:x.concepto||'Sin descripción',sol:x.sol,vp:x.vp})),
+    ant={list:antL,tot:r2(antL.reduce((a,x)=>a+x.sol,0)),no:r2(antL.filter(x=>x.vp==='No').reduce((a,x)=>a+x.sol,0)),si:antL.filter(x=>x.vp==='Sí').length,pend:antL.filter(x=>!x.vp).length};
   /* Ahorros por cuenta: saldo inicial + movimientos del período = saldo final */
   const pk=mkey(first.y,first.i)-1,py=String(Math.floor(pk/12)),pi=((pk%12)+12)%12;
   const ini=new Map(),fin=new Map();
@@ -3357,14 +3362,14 @@ function repData(a,b){
     return {k:ck,n:SECN[ck],cur,cons:r2(cons),pag:r2(pag),deuda:r2(deuda),deudaS:r2(deuda*rateC(cur,last.m))};}).filter(t=>t.cons||t.pag||t.deuda);
   const lc=curOf('liq'),liq=(last.m.liq||[]).filter(r=>(r.c||'').trim()).map(r=>({c:r.c.trim(),cur:lc,v:r2(r.m),s:r2((+r.m||0)*rateC(lc,last.m))}));
   const label=first===last?perOf(first.y,first.i):perOf(first.y,first.i)+' – '+perOf(last.y,last.i);
-  return {first,last,label,mens,mov,T,cat,ahorros,tarjetas,liq,fx:[...fx.values()],
+  return {first,last,label,mens,mov,T,cat,grupos,gT,ant,ahorros,tarjetas,liq,fx:[...fx.values()],
     ahoTot:r2(ahorros.reduce((s,a)=>s+a.fin,0)),deudaTot:r2(tarjetas.reduce((s,t)=>s+t.deudaS,0)),liqTot:r2(liq.reduce((s,l)=>s+l.s,0)),
     tasa:T.ing>0?(T.aho+T.inv)/T.ing:null};
 }
 function repWho(){return {nombre:(cfg.titular||'').trim(),correo:(typeof sbUser!=='undefined'&&sbUser&&sbUser.email)||''};}
 /* Reportes en segundo plano: el armado de PDF y Excel (lo pesado) corre en un Web Worker (reportes.js)
    y la pantalla sigue respondiendo. Si el navegador no permite workers, se carga el mismo archivo y corre aquí. */
-const REP_JS='reportes.js?v=2';
+const REP_JS='reportes.js?v=3';
 function mkReport(fmt,R,o){
   const ctx={MES,who:repWho()},job={fmt,R,o:{det:o.det},ctx};
   const viaMain=()=>new Promise((res,rej)=>{
