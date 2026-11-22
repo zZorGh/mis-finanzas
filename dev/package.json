@@ -7,7 +7,7 @@
     "test": "node paralelo.js --pruebas",
     "scan": "node paralelo.js --escaneos",
     "verificar": "node lint.js && node paralelo.js",
-    "test:serie": "node build-wrap.js && node t61.js wrap-repo.html && node t73.js && node t74.js && node t82.js && node t83.js && node t84.js && node t85.js && node t86.js && node t87.js && node t88.js && node t89.js && node t90.js && node t91.js && node t92.js && node t93.js && node t94.js && node t95.js && node t96.js && node t97.js && node t98.js && node t99.js && node t100.js && node t101.js && node t102.js && node t103.js && node t104.js && node t105.js && node t106.js && node t107.js && node t108.js && node t109.js && node t110.js && node t111.js && node t112.js && node t113.js && node t114.js && node t115.js && node t116.js && node t117.js && node t118.js",
+    "test:serie": "node build-wrap.js && node t61.js wrap-repo.html && node t73.js && node t74.js && node t82.js && node t83.js && node t84.js && node t85.js && node t86.js && node t87.js && node t88.js && node t89.js && node t90.js && node t91.js && node t92.js && node t93.js && node t94.js && node t95.js && node t96.js && node t97.js && node t98.js && node t99.js && node t100.js && node t101.js && node t102.js && node t103.js && node t104.js && node t105.js && node t106.js && node t107.js && node t108.js && node t109.js && node t110.js && node t111.js && node t112.js && node t113.js && node t114.js && node t115.js && node t116.js && node t117.js && node t118.js && node t119.js",
     "scan:serie": "node build-wrap.js && node scan.js && node scan-auth.js && node scan-web.js",
     "verificar:serie": "node lint.js && npm run test:serie && npm run scan:serie && node regla-de-oro.js sello",
     "capturas": "node landing-shots.js",

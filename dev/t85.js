@@ -25,10 +25,18 @@ const seed=(owner,dirty)=>`if(!sessionStorage.getItem('__seeded')){sessionStorag
  const ups=async p=>JSON.parse(await p.evaluate(()=>sessionStorage.getItem('__L')||'[]'));
  const ls=(p,k)=>p.evaluate(k=>localStorage.getItem(k),k);
 
- // 1 Otra cuenta entra en un equipo con datos de A (con cambios pendientes): no se suben y se borran.
+ // 1 Otra cuenta entra en un equipo con cambios pendientes de A: pregunta, no los sube ni los muestra.
  let p=await mk('uB','uA',true);await p.waitForTimeout(800);
  let L=await ups(p);
+ T('1 pregunta antes de borrar',await p.locator('#foreignbg').isVisible());
+ T('1 mientras pregunta conserva los datos de A',((await ls(p,K))||'').includes(MARK)&&(await ls(p,K+'-owner'))==='uA');
+ T('1 no muestra datos de A en la pregunta',!(await p.locator('#foreignbg').innerText()).includes(MARK));
  T('1 no sube datos de A a la cuenta de B',!L.some(x=>x[0]==='upsert'&&(x[1]||'').includes(MARK)));
+ await p.click('#fg-back');await p.waitForTimeout(1200);L=await ups(p);
+ T('1 «volver» cierra la sesión de B',L.some(x=>x[0]==='out'));
+ T('1 «volver» conserva lo de A para que A lo suba',((await ls(p,K))||'').includes(MARK)&&(await ls(p,K+'-owner'))==='uA');await p.context().close();
+ p=await mk('uB','uA',true);await p.waitForTimeout(800);p.once('dialog',d=>d.accept());await p.click('#fg-del');await p.waitForTimeout(1500);L=await ups(p);
+ T('1 borrar no sube datos de A',!L.some(x=>x[0]==='upsert'&&(x[1]||'').includes(MARK)));
  T('1 borra los datos de A del navegador',!((await ls(p,K))||'').includes(MARK));
  T('1 marca a B como dueño',(await ls(p,K+'-owner'))==='uB');
  T('1 conserva el estilo',(await ls(p,K+'-skin'))==='escalon');
