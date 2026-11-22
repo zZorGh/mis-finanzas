@@ -99,6 +99,9 @@ Ver `dev/README.md`. Resumen: `cd dev && npm install && npx playwright install c
 5. Si cambias `inicio/` o `legal.html`, revisa también en móvil. Las capturas de celular de la landing (`inicio/img/*.jpg`) y `og.jpg` salen de `cd dev && npm run capturas` (siempre con `demo.json`, nunca con datos reales); regenéralas si el diseño cambia y sube `CACHE` en `sw.js`, porque se sirven «caché primero».
 6. La landing es un documento completo: `<!doctype html>`, `<html lang="es-PE">` y `<meta name="viewport">` (sin ellos, en celulares se ve como escritorio en miniatura; `npm run scan` lo detecta emulando un teléfono real). La vista previa al compartir usa `inicio/img/og.jpg` (1200×630, datos de ejemplo); si cambian el titular o el diseño, regenérala. `sitemap.xml` va en la raíz.
 
+## Dominio y Cloudflare (en preparación, 22 nov. 2026)
+`dev/cf-build.js` genera `dist/` para Cloudflare Pages (comando `node dev/cf-build.js`, salida `dist`): solo archivos públicos, enlaces a misoles.pe y cabeceras en `_headers`. **No cambia los archivos del repo; GitHub Pages sigue siendo producción** hasta la mudanza. Si agregas un archivo público, añádelo a `PUBLICOS`. Falta: que el registro active misoles.pe, apuntar sus servidores a Cloudflare, conectar Pages, añadir la dirección en Supabase Auth (con aprobación) y avisar a quien use la dirección anterior, porque datos locales, app instalada y push dependen del origen. Prueba: `dev/t126.js`.
+
 ## Producto y negocio
 - Idea de precio (a validar con la beta): núcleo gratis; reportes, historial y extras de pago; punto de partida S/ 9.90 al mes o S/ 79 al año.
 - Siguiente paso de más valor: que 5–10 personas la usen unas semanas y medir si la usarían de verdad, antes de construir cobros.

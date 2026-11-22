@@ -15,3 +15,6 @@ dev/wrap-repo.html
 
 # tiempos de cada prueba (los usa dev/paralelo.js para repartir el trabajo)
 dev/.tiempos-pruebas.json
+
+# versión generada para Cloudflare Pages (dev/cf-build.js)
+dist/
