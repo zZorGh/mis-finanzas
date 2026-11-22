@@ -82,6 +82,8 @@ Selector en Ajustes → «Estilo de la app»; se guarda en `localStorage['mis-fi
 ## Probar
 Ver `dev/README.md`. Resumen: `cd dev && npm install && npx playwright install chromium`, luego `npm test` (regresión, ~3 min en paralelo) y `npm run scan` (contraste/desbordes/errores en todos los estilos). **Corre ambos antes de proponer un push.** Lección aprendida: una captura bonita no basta; los errores reales salieron al abrir estados secundarios (modo «Editar», diálogos) en cada estilo, claro y oscuro.
 
+**Calidad automática (21 nov. 2026):** `npm run lint` (`dev/lint.js`) busca errores reales, también dentro de los HTML, y corre primero en `npm run verificar`. GitHub Actions (`.github/workflows/revision.yml`, acciones fijadas por SHA) repite lint, regla de oro y `npm audit` en cada subida. Todo el texto va con LF (`.gitattributes`, `.editorconfig`).
+
 ## Publicar
 1. `git pull`; edita; `cd dev && npm run verificar` (= pruebas + escáneres en paralelo + sello; ~4 min; levanta solo el servidor si falta y **no edites la app mientras corre**). Las pruebas y el escáner salen con error si algo falla (en el escáner, solo los errores de JS: los avisos de contraste tienen falsos positivos conocidos).
 2. Muestra captura/demo al dueño y espera su OK.

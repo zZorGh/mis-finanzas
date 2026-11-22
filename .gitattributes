@@ -1,2 +1,14 @@
-# Los ganchos de git deben quedar con fin de linea LF o sh no los ejecuta
+# Todo el texto se guarda con fin de línea LF, también en Windows.
+* text=auto eol=lf
+
+# Los ganchos de git deben quedar con LF o sh no los ejecuta.
 .githooks/* text eol=lf
+
+# Binarios: git no los toca.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
