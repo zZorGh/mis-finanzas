@@ -2,6 +2,10 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; manifest-src 'self'; media-src 'none'; font-src 'self' data: https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/ https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/ https://cdn.jsdelivr.net/npm/exceljs@4.4.0/ https://cdn.jsdelivr.net/npm/jspdf@2.5.1/ https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/; worker-src 'self'; connect-src 'self' https://lmjhlghwthydpeismulb.supabase.co wss://lmjhlghwthydpeismulb.supabase.co https://open.er-api.com https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/ https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net/npm/exceljs@4.4.0/ https://cdn.jsdelivr.net/npm/jspdf@2.5.1/ https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/ https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/ https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<script>/* Anti-clickjacking: GitHub Pages no permite la cabecera frame-ancestors; dentro de un marco la app no se muestra. */
+if(window.top!==window.self){document.documentElement.style.display='none';try{window.top.location=window.self.location.href;}catch(e){}}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0B7A62">
 <title>MiS²oles</title>
@@ -1103,6 +1107,7 @@ function saneCfg(c0){
   if(['ask','auto','manual'].indexOf(o.modoReg)<0)o.modoReg='ask';
   {const cg={};if(isObj(o.catGrupo))Object.keys(o.catGrupo).forEach(k=>{const v=o.catGrupo[k];if(k!=='__proto__'&&['need','want','ai','-'].indexOf(v)>=0)cg[String(k).toLowerCase()]=v;});o.catGrupo=cg;}
   if('liqNames' in o){o.liqNames=Array.isArray(o.liqNames)?o.liqNames.filter(s=>typeof s==='string').map(s=>s.trim().replace(/\s+/g,' ').slice(0,28)).slice(0,8):[];if(!o.liqNames.length||o.liqNames.some(s=>!s))delete o.liqNames;}
+  if('bancos' in o){if(isObj(o.bancos)){const b={};['bbva','bcp','oh'].forEach(k=>{if(typeof o.bancos[k]==='string'){const n=o.bancos[k].replace(/[<>"'`]/g,'').trim().replace(/\s+/g,' ').slice(0,28);if(n)b[k]=n;}});o.bancos=b;}else delete o.bancos;}
   o.credito={bbva:fin(o.credito.bbva),bcp:fin(o.credito.bcp),oh:fin(o.credito.oh)};
   o.metas=o.metas.filter(isObj).map(g=>Object.assign({},g,{n:sStr(g.n),o:fin(g.o)}));
   o.rec=o.rec.map(saneRow).filter(Boolean);
@@ -1184,7 +1189,7 @@ function parseHash(){const h=location.hash.slice(1);if(h==='capturar'){view='cap
   view='resumen';}
 parseHash();
 
-const curOf=id=>((LAY.mes&&LAY.mes.c&&LAY.mes.c[id])||{}).cur||'S/';
+const curOf=id=>{const c=((LAY.mes&&LAY.mes.c&&LAY.mes.c[id])||{}).cur;return c==='$'||c==='€'?c:'S/';};
 const rateC=(c,m)=>c==='S/'?1:((m&&m.tc&&+m.tc[c])||(+((cfg.tc||{})[c]))||1);
 const rate=(id,m)=>rateC(curOf(id),m);
 const CURS=['S/','$','€'];
@@ -2532,7 +2537,18 @@ const TNAME={bar:'Barras',line:'Líneas',doughnut:'Dona',pie:'Torta'};
 const CNAME={ins:'En resumen',mg:'Metas de ahorro',rk:'Indicadores',r1:'Ingreso, gastado y ahorrado',r2:'Ahorro sobre el ingreso',r3:'Gastos cotidianos por mes',r4:'En qué se fue el año',r6:'A dónde fue tu ingreso',r7:'Capital acumulado',r5:'Año contra año',rf:'Fondo de emergencia',rm:'Meses',ra:'Ajustes',mk:'Indicadores',mc1:'Distribución del mes',mc2:'Contra el mes anterior',mc3:'Saldo por cuenta',tcm:'Tipo de cambio del mes',hm1:'Gasto por día',ing:'Ingresos',liq:'Liquidez',pre:'Presupuesto',eur:'Apuntes',fij:'Gastos fijos',hor:'Gastos cotidianos',bbva:'BBVA',bcp:'BCP',oh:'oh!',aho:'Ahorros',inv:'Inversiones'};
 const WOPT=[[3,'1/4 de ancho'],[4,'1/3 de ancho'],[6,'1/2 de ancho'],[8,'2/3 de ancho'],[9,'3/4 de ancho'],[12,'Ancho completo']];
 const HOPT=[[0,'Automático'],[160,'Compacto'],[240,'Normal'],[340,'Alto'],[460,'Muy alto']];
-let LAY={};try{LAY=JSON.parse(localStorage.getItem(LKEY))||{};}catch(e){LAY={};}
+/* El diseño también llega de un respaldo o de la nube: se valida como los datos (ids simples, ancho numérico, moneda conocida). */
+function saneLay(x){
+  const out={};if(!isObj(x))return out;
+  Object.keys(x).forEach(g=>{const v=x[g];if(g==='__proto__'||!isObj(v)){if(g!=='__proto__'&&!isObj(v))out[g]=(typeof v==='number'||typeof v==='boolean')?v:undefined;if(out[g]===undefined)delete out[g];return;}
+    const o=Object.assign({},v);o.order=Array.isArray(v.order)?v.order.filter(s=>typeof s==='string'&&/^[a-z0-9_-]{1,24}$/i.test(s)):[];
+    const c={};if(isObj(v.c))Object.keys(v.c).forEach(id=>{if(!/^[a-z0-9_-]{1,24}$/i.test(id)||!isObj(v.c[id]))return;const e=Object.assign({},v.c[id]);
+      if('cur' in e&&e.cur!=='S/'&&e.cur!=='$'&&e.cur!=='€')delete e.cur;if('w' in e&&!(Number.isInteger(+e.w)&&+e.w>=1&&+e.w<=12))delete e.w;else if('w' in e)e.w=+e.w;
+      if('ty' in e&&(typeof e.ty!=='string'||!/^[a-z0-9_-]{1,24}$/i.test(e.ty)))delete e.ty;c[id]=e;});
+    o.c=c;out[g]=o;});
+  return out;
+}
+let LAY={};try{LAY=saneLay(JSON.parse(localStorage.getItem(LKEY)));}catch(e){LAY={};}
 const localLay=()=>{try{localStorage.setItem(LKEY,JSON.stringify(LAY));}catch(e){}};
 const saveLay=()=>{localLay();queueSync();};
 const grp=()=>(view==='resumen'||view==='ajustes')?'resumen':'mes';
@@ -2641,13 +2657,13 @@ function liqAdd(name){
   cfg.liqNames=L.concat([name]);return true;
 }
 const BANK0={bbva:'BBVA',bcp:'BCP',oh:'oh!'};
-function applyBanks(){['bbva','bcp','oh'].forEach((k,i)=>{const n=String((cfg.bancos||{})[k]||'').trim()||BANK0[k];BANKN[k]=n;SECN[k]=n;BANCOS[i][1]=n;});}
+function applyBanks(){['bbva','bcp','oh'].forEach((k,i)=>{const n=String((cfg.bancos||{})[k]||'').replace(/[<>"'`]/g,'').trim()||BANK0[k];BANKN[k]=n;SECN[k]=n;BANCOS[i][1]=n;});}
 applyBanks();
 function applyNames(liq,cards){
   const cl=(v,fb)=>{v=String(v||'').trim().replace(/\s+/g,' ').slice(0,28);return v||fb;};
   const old=liqNamesAll();
   const nl=old.map((o,j)=>j<liq.length?cl(liq[j],o):o);
-  const nb={};['bbva','bcp','oh'].forEach((k,i)=>{nb[k]=cl(cards[i],BANKN[k]);});
+  const nb={};['bbva','bcp','oh'].forEach((k,i)=>{nb[k]=cl(String(cards[i]||'').replace(/[<>"'`]/g,''),BANKN[k]);});
   cfg.liqNames=nl;cfg.bancos=nb;
   Object.keys(S).forEach(y=>S[y].forEach(m=>{const l=m.liq||[];nl.forEach((n,j)=>{if(l[j])l[j].c=n;});}));
   applyBanks();
@@ -2740,7 +2756,7 @@ const SB_URL='https://lmjhlghwthydpeismulb.supabase.co',SB_KEY='sb_publishable_C
    Cuentan qué pantallas se usan y dónde se traba la gente. NUNCA llevan montos, conceptos, cuentas ni correo:
    solo un id aleatorio del dispositivo (cuadra-sid), el nombre del evento, un dato corto (modo, paso, tipo) y la versión.
    Apagado hasta que exista la tabla (TRACK_DEFAULT); cada persona puede apagarlo en Ajustes (cuadra-stats = 0/1). */
-const TRACK_DEFAULT=true,APPV='2026.11.19.2';
+const TRACK_DEFAULT=true,APPV='2026.11.21.1';
 /* En tu computadora (localhost, file) no se mide por defecto: así las pruebas y el desarrollo no ensucian las métricas reales. */
 const trLocal=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\]|)$/.test(location.hostname);
 const statsOn=()=>{let v=null;try{v=localStorage.getItem('cuadra-stats');}catch(e){}return v==='1'?true:v==='0'?false:(TRACK_DEFAULT&&!trLocal);};
@@ -2845,7 +2861,7 @@ function applyRemote(rows,conf){
   (conf||[]).forEach(r=>{
     try{
       if(r[0]==='cfg'&&r[1]){cfg=saneCfg(JSON.parse(r[1]));['Deseo','Necesidad'].forEach(c=>{if(cfg.cats.indexOf(c)<0)cfg.cats.unshift(c);});}
-      if(r[0]==='layout'&&r[1])LAY=JSON.parse(r[1])||{};
+      if(r[0]==='layout'&&r[1])LAY=saneLay(JSON.parse(r[1]));
       if(r[0]==='guardado')sync.stamp=r[1]||'';
     }catch(e){}
   });
@@ -3468,7 +3484,7 @@ function restoreFrom(text){
   try{histApi.keep('antes_de_restaurar',snapNow()).catch(()=>{});HC=null;}catch(e){}
   ys.forEach(y=>{if(YEARS.indexOf(y)<0)YEARS.push(y);});YEARS.sort();
   const sj=saneS(j.S),ns={};YEARS.forEach(y=>{ns[y]=sj[y]||Array.from({length:12},blank);});
-  S=ns;cfg=saneCfg(j.cfg);if(isObj(j.LAY))LAY=j.LAY;
+  S=ns;cfg=saneCfg(j.cfg);if(isObj(j.LAY))LAY=saneLay(j.LAY);
   if(!S[year])year=YEARS[YEARS.length-1];
   save();saveLay();render();toast('Respaldo restaurado');
 }
