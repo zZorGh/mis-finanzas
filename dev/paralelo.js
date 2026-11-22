@@ -29,7 +29,7 @@ trabajos.sort((a,b)=>(previos[b.f]||0)-(previos[a.f]||0));
 const pedirWrap=()=>new Promise(r=>{const q=http.get('http://127.0.0.1:8765/wrap-repo.html',x=>{x.resume();r(x.statusCode===200);});q.on('error',()=>r(false));q.setTimeout(2500,()=>{q.destroy();r(false);});});
 const correr=t=>new Promise(res=>{
   const ini=Date.now();let out='';
-  const p=spawn(process.execPath,[t.f,...t.args],{cwd:DIR,stdio:['ignore','pipe','pipe']});
+  const p=spawn(process.execPath,['-r','./entorno-pruebas.js',t.f,...t.args],{cwd:DIR,stdio:['ignore','pipe','pipe']});
   const tope=setTimeout(()=>{out+='\n[paralelo] se pasó de 12 minutos: se detuvo.\n';p.kill();},12*60*1000);
   p.stdout.on('data',d=>{out+=d;});p.stderr.on('data',d=>{out+=d;});
   p.on('close',code=>{clearTimeout(tope);res({t,ok:code===0,code,out,ms:Date.now()-ini});});

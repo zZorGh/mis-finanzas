@@ -51,7 +51,7 @@ const todos=p=>[].concat(...p.posts);
 
   // 4. Errores: llegan sin ruido de red
   p.posts.length=0;
-  await p.evaluate(()=>{setTimeout(()=>{throw new Error('boom T92');},0);Promise.reject(new Error('Failed to fetch'));});
+  await p.evaluate(()=>{const s=document.createElement('script');s.textContent="throw new Error('boom T92')";document.head.append(s);Promise.reject(new Error('Failed to fetch'));});
   await p.waitForTimeout(300);await flush(p);
   {const e2=todos(p).filter(x=>x.ev==='error');T('un error de JavaScript se reporta',e2.some(x=>/boom T92/.test(x.dato)));T('los errores de red (sin internet) no se reportan',!e2.some(x=>/failed to fetch/i.test(x.dato)));}
 

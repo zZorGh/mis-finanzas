@@ -1,5 +1,5 @@
-# Revisión automática en cada subida: errores de código, regla de oro y dependencias.
-# Las pruebas completas siguen en local (npm run verificar), y el gancho pre-push exige su sello.
+# Revisión automática en cada subida: errores de código, regla de oro, dependencias, pruebas y escáneres.
+# El gancho pre-push sigue exigiendo el sello local de npm run verificar; esto lo confirma en una máquina limpia.
 name: Revision
 
 on:
@@ -30,3 +30,28 @@ jobs:
       - run: npm run lint
       - run: npm run regla
       - run: npm audit --audit-level=high
+
+  pruebas:
+    needs: revision
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: dev
+    env:
+      PRUEBAS_HILOS: "4"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dev/package-lock.json
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      - run: npx playwright install --with-deps chromium
+      - name: Pruebas de regresión
+        run: node paralelo.js --pruebas
+      - name: Escáneres de errores
+        run: node paralelo.js --escaneos
