@@ -81,7 +81,7 @@ const sha=s=>crypto.createHash('sha1').update(s).digest('hex').toUpperCase();
  await alta(p,'Cuy-del-Rimac-2026!');T('7 deja pasar una contraseña no filtrada',(await p.evaluate(()=>window.__signups))===1);await p.context().close();
  p=await mk({out:true},'#crear',null,'caido');await alta(p,'password123');T('7 si el servicio cae, no bloquea el registro',(await p.evaluate(()=>window.__signups))===1);await p.context().close();
  // 8. Inglés
- p=await mk({},'#ajustes','en');T('8 Ajustes en inglés',/Two-step verification: off/.test(await p.textContent('.mfast')));
+ p=await mk({},'#ajustes','en');T('8 Ajustes en inglés',/Two-step verification: off/.test(await p.textContent('.mfast:not(#recbox)')));
  await p.click('#mfa-on');await p.waitForSelector('#mfaset');T('8 activación en inglés',/Turn on two-step verification/.test(await p.textContent('#mfaset')));await p.context().close();
  p=await mk({factors:FV,aal:'aal1'},'#ajustes','en');T('8 pantalla del código en inglés',/Enter your code/.test(await p.textContent('#mfabg')));await codigo(p,'000000');T('8 error en inglés',/wrong or expired/.test(await p.textContent('#mfa-msg')));await p.context().close();
  p=await mk({out:true},'#crear','en');await alta(p,'password123');T('8 contraseña filtrada en inglés',/data breaches/.test(await p.textContent('#au-msg')));await p.context().close();

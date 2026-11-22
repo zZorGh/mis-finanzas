@@ -1,6 +1,7 @@
 /* Service worker: la app siempre trae lo último de la red; el caché es solo para
    abrir sin conexión (muestra tus últimos datos locales). */
-const CACHE = 'mis-finanzas-v12';
+const CACHE = 'mis-finanzas-v13';
+const PREF = 'misoles-pref';
 /* Librerías pesadas de reportes: no se precargan; se guardan la primera vez que se usan. */
 const RUNTIME = [
   'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js',
@@ -18,7 +19,7 @@ self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()).catch(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== PREF).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 self.addEventListener('fetch', e => {
   const req = e.request;
@@ -47,4 +48,25 @@ self.addEventListener('fetch', e => {
       return resp;
     }).catch(() => undefined))
   );
+});
+/* Recordatorios: el aviso llega sin contenido; el texto se elige aquí, con el idioma y la frecuencia guardados en este dispositivo. */
+const AVISOS = {
+  es: { diario: '¿Ya anotaste tus gastos de hoy? Te toma menos de un minuto.', semanal: 'Revisa cómo te fue esta semana y anota lo que falte.' },
+  en: { diario: 'Have you logged today’s spending? It takes less than a minute.', semanal: 'Check how your week went and log anything missing.' }
+};
+self.addEventListener('push', e => {
+  e.waitUntil((async () => {
+    let p = {};
+    try { const c = await caches.open(PREF); const r = await c.match('./__pref'); if (r) p = await r.json(); } catch (_) {}
+    const t = AVISOS[p.l === 'en' ? 'en' : 'es'];
+    await self.registration.showNotification('MiS²oles', { body: t[p.f === 'semanal' ? 'semanal' : 'diario'], icon: 'icon-192.png', badge: 'icon-192.png', tag: 'recordatorio' });
+  })());
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = new URL('./', self.location).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(l => {
+    const w = l.find(c => c.url.startsWith(url));
+    return w ? w.focus() : self.clients.openWindow(url);
+  }));
 });
