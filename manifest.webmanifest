@@ -27,6 +27,15 @@
     "finance",
     "productivity"
   ],
+  "share_target": {
+    "action": "./compartir",
+    "method": "POST",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text"
+    }
+  },
   "shortcuts": [
     {
       "name": "Registrar un movimiento",

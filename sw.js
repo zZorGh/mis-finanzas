@@ -1,7 +1,8 @@
 /* Service worker: la app siempre trae lo último de la red; el caché es solo para
    abrir sin conexión (muestra tus últimos datos locales). */
-const CACHE = 'mis-finanzas-v13';
+const CACHE = 'mis-finanzas-v14';
 const PREF = 'misoles-pref';
+const SHARE = 'misoles-share';
 /* Librerías pesadas de reportes: no se precargan; se guardan la primera vez que se usan. */
 const RUNTIME = [
   'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js',
@@ -19,12 +20,22 @@ self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()).catch(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== PREF).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== PREF && k !== SHARE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
+async function recibirCompartido(req) {
+  try {
+    const f = await req.formData();
+    const x = [...new Set(['title', 'text'].map(k => f.get(k)).filter(v => typeof v === 'string' && v.trim()).map(v => v.trim()))].join('\n').slice(0, 600);
+    if (x) { const c = await caches.open(SHARE); await c.put('./__compartido', new Response(JSON.stringify({ x, t: Date.now() }), { headers: { 'Content-Type': 'application/json' } })); }
+  } catch (_) {}
+  return Response.redirect(new URL('./#compartido', self.location).href, 303);
+}
 self.addEventListener('fetch', e => {
   const req = e.request;
-  if (req.method !== 'GET') return;
   let url; try { url = new URL(req.url); } catch (_) { return; }
+  // Compartir a MiS²oles: el texto se queda en este dispositivo y nunca llega al servidor de la página.
+  if (req.method === 'POST' && url.origin === location.origin && url.pathname.endsWith('/compartir')) { e.respondWith(recibirCompartido(req)); return; }
+  if (req.method !== 'GET') return;
   // La API de Supabase (auth y datos) siempre a la red, nunca cacheada.
   if (url.hostname.endsWith('supabase.co') && url.pathname !== '/') return;
 
