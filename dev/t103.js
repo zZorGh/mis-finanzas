@@ -20,8 +20,8 @@ const guardar=async p=>{await p.click('[data-s="save"]');await p.waitForTimeout(
   await p.click('#fab');await p.waitForSelector('#sheet');await p.waitForTimeout(150);await p.click('[data-mode="manual"]');await W(p);await p.click('#stype [data-g="gasto"]');await W(p);
   T('el tipo de gasto ofrece Fijo, Cotidiano y Antojo',await p.evaluate(()=>[...document.querySelectorAll('#ssub [data-t]')].map(b=>b.dataset.t).join()==='fij,hor,ant')&&/Antojo/.test(await p.innerText('#ssub')));
   await p.click('#ssub [data-t="ant"]');await W(p);
-  T('elegir Antojo sigue el camino de un gasto cotidiano (pregunta el grupo)',await p.getAttribute('#sheet','data-step')==='grp');
-  await p.click('#sgrp [data-sgrp="want"]');await W(p);await p.click('[data-scatskip]');await W(p);await p.click('#ssrc [data-src="liq:0"]');await W(p);
+  T('elegir Antojo no pregunta el grupo: siempre es Deseos y pasa a la categoría',await p.getAttribute('#sheet','data-step')==='cat');
+  await p.click('[data-scatskip]');await W(p);await p.click('#ssrc [data-src="liq:0"]');await W(p);
   T('el resumen dice «Antojo»',/Antojo/.test(await p.innerText('#swsum')));
   await p.fill('#sa','12');await p.fill('#sd','T103 helado');await guardar(p);
   {const f=await fila(p,'T103 helado');T('se guarda en gastos cotidianos con la marca de antojo',!!f&&f.t==='ant'&&f.m===12);}

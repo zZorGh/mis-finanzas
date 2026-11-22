@@ -39,7 +39,7 @@ const cfgNow=p=>p.evaluate(k=>JSON.parse(localStorage.getItem(k)).cfg,K);
   const iMenu=await p.evaluate(()=>{const c=JSON.parse(localStorage.getItem('mis-finanzas-prototipo-v1')).cfg.cats;return c.indexOf('Menú');});
   await p.selectOption('select[data-catg="'+iMenu+'"]','want');await p.waitForTimeout(300);
   T('elegir un grupo en Ajustes lo guarda',(await cfgNow(p)).catGrupo['menú']==='want');
-  T('la categoría pasa al bloque de Deseos',await p.evaluate(()=>{const g=[...document.querySelectorAll('.cgg')].find(x=>x.querySelector('b').textContent==='Deseos');return !!g&&/Menú/.test(g.innerText);}));
+  T('la categoría pasa al bloque de Deseos',await p.evaluate(()=>{const g=[...document.querySelectorAll('.cgg')].find(x=>x.querySelector('b').textContent==='Deseos');return !!g&&[...g.querySelectorAll('.cgn')].some(i=>i.value==='Menú');}));
   await p.fill('#nc','T96 Mascotas');await p.selectOption('#nc-g','need');await p.click('#addcat');await p.waitForTimeout(300);
   T('una categoría nueva se agrega con el grupo elegido',(await cfgNow(p)).catGrupo['t96 mascotas']==='need'&&(await cfgNow(p)).cats.includes('T96 Mascotas'));
   {const i=(await cfgNow(p)).cats.indexOf('T96 Mascotas');await p.click('button[data-cat="'+i+'"]');await p.waitForTimeout(300);}
