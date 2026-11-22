@@ -44,7 +44,7 @@ const todos=p=>[].concat(...p.posts);
   T('abrir y elegir modo',dn('reg_abrir','elegir')&&dn('reg_modo','manual_pasos')&&dn('reg_modo','auto'));
   T('cada paso del asistente',['type','sub','src','form'].every(s=>dn('reg_paso',s)));
   T('guardar, con modo y tipo',dn('reg_guardar','pasos:fij')&&dn('reg_guardar','auto:hor'));
-  T('abandonar, con el último paso o modo',dn('reg_abandono','elegir')&&dn('reg_abandono','manual:sub'));
+  T('abandonar, con el último paso o modo',dn('reg_abandono','rapido:vacio')&&dn('reg_abandono','manual:sub'));
   {const crudo=JSON.stringify(ev);T('NO viaja ningún monto, concepto, cuenta ni correo',!/777|T92|secreto|almuerzo|yape|@|liq:/i.test(crudo));}
   T('«día activo» se envía una sola vez',ev.filter(x=>x.ev==='dia_activo').length<=1);
   T('el id de dispositivo es siempre el mismo',new Set(ev.map(x=>x.sid)).size===1);

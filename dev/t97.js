@@ -47,7 +47,7 @@ const mode=p=>p.evaluate(()=>{const s=document.getElementById('sheet');return s?
   await p.context().close();
   // 8. Inglés
   p=await nueva(b,'#ajustes',null,'en');
-  T('en inglés se traduce («Ask me every time»)',/Ask me every time/.test(await p.evaluate(()=>document.body.innerText))&&/Always automatic/.test(await p.evaluate(()=>document.body.innerText)));
+  T('en inglés se traduce («Quick screen»)',/Quick screen/.test(await p.evaluate(()=>document.body.innerText))&&/Always automatic/.test(await p.evaluate(()=>document.body.innerText)));
   await p.context().close();
   console.log('Total '+(ok+bad)+' ok '+ok+' fallas '+bad);await b.close();process.exit(bad?1:0);
 })().catch(e=>{console.log('ERR',e);process.exit(1);});
