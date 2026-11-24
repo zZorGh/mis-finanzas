@@ -1,0 +1,27 @@
+# Plantilla del respaldo diario. Va en el repositorio PRIVADO de respaldos (.github/workflows/respaldo.yml), nunca en el público:
+# los archivos adjuntos de un repo público los puede descargar cualquiera.
+# Secreto necesario: SUPABASE_DB_URL (conexión del usuario «respaldo»). El certificado público va en el repo como certificado.pem.
+name: Respaldo diario
+on:
+  schedule:
+    - cron: "30 8 * * *"   # 03:30 en Lima
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  respaldo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Exportar y cifrar
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          CERT: certificado.pem
+        run: bash respaldo/exportar.sh "respaldo-$(date -u +%F).cms"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: respaldo
+          path: respaldo-*.cms
+          retention-days: 30
+          if-no-files-found: error

@@ -55,3 +55,23 @@ jobs:
         run: node paralelo.js --pruebas
       - name: Escáneres de errores
         run: node paralelo.js --escaneos
+
+  simulacro-respaldo:
+    needs: revision
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: simulacro
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Simulacro de restauración (datos inventados)
+        env:
+          PGBASE: postgresql://postgres:simulacro@localhost:5432
+        run: bash respaldo/simulacro.sh
