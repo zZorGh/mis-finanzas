@@ -27,7 +27,7 @@ const cerrar=async p=>{await p.keyboard.press('Escape');await p.waitForTimeout(2
   await abrir(p);
   T('«+» abre primero la ventana de elección',await p.getAttribute('#sheet','data-mode')==='ask');
   T('ofrece Manual y Automático',await vis(p,'[data-mode="manual"]')&&await vis(p,'[data-mode="auto"]'));
-  T('la pantalla rápida muestra monto y concepto, sin el selector de movimiento',await vis(p,'#sa')&&await vis(p,'#sd')&&!(await vis(p,'#stype')));
+  T('la pantalla rápida muestra monto, concepto y el selector de movimiento',await vis(p,'#sa')&&await vis(p,'#sd')&&await vis(p,'#stype'));
   T('en la elección tampoco se ven los atajos: solo Manual y Automático',await p.locator('#sheet [data-rec1]').evaluateAll(els=>els.every(e=>e.offsetParent===null)));
   await cerrar(p);T('Escape cierra la ventana',await p.locator('#sheet').count()===0);
 
@@ -143,7 +143,7 @@ const cerrar=async p=>{await p.keyboard.press('Escape');await p.waitForTimeout(2
 
   // 8. Inglés
   p=await nueva(b,'en');await abrir(p);await W(p);
-  {const tx=await p.innerText('#sheet');T('en inglés la elección está traducida',/Income, card or savings/.test(tx)&&/Automatic/.test(tx)&&!/Cómo quieres|Escribes o dictas|Eliges el tipo/.test(tx));}
+  {const tx=await p.innerText('#sheet');T('en inglés la elección está traducida',/Prefer another way/.test(tx)&&/Automatic/.test(tx)&&!/Cómo quieres|Escribes o dictas|Eliges el tipo/.test(tx));}
   await p.click('[data-mode="manual"]');await p.waitForTimeout(300);
   {const tx=await p.innerText('#sheet');T('en inglés el primer paso está traducido',/What kind of entry is it\?/.test(tx)&&/Back/.test(tx)&&!/Qué movimiento|Atrás/.test(tx));}
   await p.click('#stype [data-g="gasto"]');await p.waitForTimeout(300);

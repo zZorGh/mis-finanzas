@@ -15,7 +15,7 @@ const box=p=>p.evaluate(()=>{const e=document.getElementById('ingsum');if(!e)ret
   // al registrar otro ingreso se actualiza solo
   await p.click('[data-new="ing"]');await p.waitForSelector('#sheet');await p.waitForTimeout(200);
   await p.evaluate(()=>{const a=document.getElementById('sa');if(a){a.value='700';a.dispatchEvent(new Event('input',{bubbles:true}));}const d=document.getElementById('sd');if(d){d.value='Extra';d.dispatchEvent(new Event('input',{bubbles:true}));}});
-  await p.waitForTimeout(150);
+  await p.waitForTimeout(150);await p.click('#ssrc [data-src="none"]');await p.waitForTimeout(100);
   await p.evaluate(()=>{const s=document.querySelector('#sheet [data-s="save"]');if(s)s.click();});await p.waitForTimeout(600);
   c=await box(p);T('después de guardar otro ingreso, el resumen se actualiza (disponible sube)',!!c&&/Disponible[\s\S]*3,000\.00/.test(c.txt));
   T('sin errores de JavaScript',p.errs.length===0);if(p.errs.length)console.log(p.errs);
