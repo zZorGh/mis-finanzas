@@ -3,6 +3,7 @@ const {chromium}=require('playwright');const fs=require('fs');
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
 const demo=JSON.parse(fs.readFileSync(__dirname+'/demo.json','utf8'));const K='mis-finanzas-prototipo-v1';
 const data=JSON.stringify({v:1,S:demo.S,cfg:Object.assign({},demo.cfg,{onb:1,ahoV:3})});
+const sinId=(k,v)=>k==='id'?undefined:v;
 let ok=0,bad=0;const T=(n,c)=>{c?ok++:(bad++,console.log('FALLA',n));};
 const SIGNO=['Banco Ejemplo;;;','Cuenta;000;;','','Fecha;Descripción;Monto;Saldo','20/11/2026;TOTTUS MIRAFLORES;-89,90;1.000,00','19/11/2026;NETFLIX.COM;-44,90;1.089,90','18/11/2026;SUELDO EMPRESA;3.500,00;1.134,80','17/11/2026;PAGO TARJETA BBVA;-200,00;0,00','Total;;;'].join('\r\n');
 const DOBLE='Fecha operación,Concepto,Cargo,Abono,Moneda,Saldo\n2026-11-10,"Bodega, Don Pepe",25.50,,PEN,500\n2026-11-11,Amazon,15.00,,USD,485\n2026-11-12,Devolución,,10.00,PEN,495\n';
@@ -29,7 +30,7 @@ const HTML='<html><body><table><tr><th>Fecha</th><th>Detalle</th><th>Importe</th
  T('2 saldo apagado no cambia cuentas',JSON.stringify(s['2026'][10].liq.map(r=>r.m))===JSON.stringify(liq0));T('2 sin descuento',im.every(r=>!r.src&&r._d==null));
  await p.waitForSelector('#imp-undo');
  await sube(p,'banco.csv',SIGNO);f=await filas(p);T('3 reimportar: ya registrados',f.slice(0,3).every(x=>x.fl==='Ya está registrado'&&!x.on));T('3 no hay nada que importar',await p.isDisabled('#imp-go'));await p.click('#imp-cancel');T('3 cancelar cierra',!(await p.locator('#impbg').count()));
- await p.click('#imp-undo');await p.waitForTimeout(250);s=await S(p);T('4 deshacer quita todo',imp(s).length===0);T('4 datos intactos',JSON.stringify(s['2026'][10].liq)===JSON.stringify(s0['2026'][10].liq));
+ await p.click('#imp-undo');await p.waitForTimeout(250);s=await S(p);T('4 deshacer quita todo',imp(s).length===0);T('4 datos intactos',JSON.stringify(s['2026'][10].liq,sinId)===JSON.stringify(s0['2026'][10].liq,sinId));
  await sube(p,'doble.csv',DOBLE);f=await filas(p);T('5 cargo y abono',f.length===3&&f[0].m.startsWith('−')&&f[2].m.startsWith('+'));T('5 coma entre comillas',f[0].c==='Bodega, Don Pepe');T('5 moneda por fila',f[1].m.includes('$'));
  await p.selectOption('#imp-dest','liq:0');await p.check('#imp-saldo');await p.click('#imp-go');await p.waitForTimeout(250);s=await S(p);im=imp(s);
  T('6 saldo encendido descuenta y suma',im.filter(r=>r.src==='liq:0').length===3&&im.every(r=>r._d!=null));T('6 guarda la moneda',im.find(r=>r.c==='Amazon').cur==='$');

@@ -3,6 +3,7 @@ const {chromium}=require('playwright');const fs=require('fs');
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
 const demo=JSON.parse(fs.readFileSync(__dirname+'/demo.json','utf8'));const K='mis-finanzas-prototipo-v1';
 const data=JSON.stringify({v:1,S:demo.S,cfg:Object.assign({},demo.cfg,{onb:1,ahoV:3})});
+const sinId=(k,v)=>k==='id'?undefined:v;
 let ok=0,bad=0;const T=(n,c)=>{c?ok++:(bad++,console.log('FALLA',n));};
 (async()=>{
  const b=await chromium.launch();
@@ -19,7 +20,7 @@ let ok=0,bad=0;const T=(n,c)=>{c?ok++:(bad++,console.log('FALLA',n));};
  await add(p,'Ripley');await add(p,'Falabella');j=await J(p);
  T('2 agrega dos',j.cfg.tarjetasX.length===2&&j.cfg.tarjetasX[0].k==='c4'&&j.cfg.tarjetasX[1].n==='Falabella');
  T('2 existen en todos los meses',Object.values(j.S).every(y=>y.every(m=>Array.isArray(m.c4)&&Array.isArray(m.c5))));
- T('2 no toca lo anterior',['bbva','bcp','oh','fij','hor','ing','liq'].every(k=>Object.keys(j.S).every(y=>j.S[y].every((m,i)=>JSON.stringify(m[k])===JSON.stringify(JSON.parse(s0)[y][i][k])))));
+ T('2 no toca lo anterior',['bbva','bcp','oh','fij','hor','ing','liq'].every(k=>Object.keys(j.S).every(y=>j.S[y].every((m,i)=>JSON.stringify(m[k],sinId)===JSON.stringify(JSON.parse(s0)[y][i][k],sinId)))));
  await add(p,'ripley');T('2 no repite nombre',(await J(p)).cfg.tarjetasX.length===2);
  await p.fill('#nm-b3','Ripley Oro');await p.click('#nm-save');await p.waitForTimeout(80);T('3 renombra',(await J(p)).cfg.tarjetasX[0].n==='Ripley Oro');
  await p.evaluate(()=>{location.hash='#noviembre';});await p.waitForSelector('[data-cid=c4]');

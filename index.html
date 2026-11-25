@@ -1184,8 +1184,25 @@ let saveWarned=false,authLocked=false,tabClash=false;
    esta pestaña conoce, otra pestaña escribió después: no se pisa, se pregunta (tabConflict). */
 const revOf=raw=>{const x=/^\{"v":1,"r":"([^"]+)"/.exec(raw||'');return x?x[1]:null;};
 let myRev=null;try{myRev=revOf(localStorage.getItem(KEY));}catch(e){}
+/* Cada movimiento lleva un id propio y estable (r.id): sirve para reconocer la misma fila en otro dispositivo o versión sin depender de su posición.
+   Las filas que ya existían reciben un id calculado de su contenido (igual en todos los dispositivos); las nuevas, uno al azar. No usa constantes de más abajo: corre al arrancar. */
+const ID_SECS=['ing','fij','hor','bbva','bcp','oh','c4','c5','c6','c7','c8','aho','inv','liq'];
+const idRand=()=>{try{const a=new Uint8Array(6);crypto.getRandomValues(a);return 'm'+Array.from(a).map(x=>x.toString(16).padStart(2,'0')).join('');}catch(e){return 'm'+Math.random().toString(16).slice(2,14).padEnd(12,'0');}};
+const idLegacy=s=>{let x=2166136261;for(let i=0;i<s.length;i++){x^=s.charCodeAt(i);x=Math.imul(x,16777619)>>>0;}return 'l'+x.toString(16).padStart(8,'0');};
+function idsAsegura(){
+  const seen=new Set(),leg=!cfg.idV;let n=0;
+  Object.keys(S).forEach(y=>(S[y]||[]).forEach((m,mi)=>ID_SECS.forEach(sec=>{const cnt=Object.create(null);((m&&m[sec])||[]).forEach(r=>{
+    if(!r||(!r.c&&!(+r.m)))return;
+    if(typeof r.id==='string'&&r.id&&!seen.has(r.id)){seen.add(r.id);return;}
+    let id;
+    if(leg){const b=[y,mi,sec,r.c,r.m,r.f,r.k,r.src||'',r.card||''].join('|');cnt[b]=(cnt[b]||0)+1;id=idLegacy(b+'|'+cnt[b]);}else id=idRand();
+    while(seen.has(id))id=idRand();
+    r.id=id;seen.add(id);n++;});})));
+  cfg.idV=1;return n;
+}
 const localSave=()=>{
   if(authLocked||tabClash)return;
+  try{idsAsegura();}catch(e){}
   try{const rv=revOf(localStorage.getItem(KEY));if(rv&&rv!==myRev){tabConflict();return;}}catch(e){}
   const tok=Date.now().toString(36)+Math.random().toString(36).slice(2,8);
   cardsMirror();let data;try{data=JSON.stringify({v:1,r:tok,S,cfg});}catch(e){return;}
@@ -3091,7 +3108,7 @@ const SB_URL='https://lmjhlghwthydpeismulb.supabase.co',SB_KEY='sb_publishable_C
    Cuentan qué pantallas se usan y dónde se traba la gente. NUNCA llevan montos, conceptos, cuentas ni correo:
    solo un id aleatorio del dispositivo (cuadra-sid), el nombre del evento, un dato corto (modo, paso, tipo) y la versión.
    Apagado hasta que exista la tabla (TRACK_DEFAULT); cada persona puede apagarlo en Ajustes (cuadra-stats = 0/1). */
-const TRACK_DEFAULT=true,APPV='2026.11.23.1';
+const TRACK_DEFAULT=true,APPV='2026.11.25.1';
 /* En tu computadora (localhost, file) no se mide por defecto: así las pruebas y el desarrollo no ensucian las métricas reales. */
 const trLocal=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\]|)$/.test(location.hostname);
 const statsOn=()=>{let v=null;try{v=localStorage.getItem('cuadra-stats');}catch(e){}return v==='1'?true:v==='0'?false:(TRACK_DEFAULT&&!trLocal);};
@@ -3146,14 +3163,19 @@ async function ensureTabs(){
   if(add.length)await gs('update_spreadsheet',{spreadsheetId:sync.id,requests:add});
   sync.tabs=true;
 }
-function toRows(){
-  const out=[];
+/* Columna 16 de cada movimiento en la nube: lo que no tiene columna propia (id, antojo, «¿valió la pena?», importación…) en JSON. Las versiones anteriores la ignoran. */
+const XSKIP={c:1,m:1,k:1,f:1,cur:1,src:1,card:1,_d:1};
+const xOk=k=>k!=='__proto__'&&k!=='constructor'&&k!=='prototype'&&!XSKIP[k]&&k.length<=24;
+const xVal=v=>typeof v==='string'||typeof v==='boolean'||(typeof v==='number'&&Number.isFinite(v));
+const xJson=r=>{const o={};Object.keys(r).forEach(k=>{if(xOk(k)&&xVal(r[k]))o[k]=r[k];});return Object.keys(o).length?JSON.stringify(o):'';};
+function toRows(wantX){
+  const out=[];if(wantX){try{if(idsAsegura())localSave();}catch(e){}}
   YEARS.forEach(y=>S[y].forEach((m,i)=>{
     const base=[+y,i+1,MES[i]],n0=out.length;
     SECKEYS.forEach(k=>{
       const arr=m[k]||[];
       if(k==='liq'&&arr.length===4&&arr.every((r,j)=>r.c===DEFLIQ[j]&&!(+r.m)))return;
-      arr.forEach(r=>{if(!r.c&&!(+r.m))return;out.push(base.concat([APART[k],txt(r.c),+r.m||0,txt(r.k),txt(r.f),txt(r.cur||''),txt(r.t||''),'','','',txt(r.src||''),txt(r.card||'')]));});
+      arr.forEach(r=>{if(!r.c&&!(+r.m))return;const rr=base.concat([APART[k],txt(r.c),+r.m||0,txt(r.k),txt(r.f),txt(r.cur||''),txt(r.t||''),'','','',txt(r.src||''),txt(r.card||'')]);if(wantX){const xs=xJson(r);if(xs)rr.push(xs);}out.push(rr);});
     });
     (m.eur||[]).forEach(r=>{if(!(r.a||r.b||r.d||r.s||r.p))return;out.push(base.concat(['Apuntes','',0,'','',+r.a||0,+r.b||0,+r.d||0,+r.s||0,+r.p||0,'','']));});
     const dflt=JSON.stringify([50,30,20]);
@@ -3178,7 +3200,9 @@ function fromRows(rows){
     if(ap==='_Mov'){try{m.mov=JSON.parse(r[4]);}catch(e){}return;}
     if(ap==='Apuntes'){m.eur.push({a:num(r[8]),b:num(r[9]),d:num(r[10]),s:num(r[11]),p:num(r[12])});return;}
     const k=APART_INV[ap];
-    if(k){const o=row(r[4]||'',num(r[5]),r[7]||'',r[6]||'',r[13]||'',r[14]||''),c=String(r[8]||'').trim();if(CURS.indexOf(c)>0)o.cur=c;if(k==='aho'&&r[9])o.t=String(r[9]);m[k].push(o);}
+    if(k){const o=row(r[4]||'',num(r[5]),r[7]||'',r[6]||'',r[13]||'',r[14]||''),c=String(r[8]||'').trim();if(CURS.indexOf(c)>0)o.cur=c;if(k==='aho'&&r[9])o.t=String(r[9]);
+      if(typeof r[15]==='string'&&r[15]){try{const j=JSON.parse(r[15]);if(isObj(j))Object.keys(j).forEach(q=>{if(xOk(q)&&xVal(j[q]))o[q]=j[q];});}catch(e){}}
+      m[k].push(o);}
   });
   Object.keys(years).forEach(y=>years[y].forEach(m=>{
     SECKEYS.forEach(k=>{if(!m[k].length)m[k]=(k==='liq')?LIQ():[row()];});
@@ -3637,7 +3661,7 @@ async function pushNow(force){
   sync.busy=true;sync.state='saving';updateChip();
   try{
     if(!force){const remote=await backend.stamp();if(remote&&remote!==sync.stamp){sync.state='conflict';sync.msg='Tus datos cambiaron desde otro dispositivo. Usa «Recargar mis datos» para traer esos cambios o «Guardar todo ahora» para conservar los de aquí.';return;}}
-    const rev=sync.rev||0;const rows=toRows();
+    const rev=sync.rev||0;const rows=toRows(backend.name==='sb');
     if(backend.name==='sb'){if(rows.length>8000&&JSON.stringify(rows).length>4000000)throw{code:'tool_error',message:'Tus datos ya son demasiado grandes para guardarse en tu cuenta. Descarga una copia en Ajustes y archiva los años anteriores.'};}
     else if(rows.length>2900)throw{code:'tool_error',message:'La pestaña Registro está llena (más de 2900 filas).'};
     const stamp='v'+Date.now();
@@ -4363,7 +4387,7 @@ function openReport(){
 const HKEY=KEY+'-hist',HDIAS=30;
 const p2=n=>String(n).padStart(2,'0');
 const hoyLima=()=>{const d=limaD();return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());};
-const snapNow=()=>({registro:toRows(),config:[['cfg',JSON.stringify(cfg)],['layout',JSON.stringify(LAY)]]});
+const snapNow=()=>({registro:toRows(true),config:[['cfg',JSON.stringify(cfg)],['layout',JSON.stringify(LAY)]]});
 const useSbHist=()=>IS_SB&&sb&&sbUser;
 function localHist(){try{const a=JSON.parse(localStorage.getItem(HKEY));return Array.isArray(a)?a:[];}catch(e){return [];}}
 function localHistSet(a){a.sort((x,y)=>y.dia.localeCompare(x.dia)||x.tipo.localeCompare(y.tipo));
