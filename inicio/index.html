@@ -2,7 +2,7 @@
 <html lang="es-PE">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; manifest-src 'self'; media-src 'none'; font-src 'self' data: https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; connect-src 'self' https://lmjhlghwthydpeismulb.supabase.co">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; manifest-src 'self'; media-src 'none'; font-src 'self' data: https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; connect-src 'self' https://lmjhlghwthydpeismulb.supabase.co https://qfnqqhwfzzmheztcarbo.supabase.co">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MiS²oles · Finanzas personales en soles</title>
@@ -608,7 +608,9 @@ img{max-width:100%}
     if(!n||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){$('w-x').textContent=!n?'Escribe tu nombre.':'Revisa tu correo, parece incompleto.';return;}
     $('w-x').textContent='';const ok=$('w-ok'),btn=$('w-b');btn.disabled=true;btn.textContent='Enviando…';
     const done=m=>{ok.hidden=false;ok.textContent=m;btn.textContent='Listo';};
-    fetch('https://lmjhlghwthydpeismulb.supabase.co/rest/v1/lista_espera',{method:'POST',headers:{'Content-Type':'application/json',apikey:'sb_publishable_Chi2CqOxqdL_15IggSgUZA_09aZ4XEf',Authorization:'Bearer sb_publishable_Chi2CqOxqdL_15IggSgUZA_09aZ4XEf',Prefer:'return=minimal'},body:JSON.stringify({nombre:n.slice(0,80),correo:em.toLowerCase(),hoy:$('w-h').value||null})})
+    /* Fuera de la web oficial la lista de espera va al proyecto de pruebas. */
+    const prod=/^(zzorgh\.github\.io|(www\.)?misoles\.pe)$/.test(location.hostname),sbU=prod?'https://lmjhlghwthydpeismulb.supabase.co':'https://qfnqqhwfzzmheztcarbo.supabase.co',sbK=prod?'sb_publishable_Chi2CqOxqdL_15IggSgUZA_09aZ4XEf':'sb_publishable_3rPtVgvz3OT3P77J1BXZWg_pqZ98siA';
+    fetch(sbU+'/rest/v1/lista_espera',{method:'POST',headers:{'Content-Type':'application/json',apikey:sbK,Authorization:'Bearer '+sbK,Prefer:'return=minimal'},body:JSON.stringify({nombre:n.slice(0,80),correo:em.toLowerCase(),hoy:$('w-h').value||null})})
     .then(r=>{if(r.ok)done('Listo, '+n+'. Quedaste en la lista de la beta. Ahora no te llegará ningún correo: cuando tu invitación esté lista te escribiremos a '+em+'. Entonces crea tu cuenta con ese mismo correo.');else if(r.status===409)done('Listo, '+n+'. Quedaste en la lista de la beta. Ahora no te llegará ningún correo: cuando tu invitación esté lista te escribiremos a '+em+'. Entonces crea tu cuenta con ese mismo correo.');else throw new Error(r.status);})
     .catch(()=>{btn.disabled=false;btn.textContent='Quiero entrar a la beta';$('w-x').textContent='No pude guardarte ahora. Revisa tu conexión e inténtalo de nuevo.';});});
 })();
