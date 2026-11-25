@@ -9,7 +9,14 @@ $usuario = (gh api user --jq .login).Trim()
 New-Item -ItemType Directory -Force $CarpetaClave | Out-Null
 $pem = Join-Path $CarpetaClave 'clave-privada.pem'; $cert = Join-Path $CarpetaClave 'certificado.pem'
 if (Test-Path $pem) { throw "Ya existe $pem. No la sobrescribo: si quieres otra, usa otra carpeta." }
-openssl req -x509 -newkey rsa:4096 -nodes -days 3650 -subj '/CN=respaldo-misoles' -keyout $pem -out $cert 2>$null
+if (-not (Get-Command openssl -ErrorAction SilentlyContinue)) {
+  foreach ($d in 'C:\Program Files\Git\usr\bin', 'C:\Program Files\Git\mingw64\bin', 'C:\Program Files (x86)\Git\usr\bin') {
+    if (Test-Path "$d\openssl.exe") { $env:PATH += ";$d"; break }
+  }
+}
+if (-not (Get-Command openssl -ErrorAction SilentlyContinue)) { throw 'No encuentro openssl. Viene con Git para Windows (C:\Program Files\Git\usr\bin).' }
+openssl req -x509 -newkey rsa:4096 -nodes -days 3650 -subj '/CN=respaldo-misoles' -keyout $pem -out $cert
+if ($LASTEXITCODE -ne 0 -or -not (Test-Path $pem)) { throw 'No pude crear la clave. Nada se subió.' }
 $tmp = Join-Path ([IO.Path]::GetTempPath()) "respaldo-$(Get-Random)"; New-Item -ItemType Directory $tmp | Out-Null
 New-Item -ItemType Directory "$tmp\respaldo", "$tmp\.github\workflows" | Out-Null
 Copy-Item "$aqui\exportar.sh", "$aqui\restaurar.sh", "$aqui\esquema.sql", "$aqui\LEEME.md" "$tmp\respaldo"
