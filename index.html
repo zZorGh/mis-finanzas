@@ -984,7 +984,28 @@ h1,.bt{letter-spacing:-.025em}
 .hbar span:only-child{background:var(--amber)!important}
 .hero .pill{background:rgba(255,255,255,.14);color:#F3F2FA}
 .hero .pill::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--amber);margin-right:6px}
-</style><style>.skins{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}.sk-l{font-weight:600;margin-right:4px}.skins button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600}.tab.off{opacity:.95}.amt-t.dep{color:color-mix(in srgb,var(--c-aho) 72%,CanvasText)}</style><script>(function(){var s='cuadre';try{var v=localStorage.getItem('mis-finanzas-prototipo-v1-skin');if(v==='original'||v==='cuadre'||v==='escalon')s=v;}catch(e){}document.documentElement.dataset.skin=s;['cuadre','escalon'].forEach(function(k){var e=document.getElementById('sk-'+k);if(e)e.disabled=(k!==s);});})();</script>
+</style><style>.skins{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}.sk-l{font-weight:600;margin-right:4px}.skins button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600}.tab.off{opacity:.95}.amt-t.dep{color:color-mix(in srgb,var(--c-aho) 72%,CanvasText)}
+/* Escritorio: más a la vista (26 nov. 2026). Solo pantallas anchas; el celular no cambia. */
+@media (min-width:900px){
+  #app[data-v=m] .hero.with-liq{padding-top:22px;padding-bottom:22px;margin-bottom:var(--sp-4)}
+  #app[data-v=m] .hero h1{font-size:clamp(30px,2.8vw,42px)}
+  #app[data-v=m] .hero-v{font-size:clamp(42px,4.2vw,64px)}
+  .hero .hfondo{display:none}
+  #app[data-v=m]{padding-top:0}
+  #app[data-v=m] .hero.with-liq{margin-top:0;border-top:0}
+}
+/* Los tres grupos ocupan todo el ancho (con auto-fit quedaban columnas vacías por el título que cruza la rejilla) */
+.dgy{display:flex;flex-wrap:wrap}.dgy>*{flex:1 0 100%}.dgy>.dgg{flex:1 1 250px;min-width:0}
+/* Menú en una sola fila cuando cabe */
+@media (min-width:1400px){
+  #hdr{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:18px;padding:10px max(16px,calc((100% - 1528px)/2))}
+  #hdr .hrow{display:contents}
+  #hdr .brand{grid-column:1;grid-row:1}
+  #hdr .tabs{grid-column:2;grid-row:1;margin:0;padding:2px 4px 4px 2px;max-width:none;justify-content:safe center;gap:2px}
+  #hdr .tabs .tab{padding-left:9px;padding-right:9px}
+  #hdr .ctl{grid-column:3;grid-row:1;flex-wrap:nowrap}
+}
+</style><script>(function(){var s='cuadre';try{var v=localStorage.getItem('mis-finanzas-prototipo-v1-skin');if(v==='original'||v==='cuadre'||v==='escalon')s=v;}catch(e){}document.documentElement.dataset.skin=s;['cuadre','escalon'].forEach(function(k){var e=document.getElementById('sk-'+k);if(e)e.disabled=(k!==s);});})();</script>
 
 <header id="hdr"></header>
 <main class="wrap" id="app"></main>
@@ -1432,8 +1453,8 @@ function viewResumen(){
   <section class="hero">
     <div class="hero-top"><div><div class="hero-k">${year}</div><h1>Resumen</h1></div></div>
     <div><div class="hero-l">Tienes ahorrado</div><div class="hero-v">${fmt(saldo)}</div></div>
-    <div class="hbar" aria-hidden="true"><span style="width:${Math.min(100,prog*100)}%;background:var(--c-aho)"></span></div>
-    <div class="hleg"><span>Fondo de emergencia: ${Math.round(prog*100)}% de ${fmt(meta)}</span></div>
+    <div class="hbar hfondo" aria-hidden="true"><span style="width:${Math.min(100,prog*100)}%;background:var(--c-aho)"></span></div>
+    <div class="hleg hfondo"><span>Fondo de emergencia: ${Math.round(prog*100)}% de ${fmt(meta)}</span></div>
     <div class="hint">${any?nOn+(nOn===1?' mes':' meses')+' con datos'+(recentCount(7)?' · '+recentCount(7)+(recentCount(7)===1?' movimiento':' movimientos')+' en los últimos 7 días':'')+'. Toca una barra o una tarjeta para abrir el mes.':'Año sin movimientos todavía.'}</div>
     ${any?'<div class="acts"><button type="button" data-act="rep">Descargar reporte (PDF o Excel)</button></div>':''}
   </section>
@@ -3114,7 +3135,7 @@ const SB_URL=ES_PROD?'https://lmjhlghwthydpeismulb.supabase.co':'https://qfnqqhw
    Cuentan qué pantallas se usan y dónde se traba la gente. NUNCA llevan montos, conceptos, cuentas ni correo:
    solo un id aleatorio del dispositivo (cuadra-sid), el nombre del evento, un dato corto (modo, paso, tipo) y la versión.
    Apagado hasta que exista la tabla (TRACK_DEFAULT); cada persona puede apagarlo en Ajustes (cuadra-stats = 0/1). */
-const TRACK_DEFAULT=true,APPV='2026.11.25.3';
+const TRACK_DEFAULT=true,APPV='2026.11.26.1';
 /* En tu computadora (localhost, file) no se mide por defecto: así las pruebas y el desarrollo no ensucian las métricas reales. */
 const trLocal=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\]|)$/.test(location.hostname);
 const statsOn=()=>{let v=null;try{v=localStorage.getItem('cuadra-stats');}catch(e){}return v==='1'?true:v==='0'?false:(TRACK_DEFAULT&&!trLocal);};

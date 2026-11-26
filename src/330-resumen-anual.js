@@ -47,8 +47,8 @@ function viewResumen(){
   <section class="hero">
     <div class="hero-top"><div><div class="hero-k">${year}</div><h1>Resumen</h1></div></div>
     <div><div class="hero-l">Tienes ahorrado</div><div class="hero-v">${fmt(saldo)}</div></div>
-    <div class="hbar" aria-hidden="true"><span style="width:${Math.min(100,prog*100)}%;background:var(--c-aho)"></span></div>
-    <div class="hleg"><span>Fondo de emergencia: ${Math.round(prog*100)}% de ${fmt(meta)}</span></div>
+    <div class="hbar hfondo" aria-hidden="true"><span style="width:${Math.min(100,prog*100)}%;background:var(--c-aho)"></span></div>
+    <div class="hleg hfondo"><span>Fondo de emergencia: ${Math.round(prog*100)}% de ${fmt(meta)}</span></div>
     <div class="hint">${any?nOn+(nOn===1?' mes':' meses')+' con datos'+(recentCount(7)?' · '+recentCount(7)+(recentCount(7)===1?' movimiento':' movimientos')+' en los últimos 7 días':'')+'. Toca una barra o una tarjeta para abrir el mes.':'Año sin movimientos todavía.'}</div>
     ${any?'<div class="acts"><button type="button" data-act="rep">Descargar reporte (PDF o Excel)</button></div>':''}
   </section>

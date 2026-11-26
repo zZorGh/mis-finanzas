@@ -1,4 +1,25 @@
-</style><style>.skins{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}.sk-l{font-weight:600;margin-right:4px}.skins button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600}.tab.off{opacity:.95}.amt-t.dep{color:color-mix(in srgb,var(--c-aho) 72%,CanvasText)}</style><script>(function(){var s='cuadre';try{var v=localStorage.getItem('mis-finanzas-prototipo-v1-skin');if(v==='original'||v==='cuadre'||v==='escalon')s=v;}catch(e){}document.documentElement.dataset.skin=s;['cuadre','escalon'].forEach(function(k){var e=document.getElementById('sk-'+k);if(e)e.disabled=(k!==s);});})();</script>
+</style><style>.skins{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}.sk-l{font-weight:600;margin-right:4px}.skins button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600}.tab.off{opacity:.95}.amt-t.dep{color:color-mix(in srgb,var(--c-aho) 72%,CanvasText)}
+/* Escritorio: más a la vista (26 nov. 2026). Solo pantallas anchas; el celular no cambia. */
+@media (min-width:900px){
+  #app[data-v=m] .hero.with-liq{padding-top:22px;padding-bottom:22px;margin-bottom:var(--sp-4)}
+  #app[data-v=m] .hero h1{font-size:clamp(30px,2.8vw,42px)}
+  #app[data-v=m] .hero-v{font-size:clamp(42px,4.2vw,64px)}
+  .hero .hfondo{display:none}
+  #app[data-v=m]{padding-top:0}
+  #app[data-v=m] .hero.with-liq{margin-top:0;border-top:0}
+}
+/* Los tres grupos ocupan todo el ancho (con auto-fit quedaban columnas vacías por el título que cruza la rejilla) */
+.dgy{display:flex;flex-wrap:wrap}.dgy>*{flex:1 0 100%}.dgy>.dgg{flex:1 1 250px;min-width:0}
+/* Menú en una sola fila cuando cabe */
+@media (min-width:1400px){
+  #hdr{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:18px;padding:10px max(16px,calc((100% - 1528px)/2))}
+  #hdr .hrow{display:contents}
+  #hdr .brand{grid-column:1;grid-row:1}
+  #hdr .tabs{grid-column:2;grid-row:1;margin:0;padding:2px 4px 4px 2px;max-width:none;justify-content:safe center;gap:2px}
+  #hdr .tabs .tab{padding-left:9px;padding-right:9px}
+  #hdr .ctl{grid-column:3;grid-row:1;flex-wrap:nowrap}
+}
+</style><script>(function(){var s='cuadre';try{var v=localStorage.getItem('mis-finanzas-prototipo-v1-skin');if(v==='original'||v==='cuadre'||v==='escalon')s=v;}catch(e){}document.documentElement.dataset.skin=s;['cuadre','escalon'].forEach(function(k){var e=document.getElementById('sk-'+k);if(e)e.disabled=(k!==s);});})();</script>
 
 <header id="hdr"></header>
 <main class="wrap" id="app"></main>
