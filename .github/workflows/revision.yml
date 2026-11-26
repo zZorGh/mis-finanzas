@@ -27,6 +27,8 @@ jobs:
       - run: npm ci
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      - name: index.html coincide con src/
+        run: node armar.js --comprobar
       - run: npm run lint
       - run: npm run regla
       - run: npm audit --audit-level=high

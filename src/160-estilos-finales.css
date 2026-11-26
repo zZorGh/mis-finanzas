@@ -1,0 +1,8 @@
+</style><style>.skins{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}.sk-l{font-weight:600;margin-right:4px}.skins button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600}.tab.off{opacity:.95}.amt-t.dep{color:color-mix(in srgb,var(--c-aho) 72%,CanvasText)}</style><script>(function(){var s='cuadre';try{var v=localStorage.getItem('mis-finanzas-prototipo-v1-skin');if(v==='original'||v==='cuadre'||v==='escalon')s=v;}catch(e){}document.documentElement.dataset.skin=s;['cuadre','escalon'].forEach(function(k){var e=document.getElementById('sk-'+k);if(e)e.disabled=(k!==s);});})();</script>
+
+<header id="hdr"></header>
+<main class="wrap" id="app"></main>
+<button id="fab" class="fab" type="button" aria-label="Registrar movimiento">+</button><nav id="bnav" class="bnav" aria-label="Navegación principal"></nav>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<!-- integrity: el navegador rechaza la librería si el CDN la entrega alterada. Al cambiar de versión, recalcular la huella. -->

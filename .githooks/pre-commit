@@ -1,3 +1,6 @@
 #!/bin/sh
 # Regla de oro: ver dev/regla-de-oro.js
-exec node "$(git rev-parse --show-toplevel)/dev/regla-de-oro.js" commit
+raiz=$(git rev-parse --show-toplevel)
+# index.html se genera desde src/: no se puede subir una mitad sin la otra.
+node "$raiz/dev/armar.js" --indice || exit 1
+exec node "$raiz/dev/regla-de-oro.js" commit
