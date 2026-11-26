@@ -1,0 +1,20 @@
+# Avisa y propone cambios cuando una dependencia de desarrollo o una acción de GitHub tiene versión nueva o un fallo de seguridad.
+# La app publicada no tiene dependencias de npm; sus librerías por CDN van con versión fija y huella (SRI) y se actualizan a mano.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /dev
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    groups:
+      desarrollo:
+        patterns: ["*"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    groups:
+      acciones:
+        patterns: ["*"]
