@@ -19,6 +19,6 @@
     "chart.js": "4.4.1",
     "eslint": "^9.39.5",
     "globals": "^17.14.0",
-    "playwright": "^1.50.0"
+    "playwright": "^1.65.1"
   }
 }
