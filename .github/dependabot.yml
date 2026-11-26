@@ -7,6 +7,12 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 3
+    ignore:
+      # Las pruebas usan la misma versión de Chart.js que la app (CDN con huella): se suben juntas y a mano.
+      - dependency-name: chart.js
+      # Un salto mayor de ESLint cambia las reglas: se revisa a mano.
+      - dependency-name: eslint
+        update-types: ["version-update:semver-major"]
     groups:
       desarrollo:
         patterns: ["*"]

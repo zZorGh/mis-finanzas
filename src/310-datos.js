@@ -63,9 +63,12 @@ function saneCfg(c0){
   if('bancos' in o){if(isObj(o.bancos)){const b={};['bbva','bcp','oh'].forEach(k=>{if(typeof o.bancos[k]==='string'){const n=o.bancos[k].replace(/[<>"'`]/g,'').trim().replace(/\s+/g,' ').slice(0,28);if(n)b[k]=n;}});o.bancos=b;}else delete o.bancos;}
   const cr0=o.credito;o.credito={bbva:fin(cr0.bbva),bcp:fin(cr0.bcp),oh:fin(cr0.oh)};CARD_X.forEach(k=>{if(cr0[k]!=null)o.credito[k]=fin(cr0[k]);});
   if('tarjetasX' in o){const vis={},dia=v=>+v>=1&&+v<=31?Math.round(+v):0;o.tarjetasX=(Array.isArray(o.tarjetasX)?o.tarjetasX:[]).filter(x=>isObj(x)&&CARD_X.includes(x.k)&&!vis[x.k]&&(vis[x.k]=1)).map(x=>({k:x.k,n:String(x.n||'').replace(/[<>"'`]/g,'').trim().replace(/\s+/g,' ').slice(0,28)||('Tarjeta '+(CARD_ALL.indexOf(x.k)+1)),l:Math.max(0,fin(x.l)),cd:dia(x.cd),pd:dia(x.pd)}));}
+  /* La tasa de ahorro llega a la pantalla: solo un tipo conocido y un número (un respaldo manipulado podía colar código aquí). */
+  if('ahoTasa' in o){const t={};if(isObj(o.ahoTasa))Object.keys(o.ahoTasa).forEach(k=>{const x=o.ahoTasa[k],v=isObj(x)?+x.v:NaN;if(k!=='__proto__'&&Number.isFinite(v)&&v>0&&v<=1000)t[String(k).trim().toLowerCase()]={t:x.t==='TEA'?'TEA':'TREA',v};});o.ahoTasa=t;}
   if('tarjetasD' in o&&!isObj(o.tarjetasD))delete o.tarjetasD;
   o.metas=o.metas.filter(isObj).map(g=>Object.assign({},g,{n:sStr(g.n),o:fin(g.o)}));
-  o.rec=o.rec.map(saneRow).filter(Boolean);
+  /* El día de un recurrente es un número de 1 a 31; cualquier otra cosa se descarta (se muestra en Ajustes). */
+  o.rec=o.rec.map(saneRow).filter(Boolean).map(r=>{const n=parseInt(r.f,10);r.f=(String(n)===String(r.f).trim()&&n>=1&&n<=31)?r.f:'';return r;});
   if(isObj(o.pagoDia)){const p={};Object.keys(o.pagoDia).forEach(k=>{if(k!=='__proto__'&&Number.isFinite(+o.pagoDia[k]))p[k]=+o.pagoDia[k];});o.pagoDia=p;}
   if(isObj(o.corteDia)){const p={};Object.keys(o.corteDia).forEach(k=>{if(k!=='__proto__'&&CARD_ALL.includes(k)&&+o.corteDia[k]>=1&&+o.corteDia[k]<=31)p[k]=Math.round(+o.corteDia[k]);});o.corteDia=p;}else if('corteDia' in o)delete o.corteDia;
   if('tcLast' in o){if(isObj(o.tcLast)){const t=o.tcLast;o.tcLast=Object.assign({},t,{usd:fin(t.usd),s:sStr(t.s),f:sStr(t.f)});if('eur' in t)o.tcLast.eur=fin(t.eur);}else delete o.tcLast;}

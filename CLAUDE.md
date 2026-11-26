@@ -99,6 +99,10 @@ Copia diaria cifrada de `estado` y `estado_historial` a un repo **privado** de G
 - Supabase pausa los proyectos Free sin uso por una semana: se reactivan desde el panel.
 - En el panel de pruebas falta (del dueño): URL del sitio y redirecciones para los correos de confirmación (Authentication → URL Configuration), p. ej. `http://127.0.0.1:8765`.
 
+## Protecciones de GitHub (25 nov. 2026)
+Activos: detección de secretos con bloqueo al subir, Dependabot (alertas y arreglos; `.github/dependabot.yml` **ignora Chart.js** porque las pruebas usan la misma versión que la app, y los saltos mayores de ESLint), CodeQL (configuración por defecto), reporte privado de vulnerabilidades (`SECURITY.md`) y una regla que impide borrar o reescribir `main` (publicar sigue igual). Las alertas de CodeQL en `dev/` son código de pruebas.
+- **Datos manipulados:** `dev/t132.js` mete HTML en toda la configuración y los datos y falla si algo se ejecuta (encontró dos casos reales: `cfg.ahoTasa` y el día de `cfg.rec`). **Toda clave nueva de `cfg` que llegue a la pantalla se valida en `saneCfg`, se escapa con `esc()` y se añade a t132.**
+
 ## Probar
 Ver `dev/README.md`. Resumen: `cd dev && npm install && npx playwright install chromium`, luego `npm test` (regresión, ~3 min en paralelo) y `npm run scan` (contraste/desbordes/errores en todos los estilos). **Corre ambos antes de proponer un push.** Lección aprendida: una captura bonita no basta; los errores reales salieron al abrir estados secundarios (modo «Editar», diálogos) en cada estilo, claro y oscuro.
 
