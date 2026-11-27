@@ -166,11 +166,9 @@ app.addEventListener('click',e=>{
   if(b.id==='lreset'){delete LAY[grp()];saveLay();closePanel();render();return;}
   if(d.add&&typeof view==='number'){const arr=S[year][view][d.add];arr.push(d.add==='eur'?{a:0,b:0,d:0,s:0,p:0}:row());pf=[d.add,arr.length-1,d.add==='eur'?'a':'c'];save();render();}
   else if(d.del&&typeof view==='number'){delMov(S[year][view],d.del,+d.i);save();render();}
-  else if(d.cat!==undefined){const nm0=cfg.cats[+d.cat];if(nm0&&catCuenta(nm0)>0){toast('Tiene movimientos. Para quitarla, únela con otra escribiendo su nombre.');return;}const nm=cfg.cats.splice(+d.cat,1)[0];if(nm&&cfg.catGrupo)delete cfg.catGrupo[nm.trim().toLowerCase()];save();render();}
-  else if(b.id==='addcat'){const v=catNom(document.getElementById('nc').value);if(v&&catFind(v)){toast('Ya tienes esa categoría.');return;}if(v){cfg.cats.push(v);const gv=(document.getElementById('nc-g')||{}).value;if(gv&&gv!=='-'){cfg.catGrupo=cfg.catGrupo||{};cfg.catGrupo[v.toLowerCase()]=gv;}save();}render();}
+
   else if(b.id==='addmeta'){const n=document.getElementById('mn').value.trim(),o=parseFloat(document.getElementById('mobj').value)||0;if(!n){toast('Escribe el nombre de la meta.');return;}cfg.metas=cfg.metas||[];const ex=cfg.metas.find(x=>x.n.toLowerCase()===n.toLowerCase());if(ex){if(o>0){ex.o=o;save();render();toast('Objetivo actualizado.');}else toast('Ya existe esa meta. Escribe un objetivo para actualizarla.');return;}cfg.metas.push({n,o});save();render();}
   else if(d.metadel!==undefined){cfg.metas.splice(+d.metadel,1);save();render();return;}
-  else if(b.id==='reset'){S=build();cfg=CFG0();save();render();}
 });
 app.addEventListener('keydown',e=>{const t=e.target;if(t.classList&&t.classList.contains('aa-tv')){if(e.key==='Enter'){e.preventDefault();saveTasa(t.dataset.acct,t.closest('.aa-t').querySelector('.aa-ts').value,t.value);}else if(e.key==='Escape'){e.preventDefault();render();}return;}
   if(!t.classList||!t.classList.contains('aa-ren'))return;if(e.key==='Enter'){e.preventDefault();renameAho(t.dataset.old,t.value);}else if(e.key==='Escape'){e.preventDefault();render();}});

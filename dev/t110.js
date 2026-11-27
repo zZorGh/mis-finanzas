@@ -23,7 +23,7 @@ const unzip=buf=>{const out={};let e=buf.length-22;while(buf.readUInt32LE(e)!==0
   let d=await dl();T(L+' descarga el Excel',!!d);
   if(d){const f=await d.path();const z=unzip(fs.readFileSync(f));const wbx=z['xl/workbook.xml'].toString();const ss=(z['xl/sharedStrings.xml']||Buffer.from('')).toString();
     T(L+' nombre del archivo en su idioma',EN?/^account-statement_/.test(d.suggestedFilename()):/^estado-de-cuenta_/.test(d.suggestedFilename()));
-    T(L+' hojas de grupos y antojos',EN?(/Spending by group/.test(wbx)&&/name="Impulse buys"/.test(wbx)&&/Spending by category/.test(wbx)&&/name="Transactions"/.test(wbx)):(/Gastos por grupo/.test(wbx)&&/name="Antojos"/.test(wbx)));
+    T(L+' hojas de grupos y antojos',EN?(/Spending by group/.test(wbx)&&/name="Impulse buys"/.test(wbx)&&/Spending by item/.test(wbx)&&/name="Transactions"/.test(wbx)):(/Gastos por grupo/.test(wbx)&&/name="Antojos"/.test(wbx)));
     T(L+' Antojos lista Galleta, Helado y Chicle',/Galleta/.test(ss)&&/Helado/.test(ss)&&/Chicle/.test(ss));
     if(EN){T('en inglés: grupos, encabezados y tipos traducidos',/Needs/.test(ss)&&/Wants/.test(ss)&&/Worth it\?/.test(ss)&&/>Impulse buy</.test(ss)&&/Personal account statement/.test(ss)&&/Yes/.test(ss));
       T('en inglés: no quedan textos fijos en español',!/Estado de cuenta|Necesidades|Deseos|Gasto variable|Resumen|Antojo/.test(ss)&&!/Resumen|Mensual/.test(wbx));

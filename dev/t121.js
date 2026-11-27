@@ -23,12 +23,12 @@ const base=S=>{const o=S['2026'][9],n=S['2026'][10];o.ing=[fila('Sueldo',3000)];
  // 2. Cifras y comparación
  p=await abrir('2026-12-10',datos(base),'#noviembre');x=await txt(p);
  T('2 título de mes cerrado',/Cierre de noviembre/i.test(x)&&!/Faltan/.test(x));T('2 entró',/S\/ 3,000\.00/.test(x));T('2 salió',/S\/ 1,200\.00/.test(x));
- T('2 compara con octubre',/20% más que en octubre \(S\/ 1,000\.00\)/.test(x));T('2 ahorro y porcentaje',/S\/ 900\.00/.test(x)&&/30% de tu ingreso/.test(x));T('2 mayor gasto',/Vivienda/.test(x)&&/67% de tus gastos/.test(x));
+ T('2 compara con octubre',/20% más que en octubre \(S\/ 1,000\.00\)/.test(x));T('2 ahorro y porcentaje',/S\/ 900\.00/.test(x)&&/30% de tu ingreso/.test(x));T('2 mayor gasto',/Alquiler/.test(x)&&/67% de tus gastos/.test(x));
  T('2 sugerencia concreta',/fue el 67% de tus gastos/.test(x));await fin(p);
  // 3. Una sola sugerencia, por prioridad
  const idea=async(mod,cfgx,re,n)=>{const q=await abrir('2026-12-10',datos(S=>{base(S);mod(S['2026'][10]);},cfgx),'#noviembre');const s=await q.locator('.ciesug span').innerText();T('3 '+n,re.test(s));await fin(q);};
  await idea(m=>{m.ing=[];},null,/No registraste ingresos/,'sin ingresos');
- await idea(m=>{m.fij=[fila('Alquiler',4000,'Vivienda')];},null,/Gastaste S\/ 1,400\.00 más.*Vivienda/,'gastó más de lo que entró');
+ await idea(m=>{m.fij=[fila('Alquiler',4000,'Vivienda')];},null,/Gastaste S\/ 1,400\.00 más.*Alquiler/,'gastó más de lo que entró');
  await idea(m=>{m.bbva=[fila('Tienda',250)];},null,/debiendo S\/ 250\.00/,'deuda de tarjeta');
  await idea(m=>{m.aho=[fila('Fondo',150,'',{t:'dep'})];},null,/Ahorraste el 5%.*meta es 20%.*S\/ 450\.00/,'bajo la meta');
  await idea(m=>{m.fij=[fila('Luz',100,'Casa'),fila('Agua',100,'Agua')];m.hor=[fila('Café',50,'Café',{t:'ant',v:0}),fila('Menú',100,'Comida')];},null,/antojos.*S\/ 50\.00/,'antojo que no valió');
@@ -43,7 +43,7 @@ const base=S=>{const o=S['2026'][9],n=S['2026'][10];o.ing=[fila('Sueldo',3000)];
  p=await abrir('2026-01-04',datos(S=>{S['2025'][11].ing=[fila('Sueldo',2500)];S['2025'][11].fij=[fila('Luz',100,'Casa')];}),'#enero');T('5 enero ofrece diciembre',/Diciembre ya cerró/.test(await p.locator('.ciebar').innerText()));
  await p.click('[data-cieir]');await p.waitForTimeout(450);x=await txt(p);T('5 abre diciembre del año anterior',/Cierre de diciembre/i.test(x)&&/S\/ 2,500\.00/.test(x)&&(await p.evaluate(()=>document.getElementById('yr')&&document.getElementById('yr').value))==='2025');await fin(p);
  // 6. Texto de la persona no se ejecuta
- p=await abrir('2026-12-10',datos(S=>{base(S);S['2026'][10].fij=[fila('X',4000,'<img src=x onerror=__x()>')];}),'#noviembre');await p.waitForTimeout(200);T('6 categoría maliciosa no se ejecuta',!(await p.evaluate(()=>window.__hit))&&!(await card(p).locator('img').count()));await fin(p);
+ p=await abrir('2026-12-10',datos(S=>{base(S);S['2026'][10].fij=[fila('<img src=x onerror=__x()>',4000,'X')];}),'#noviembre');await p.waitForTimeout(200);T('6 concepto malicioso no se ejecuta',!(await p.evaluate(()=>window.__hit))&&!(await card(p).locator('img').count()));await fin(p);
  // 7. Inglés
  p=await abrir('2026-12-03',datos(base),'#diciembre',{lang:'en'});T('7 franja en inglés',/November has closed/.test(await p.locator('.ciebar').innerText()));await p.click('[data-cieir]');await p.waitForTimeout(450);x=await txt(p);
  T('7 tarjeta en inglés',/Came in/.test(x)&&/Went out/.test(x)&&/You saved/.test(x)&&/An idea for next month/.test(x));T('7 sin español suelto',!/Entró|Salió|Ahorraste|de tus gastos|% más que|% de tu ingreso|Una idea/.test(x));await fin(p);

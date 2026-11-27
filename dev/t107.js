@@ -13,13 +13,13 @@ const abrirAlta=async(b,w,o)=>{const p=await nueva(b,w,'#resumen',Object.assign(
 (async()=>{
   const b=await chromium.launch();let p=await nueva(b,1280,'#ajustes');
   await p.waitForSelector('.ajc');const g=await pos(p),N=Object.keys(g);
-  T('Ajustes se reparte en tarjetas por tema (al menos 11)',N.length>=11&&['Apariencia','Alertas y fondo de emergencia','Al registrar','Tipo de cambio','Cuentas y tarjetas','Categorías de gastos','Ahorros y metas','Gastos recurrentes','Reportes','Tus datos'].every(n=>N.includes(n)));
+  T('Ajustes se reparte en tarjetas por tema (al menos 11)',N.length>=10&&['Apariencia','Alertas y fondo de emergencia','Al registrar','Tipo de cambio','Cuentas y tarjetas','Ahorros y metas','Gastos recurrentes','Reportes','Tus datos'].every(n=>N.includes(n)));
   const geo=()=>p.evaluate(()=>{const c=[...document.querySelectorAll(".ajc")].map(e=>{const r=e.getBoundingClientRect();return{x:Math.round(r.x),y:r.y,h:r.height,hueco:r.height-e.firstElementChild.offsetHeight};});return{c,n:document.querySelectorAll("[data-ajir]").length,nav:document.querySelector(".ajnav").getBoundingClientRect().right};});
   {const q=await geo();
    T("escritorio: una sola columna, a la derecha del índice",q.c.every(v=>v.x===q.c[0].x&&v.x>q.nav));
    T("ninguna tarjeta se estira (sin huecos) y van en orden",q.c.every(v=>v.hueco<4)&&q.c.every((v,i)=>!i||(v.y-q.c[i-1].y-q.c[i-1].h)<32));
    T("el índice tiene una entrada por tarjeta",q.n===q.c.length);}
-  T('todos los controles siguen en su sitio (ids de los formularios)',await p.evaluate(()=>['cf-alerta','cf-meta','cf-meses','tc-e','tc-d','cf-neg','fx-auto','fx-now','nm-save','nc','nc-g','addcat','mn','mobj','rc-c','rc-m','st-on','bk-json','bk-load','hist'].every(i=>document.getElementById(i))&&document.querySelectorAll('input[name="modoreg"]').length===3&&document.querySelectorAll('select[data-catg]').length>=5));
+  T('todos los controles siguen en su sitio (ids de los formularios)',await p.evaluate(()=>['cf-alerta','cf-meta','cf-meses','tc-e','tc-d','cf-neg','fx-auto','fx-now','nm-save','mn','mobj','rc-c','rc-m','st-on','bk-json','bk-load','hist'].every(i=>document.getElementById(i))&&document.querySelectorAll('input[name="modoreg"]').length===3));
   T('el título «Ajustes» queda arriba y sin tarjeta propia',await p.evaluate(()=>{const h=document.querySelector('.aj-top h1');return !!h&&h.textContent==='Ajustes'&&!h.closest('.ajc');}));
   T('sin desborde horizontal a 1280 px',await sinDesborde(p));
   await p.fill('#cf-alerta','900');await p.waitForTimeout(400);

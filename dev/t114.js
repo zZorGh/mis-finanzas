@@ -1,4 +1,4 @@
-// t114: «Tu semana» en el mes en curso: gastado en los últimos 7 días contra los 7 anteriores, categoría y día de más gasto, y antojos. Cruza de mes si hace falta.
+// t114: «Tu semana» en el mes en curso: gastado en los últimos 7 días contra los 7 anteriores, concepto y día de más gasto, y antojos. Cruza de mes si hace falta.
 const {chromium}=require('playwright');const fs=require('fs');
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
 const demo=JSON.parse(fs.readFileSync(__dirname+'/demo.json','utf8'));const K='mis-finanzas-prototipo-v1';
@@ -16,7 +16,7 @@ const sem=p=>p.evaluate(()=>{const e=document.querySelector('[data-cid="sem"]');
   const b=await chromium.launch();let p=await nueva(b);let s=await sem(p);
   T('aparece «Tu semana»',!!s&&/Tu semana/.test(s.txt));
   T('gastaste 200 esta semana (100+50+30+20), 150% más que la anterior (80)',!!s&&/Gastaste \| S\/ 200\.00/.test(s.txt)&&/▲ 150% más que la semana pasada \(S\/ 80\.00\)/.test(s.txt));
-  T('mayor categoría: Menú 100 (50%)',!!s&&/Menú \| S\/ 100\.00 · 50% de la semana/.test(s.txt));
+  T('mayor gasto por concepto: Almuerzos 100 (50%)',!!s&&/Almuerzos \| S\/ 100\.00 · 50% de la semana/.test(s.txt));
   T('día de más gasto: jueves (12-nov) con 100',!!s&&/Jueves \| S\/ 100\.00/.test(s.txt));
   T('antojos: S/ 20 que no valieron la pena',!!s&&/Antojos \| S\/ 20\.00 \| No valieron la pena: S\/ 20\.00/.test(s.txt));
   T('ocupa todo el ancho del tablero y no desborda',!!s&&s.w>1200&&!s.over);

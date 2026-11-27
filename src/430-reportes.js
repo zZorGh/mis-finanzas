@@ -29,19 +29,19 @@ function repData(a,b){
       const sol=r2(amt*tc),o={sec,fecha:dayDate(y,i,r.f),y,i,dia:parseInt(r.f,10)||99,per,tipo,sent,concepto:(concepto||'').trim(),cat:catg||'',cuenta:cuenta||'',cur,amt,tc,sol,firm:sign?r2(sign*sol):sol};mov.push(o);return o;
     };
     (m.ing||[]).forEach(r=>{if(usedRow(r))push('ing',r,'Ingreso','Entrada',r.c,liqN(r),r.k,1);});
-    (m.fij||[]).forEach(r=>{if(usedRow(r))push('fij',r,r.card?'Pago de tarjeta '+SECN[r.card]:'Gasto fijo','Salida',r.c,liqN(r),r.card?'Pago de tarjetas':(r.k||'Sin categoría'),-1);});
-    (m.hor||[]).forEach(r=>{if(usedRow(r)){const an=r.t==='ant',o=push('hor',r,an?'Antojo':'Gasto variable','Salida',r.c,liqN(r),r.k||'Sin categoría',-1);if(an){o.ant=1;o.vp=r.v===1?'Sí':r.v===0?'No':'';}}});
+    (m.fij||[]).forEach(r=>{if(usedRow(r))push('fij',r,r.card?'Pago de tarjeta '+SECN[r.card]:'Gasto fijo','Salida',r.c,liqN(r),r.card?'Pago de tarjetas':kNom('fij',r),-1);});
+    (m.hor||[]).forEach(r=>{if(usedRow(r)){const an=r.t==='ant',o=push('hor',r,an?'Antojo':'Gasto variable','Salida',r.c,liqN(r),kNom('hor',r),-1);if(an){o.ant=1;o.vp=r.v===1?'Sí':r.v===0?'No':'';}}});
     (m.inv||[]).forEach(r=>{if(usedRow(r))push('inv',r,'Inversión','Salida',r.c,liqN(r),r.k,-1);});
     (m.aho||[]).forEach(r=>{if(!usedRow(r))return;const k=ahoKind(r);
       const tipo={dep:'Depósito a ahorro',ret:'Retiro de ahorro',aj:'Ajuste de saldo de ahorro',tr:'Traspaso entre cuentas de ahorro'}[k];
       const sent={dep:'Hacia ahorro',ret:'Desde ahorro',aj:'Ajuste',tr:'Interno'}[k];
       push('aho',r,tipo,sent,r.k?'Meta: '+r.k:'',ahoName(r),'',(k==='dep'||k==='ret')?-1:0).ak=k;});
-    CARDS.forEach(ck=>(m[ck]||[]).forEach(r=>{if(usedRow(r))push(ck,r,'Compra con tarjeta '+SECN[ck],'Cargo a tarjeta',r.c,'Tarjeta '+SECN[ck],r.k||'Sin categoría',-1);}));
+    CARDS.forEach(ck=>(m[ck]||[]).forEach(r=>{if(usedRow(r))push(ck,r,'Compra con tarjeta '+SECN[ck],'Cargo a tarjeta',r.c,'Tarjeta '+SECN[ck],kNom(ck,r),-1);}));
   });
   mov.sort((p,q)=>mkey(p.y,p.i)-mkey(q.y,q.i)||p.dia-q.dia);
   Object.keys(T).forEach(k=>{T[k]=r2(T[k]);});
-  /* Gastos por categoría (gastos fijos + variables, igual que «Total gastado») */
-  const cm=new Map();mov.filter(x=>x.sec==='fij'||x.sec==='hor').forEach(x=>{const k=x.cat||'Sin categoría';cm.set(k,(cm.get(k)||0)+x.sol);});
+  /* Gastos por concepto (gastos fijos + variables, igual que «Total gastado») */
+  const cm=new Map();mov.filter(x=>x.sec==='fij'||x.sec==='hor').forEach(x=>{const k=x.cat==='Pago de tarjetas'?x.cat:concNom({c:x.concepto});cm.set(k,(cm.get(k)||0)+x.sol);});
   const cat=[...cm.entries()].map(([c,v])=>({c,v:r2(v)})).filter(x=>Math.abs(x.v)>=.005).sort((p,q)=>q.v-p.v);
   /* Gastos por grupo (Necesidades, Deseos, Ahorro e inversión), igual que «¿Dónde gastas más?» */
   const gm=gruposMes(ms.map(x=>x.m)),grupos=gm.G.map(g=>({n:g.n,t:r2(g.t),l:[...g.l.values()].map(e=>({c:e.n,v:r2(e.v)})).filter(e=>e.v>0).sort((p,q)=>q.v-p.v)})).filter(g=>g.t>0).sort((p,q)=>q.t-p.t),gT=r2(gm.total);
@@ -73,7 +73,7 @@ function repData(a,b){
 function repWho(){return {nombre:(cfg.titular||'').trim(),correo:(typeof sbUser!=='undefined'&&sbUser&&sbUser.email)||''};}
 /* Reportes en segundo plano: el armado de PDF y Excel (lo pesado) corre en un Web Worker (reportes.js)
    y la pantalla sigue respondiendo. Si el navegador no permite workers, se carga el mismo archivo y corre aquí. */
-const REP_JS='reportes.js?v=4';
+const REP_JS='reportes.js?v=5';
 function mkReport(fmt,R,o){
   const ctx={MES,who:repWho(),lang:LANG},job={fmt,R,o:{det:o.det},ctx};
   const viaMain=()=>new Promise((res,rej)=>{
@@ -109,7 +109,7 @@ function openReport(){
   const draw1=()=>{
     const R=repData(st.a,st.b);
     sh.innerHTML=`<div class="sh-h"><b>Descargar reporte</b><button type="button" data-s="close" aria-label="Cerrar">×</button></div>
-    <div class="ms">Un estado de cuenta ordenado con tu resumen, ingresos, gastos por categoría, ahorros, tarjetas y el detalle de cada movimiento.</div>
+    <div class="ms">Un estado de cuenta ordenado con tu resumen, ingresos, gastos por concepto, ahorros, tarjetas y el detalle de cada movimiento.</div>
     <div class="rp-l">Período</div>
     <div class="grp" role="radiogroup" aria-label="Período" id="rp-p">${chipH([['mes',typeof view==='number'?'Este mes':'Último mes'],['m3','Últimos 3 meses'],['m6','Últimos 6 meses'],['anio','Año '+year],['ant','Año '+(+year-1)],['rango','Elegir meses']],st.p,'rp',true)}</div>
     ${st.p==='rango'?`<div class="rp-r"><label class="fld">Desde${sel('rp-a',st.a)}</label><label class="fld">Hasta${sel('rp-b',st.b)}</label></div>`:''}

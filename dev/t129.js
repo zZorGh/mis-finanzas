@@ -17,7 +17,7 @@ const base=()=>{const d=JSON.parse(JSON.stringify({v:1,S:demo.S,cfg:Object.assig
  let p=await mk();await abre(p);
  T('1 el selector de movimiento está en la misma pantalla',await vis(p,'#stype')&&await p.locator('#stype .cp').count()===4);
  // Ingreso
- await grupo(p,'ing');T('2 ingreso pide la cuenta donde se deposita',await vis(p,'#ssrc')&&/deposita/.test(await p.innerText('#ssrcw')));T('2b sin categoría ni grupo',!(await p.locator('#sacat').count()));
+ await grupo(p,'ing');T('2 ingreso pide la cuenta donde se deposita',await vis(p,'#ssrc')&&/deposita/.test(await p.innerText('#ssrcw')));T('2b sin categoría ni grupo',!(await p.locator('#sqk [data-sgrp]').count()));
  await p.fill('#sa','300');await p.fill('#sd','Bono T129');await p.click('#sheet [data-s="save"]');await W(p);T('3 ingreso sin cuenta no guarda a ciegas',!(await mes(p)).ing.some(r=>r.c==='Bono T129')&&await p.locator('#sheet').count()===1);
  const l0=+(await mes(p)).liq[1].m;await p.click('#ssrc [data-src="liq:1"]');await W(p);await p.click('#sheet [data-s="save"]');await W(p);let m=await mes(p);
  T('4 ingreso guardado y sumado a la cuenta',m.ing.some(r=>r.c==='Bono T129'&&+r.m===300&&r.src==='liq:1')&&Math.abs(+m.liq[1].m-(l0+300))<.01);

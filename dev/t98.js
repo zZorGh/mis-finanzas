@@ -1,4 +1,4 @@
-// t98: al registrar un gasto (Manual, por pasos) se pregunta el grupo (Necesidades, Deseos, Ahorro e inversión) y luego la categoría dentro de ese grupo.
+// t98: al registrar un gasto (Manual, por pasos) se pregunta el grupo (Necesidades, Deseos, Ahorro e inversión) y se sigue con la cuenta; no hay categorías.
 const {chromium}=require('playwright');const fs=require('fs');
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
 const demo=JSON.parse(fs.readFileSync(__dirname+'/demo.json','utf8'));const K='mis-finanzas-prototipo-v1';
@@ -20,42 +20,20 @@ const cfgNow=p=>p.evaluate(k=>JSON.parse(localStorage.getItem(k)).cfg,K);
   await hastaGrupo(p);
   T('después del tipo, pregunta «¿En qué grupo cae este gasto?» con los tres grupos',await step(p)==='grp'&&/En qué grupo/.test(await p.innerText('#swq'))&&await p.locator('#sgrp button').count()===3);
   await p.click('#sgrp [data-sgrp="want"]');await W(p);
-  T('luego pregunta «¿En qué categoría?» mostrando las del grupo elegido (Ocio) y no las de otro (Menú)',await step(p)==='cat'&&/En qué categoría/.test(await p.innerText('#swq'))&&/Ocio/.test(await p.innerText('#scat2'))&&!/Menú/.test(await p.innerText('#scat2')));
-  T('las categorías sin clasificar aparecen aparte, con el aviso de que se suman al grupo',await vis(p,'#scat2o')&&/Alquiler/.test(await p.innerText('#scat2o'))&&/se suma a este grupo/.test(await p.innerText('#scat2ol')));
-  await p.click('#scat2 [data-sc="Ocio"]');await W(p);
-  T('elegir la categoría avanza solo a «de dónde sale»',await step(p)==='src');
+  T('y pasa directo a «de dónde sale»: ya no hay categorías',await step(p)==='src'&&!(await p.locator('#scat2,[data-scatskip]').count()));
   await p.click('#ssrc [data-src="liq:0"]');await W(p);
-  T('el resumen muestra el grupo y la categoría elegidos',/Deseos/.test(await p.innerText('#swsum'))&&/Ocio/.test(await p.innerText('#swsum')));
+  T('el resumen muestra el grupo elegido',/Deseos/.test(await p.innerText('#swsum')));
   await p.fill('#sa','12');await p.fill('#sd','T98 cine');await p.click('[data-s="save"]');await p.waitForTimeout(400);
-  T('el gasto se guarda con esa categoría',(await fila(p,'T98 cine')||{}).k==='Ocio');
+  T('el gasto se guarda con su grupo',(await fila(p,'T98 cine')||{}).k==='Deseo');
+  T('no se crean categorías ni cambia la clasificación antigua',(await cfgNow(p)).cats.length===demo.cfg.cats.length||!(await cfgNow(p)).cats.includes('T98 cine'));
   T('sin errores de JavaScript',p.errs.length===0);if(p.errs.length)console.log(p.errs);
   await p.context().close();
 
-  // Una categoría sin clasificar queda en el grupo donde se elige
-  p=await nueva(b,{catGrupo:{'ocio':'want'}});await hastaGrupo(p);
-  await p.click('#sgrp [data-sgrp="need"]');await W(p);
-  T('un grupo sin categorías muestra el mensaje y deja escribir una',/Todavía no tienes categorías en este grupo/.test(await p.innerText('#scat2e')));
-  await p.click('#scat2o [data-sc="Salud"]');await W(p);await guardar(p,'30','T98 farmacia');
-  T('el gasto queda con la categoría Salud',(await fila(p,'T98 farmacia')||{}).k==='Salud');
-  T('y Salud quedó clasificada en Necesidades para siempre',(await cfgNow(p)).catGrupo.salud==='need');
-  await p.context().close();
+  for(const [g,k] of [['need','Necesidad'],['ai','Ahorro e inversión']]){p=await nueva(b);await hastaGrupo(p);await p.click('#sgrp [data-sgrp="'+g+'"]');await W(p);await guardar(p,'8','T98 '+g);T('el grupo '+g+' se guarda como '+k,(await fila(p,'T98 '+g)||{}).k===k);await p.context().close();}
 
-  // Categoría nueva, con Enter
-  p=await nueva(b);await hastaGrupo(p);await p.click('#sgrp [data-sgrp="want"]');await W(p);
-  await p.fill('#scn','T98 Mascotas');await p.press('#scn','Enter');await W(p);
-  T('escribir una categoría nueva y pulsar Enter avanza sin guardar el gasto',await step(p)==='src'&&await p.locator('#sheet').count()===1);
-  await guardar(p,'20','T98 croquetas');
-  T('la categoría nueva queda creada y en el grupo elegido (Deseos)',(await fila(p,'T98 croquetas')||{}).k==='T98 Mascotas'&&(await cfgNow(p)).cats.includes('T98 Mascotas')&&(await cfgNow(p)).catGrupo['t98 mascotas']==='want');
-  await p.context().close();
-
-  // Sin categoría
-  p=await nueva(b);await hastaGrupo(p);await p.click('#sgrp [data-sgrp="need"]');await W(p);await p.click('[data-scatskip]');await W(p);await guardar(p,'8','T98 sin cat');
-  T('«Sin categoría» guarda el gasto sin categoría',(await fila(p,'T98 sin cat')||{}).k==='');
-  await p.context().close();
-
-  // Automático no pregunta grupo ni categoría
+  // Automático no pregunta el grupo por pasos: lo propone en la tarjeta
   p=await nueva(b);await p.click('#fab');await p.waitForSelector('#sheet');await p.click('[data-mode="auto"]');await W(p);await p.fill('#smsg','almuerzo 25 yape');await W(p);
-  T('Automático no muestra el grupo ni la categoría',!(await vis(p,'#sgrpw'))&&!(await vis(p,'#scatw2')));
+  T('Automático no muestra el paso del grupo y sí las fichas en su tarjeta',!(await vis(p,'#sgrpw'))&&await p.locator('#sapv [data-sgrp]').count()===3);
   await p.context().close();
 
   // Inglés

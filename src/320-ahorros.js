@@ -67,12 +67,19 @@ function migrateAho(){
 }
 const fmtC=(id,v)=>curOf(id)+' '+num2(v);
 /* Grupo de una categoría: lo que la persona eligió en Ajustes ('-' = sin clasificar a propósito); si no eligió, los nombres «Necesidad…» y «Deseo…» de siempre. */
-function catG(k){const s=String(k||'').trim().toLowerCase();if(!s)return'';const cg=cfg.catGrupo||{},v=Object.prototype.hasOwnProperty.call(cg,s)?cg[s]:'';if(v==='-')return'';if(v)return v;return s.indexOf('necesid')===0?'need':s.indexOf('deseo')===0?'want':'';}
-const GRUPOS3=[['need','Necesidades'],['want','Deseos'],['ai','Ahorro e inversión'],['','Sin clasificar']];
+function catG(k){const s=String(k||'').trim().toLowerCase();if(!s)return'';if(s==='necesidad')return'need';if(s==='deseo')return'want';if(s==='ahorro e inversión')return'ai';const cg=cfg.catGrupo||{},v=Object.prototype.hasOwnProperty.call(cg,s)?cg[s]:'';if(v==='-')return'';if(v)return v;return s.indexOf('necesid')===0?'need':s.indexOf('deseo')===0?'want':'';}
+const GRUPOS3=[['need','Necesidades'],['want','Deseos'],['ai','Ahorro e inversión']];
+/* Solo existen esos tres grupos. En la fila se guarda GNOM (lo entienden también las versiones anteriores) y se muestra GLAB.
+   Los movimientos antiguos conservan su palabra («Menú»…) sin mostrarla: catG la traduce con cfg.catGrupo. */
+const GNOM={need:'Necesidad',want:'Deseo',ai:'Ahorro e inversión'},GLAB={need:'Necesidades',want:'Deseos',ai:'Ahorro e inversión'};
+const grupoDe=(sec,r)=>(sec==='hor'&&r.t==='ant')?'want':(catG(r.k)||(sec==='fij'?'need':'want'));
+const kNom=(sec,r)=>((sec==='fij'||sec==='hor')&&!r.card)?GLAB[grupoDe(sec,r)]:(GLAB[catG(r.k)]||'');
+/* Nombre de un gasto para agrupar por concepto */
+const concNom=r=>{const s=String(r.c||'').trim();return s?s.charAt(0).toUpperCase()+s.slice(1):'Sin descripción';};
 function needWant(m){
   let n=0,w=0,a=0;
   [['fij','need'],['hor','want']].forEach(x=>{(m[x[0]]||[]).forEach(r=>{
-    const v=(+r.m||0)*rateC(rowCur(x[0],r),m),g=(x[0]==='hor'&&r.t==='ant')?'want':(catG(r.k)||x[1]);
+    const v=(+r.m||0)*rateC(rowCur(x[0],r),m),g=grupoDe(x[0],r);
     if(g==='ai')a+=v;else if(g==='need')n+=v;else w+=v;});});
   return{need:n,want:w,aiG:a};
 }

@@ -13,7 +13,7 @@ function sembrado(){
     credito:{bbva:P('credito'),bcp:1000,oh:P('credito2')},eurCols:[P('eur0'),P('eur1'),P('eur2'),P('eur3')],metas:[{n:P('metaNombre'),m:P('metaMonto'),o:P('metaObj'),f:P('metaFecha')}],
     rec:[{c:P('recConcepto'),m:5,k:P('recCat'),src:P('recSrc'),s:'hor',sec:'hor',f:P('recDia')}],cats:demo.cfg.cats.concat([P('categoria')]),pagoDia:{bbva:P('pagoDia')},corteDia:{bbva:P('corteDia')},
     tarjetasX:[{k:'c4',n:P('tarjetaX'),l:P('tarjetaL'),cd:P('tarjetaCd'),pd:P('tarjetaPd')}],bancos:{bbva:P('banco')},catGrupo:{[P('grupoClave')]:'need'}});
-  m.hor.push({c:P('filaC'),m:5,f:P('filaF'),k:P('filaK'),src:P('filaSrc'),t:'ant',id:P('filaId')});
+  m.hor.push({c:P('filaC'),m:99999,f:P('filaF'),k:P('filaK'),src:P('filaSrc'),t:'ant',id:P('filaId')});
   m.fij.push({c:P('fijoC'),m:6,f:'5-nov',k:'x',card:P('fijoCard')});
   m.aho.push({c:P('ahorroC'),m:7,f:'5-nov',k:P('ahorroK'),t:P('ahorroT')});m.ing.push({c:P('ingC'),m:8,f:P('ingF'),imp:P('imp')});
   m.liq[0].c=P('cuentaLiq');m.nota=P('nota');m.mov=[{a:P('movA'),b:P('movB'),m:P('movM'),f:P('movF'),n:P('movN'),de:P('movDe'),to:P('movTo'),from:P('movFrom')}];m.copen={bbva:P('copen')};m.tc={'$':P('tcMes'),'€':P('tcMesE')};

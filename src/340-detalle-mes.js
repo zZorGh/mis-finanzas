@@ -1,16 +1,16 @@
 /* ---------- Detalle de un mes ---------- */
 const inp=(s,i,k,v,t,ph)=>`<input id="${s}-${i}-${k}" data-s="${s}" data-i="${i}" data-k="${k}" type="${t}" ${t==='number'?'step="0.01" inputmode="decimal" value="'+esc(v?v:'')+'"':'value="'+esc(v)+'"'} placeholder="${esc(ph)}" aria-label="${esc(ph==='0.00'?'Monto':ph)}">`;
-const catSel=(s,i,v)=>`<select class="f" id="${s}-${i}-k" data-s="${s}" data-i="${i}" data-k="k" aria-label="Categoría"><option value="">Categoría</option>${v&&cfg.cats.indexOf(v)<0?`<option selected>${esc(v)}</option>`:''}${cfg.cats.map(c=>`<option${c===v?' selected':''}>${esc(c)}</option>`).join('')}</select>`;
+const catSel=(s,i,g)=>`<select class="f" id="${s}-${i}-k" data-s="${s}" data-i="${i}" data-k="k" aria-label="Grupo">${GRUPOS3.map(x=>`<option value="${GNOM[x[0]]}"${x[0]===g?' selected':''}>${x[1]}</option>`).join('')}</select>`;
 const del=(s,i)=>`<button type="button" class="x" data-del="${s}" data-i="${i}" aria-label="Quitar fila">×</button>`;
 const TPL={ing:'1fr 58px 90px 44px',gas:'1fr 88px 112px 58px 44px',aho:'1fr 90px 58px 44px',bnk:'1fr 100px 44px'};
 const EDITABLE=['ing','fij','hor','aho','inv'];
 const act=(s,i)=>`<div class="rwx">${EDITABLE.indexOf(s)>=0?`<button type="button" class="x ed-row" data-edit="${s}" data-i="${i}" aria-label="Editar fila" title="Editar"><svg class="ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>`:''}<button type="button" class="x" data-del="${s}" data-i="${i}" aria-label="Quitar fila">×</button></div>`;
-const HEAD={ing:['Concepto','Fecha','Monto',''],gas:['Concepto','Monto','Categoría','Fecha',''],aho:['Cuenta','Saldo','Fecha',''],bnk:['Concepto','Monto','']};
+const HEAD={ing:['Concepto','Fecha','Monto',''],gas:['Concepto','Monto','Grupo','Fecha',''],aho:['Cuenta','Saldo','Fecha',''],bnk:['Concepto','Monto','']};
 const mInp=(s,i,r,ph)=>{const v=inp(s,i,'m',r.m,'number',ph||'0.00');return (r.cur&&r.cur!==curOf(s))?`<span class="mwrap"><b class="curb" aria-hidden="true">${r.cur}</b>${v}</span>`:v;};
 function rowsHtml(m,s,t){return m[s].map((r,i)=>{
   let c='';
   if(t==='ing')c=inp(s,i,'c',r.c,'text','Concepto')+inp(s,i,'f',r.f,'text','Fecha')+mInp(s,i,r);
-  else if(t==='gas')c=inp(s,i,'c',r.c,'text','Concepto')+mInp(s,i,r)+catSel(s,i,r.k)+inp(s,i,'f',r.f,'text','Fecha');
+  else if(t==='gas')c=inp(s,i,'c',r.c,'text','Concepto')+mInp(s,i,r)+catSel(s,i,grupoDe(s,r))+inp(s,i,'f',r.f,'text','Fecha');
   else if(t==='aho')c=inp(s,i,'c',r.c,'text','Cuenta')+mInp(s,i,r)+inp(s,i,'f',r.f,'text','Fecha');
   else c=inp(s,i,'c',r.c,'text','Concepto')+mInp(s,i,r);
   return `<div class="rw${t==='bnk'?'':' r'+t}" style="grid-template-columns:${TPL[t]}">${c}${act(s,i)}</div>`;}).join('');}
@@ -25,7 +25,7 @@ function mvList(m,s){
   const out=s==='fij'||s==='hor';
   return '<ul class="mvl">'+rows.map(({r,i})=>{
     const v=+r.m||0,cu=r.cur||curOf(s),l=liqRef(m,r.src);
-    const meta=[r.f?esc(r.f):'',r.card?'Pago de '+BANKN[r.card]:(r.k?esc(r.k):''),l?esc((l.c||'').trim()):'',s==='hor'&&r.t==='ant'?'Antojo'+(r.v===1?' · Valió la pena':r.v===0?' · No valió la pena':''):''].filter(Boolean).join(' · ');
+    const meta=[r.f?esc(r.f):'',r.card?'Pago de '+BANKN[r.card]:((s==='fij'||s==='hor')?kNom(s,r):(r.k?esc(r.k):'')),l?esc((l.c||'').trim()):'',s==='hor'&&r.t==='ant'?'Antojo'+(r.v===1?' · Valió la pena':r.v===0?' · No valió la pena':''):''].filter(Boolean).join(' · ');
     const sg=out?(v>=0?'−':'+'):(v<0?'−':'');
     return `<li><button type="button" class="mvr" data-edit="${s}" data-i="${i}"><span class="sr">Editar: </span><span class="mvc"><span class="mvn">${esc((r.c||'').trim()||'Sin descripción')}</span>${meta?`<span class="mvd">${meta}</span>`:''}</span><span class="mvm">${sg}${cu} ${num2(Math.abs(v))}</span></button></li>`;}).join('')+'</ul>';
 }
@@ -125,37 +125,28 @@ function eurSec(m){
   return `<section class="card bcard" data-cid="eur" style="--h:var(--h-eur)">${secHead('eur','Apuntes')}<div class="sbody"${isFold('eur')?' hidden':''}><div class="tb">${m.eur.length?'':'<div class="ms">Anota aquí lo que quieras seguir aparte; no entra en tus totales.</div>'}<div class="rw lb reur"${m.eur.length?'':' hidden'} style="grid-template-columns:repeat(4,1fr) 22px;min-width:360px">${hd.map((h,j)=>`<input type="text" class="eh" data-ec="${j}" value="${esc(h)}" aria-label="Nombre de la columna ${j+1}">`).join('')}<span></span></div>${rows}<label class="sr" for="nota">Notas</label><textarea id="nota" data-nota="1" rows="3" placeholder="Notas para recordar">${esc(m.nota||'')}</textarea></div><button type="button" class="b add" data-add="eur">+ Agregar fila</button></div><div class="tot"><span>Apuntes personales</span><span>No entra en los totales</span></div></section>`;
 }
 let liqEdit=false;
-/* ¿Dónde gastas más? Reparte lo que salió del mes (gastos fijos y cotidianos, ahorro e inversión) en los 3 grupos; dentro de cada uno, por categoría. */
+/* ¿Dónde gastas más? Reparte lo que salió del mes (gastos fijos y cotidianos, ahorro e inversión) en los 3 grupos; dentro de cada uno, por concepto. */
 function gruposMes(mm){
   const LM=Array.isArray(mm)?mm:[mm];
   const G=[['need','Necesidades','var(--c-fij)'],['want','Deseos','var(--c-hor)'],['ai','Ahorro e inversión','var(--c-aho)']].map(x=>({id:x[0],n:x[1],c:x[2],t:0,l:new Map()}));
-  const by={};G.forEach(g=>{by[g.id]=g;});let sinCl=0;
+  const by={};G.forEach(g=>{by[g.id]=g;});
   const add=(g,name,v)=>{const o=by[g],k=name.toLowerCase(),e=o.l.get(k)||{n:name,v:0};e.v+=v;o.l.set(k,e);o.t+=v;};
-  LM.forEach(m=>{[['fij','need'],['hor','want']].forEach(([s,def])=>(m[s]||[]).forEach(r=>{const v=(+r.m||0)*rateC(rowCur(s,r),m);if(!(v>0))return;const an=s==='hor'&&r.t==='ant',c=an?'want':catG(r.k);if(!c&&!r.card)sinCl+=v;add(c||def,(r.k||'').trim()||(an?'Antojos':'Sin categoría'),v);}));
+  LM.forEach(m=>{['fij','hor'].forEach(s=>(m[s]||[]).forEach(r=>{const v=(+r.m||0)*rateC(rowCur(s,r),m);if(!(v>0))return;add(grupoDe(s,r),r.card?'Pago de tarjetas':concNom(r),v);}));
   const d=dv(m);if(d.aho>0)add('ai','Ahorro',d.aho);if(d.inv>0)add('ai','Inversión',d.inv);});
-  return{G,total:G.reduce((a,g)=>a+g.t,0),sinCl};
+  return{G,total:G.reduce((a,g)=>a+g.t,0)};
 }
 function dgInner(m){
-  const an=Array.isArray(m),{G,total,sinCl}=gruposMes(m);
+  const an=Array.isArray(m),{G,total}=gruposMes(m);
   if(!(total>0))return'<div class="ms">'+(an?'Cuando registres gastos en el año verás aquí a qué grupo van y en cuál gastas más.':'Cuando registres gastos verás aquí a qué grupo van y en cuál gastas más.')+'</div>';
   const pc=v=>Math.round(v/total*100);let best=null;G.forEach(g=>g.l.forEach(e=>{if(!best||e.v>best.v)best=e;}));
   let h=best?'<div class="dgtop"><span>Tu mayor gasto</span> <b>'+esc(best.n)+'</b> · '+fmt(best.v)+' <span class="ms">('+pc(best.v)+'%)</span></div>':'';
   h+=G.filter(g=>g.t>0).sort((a,b)=>b.t-a.t).map(g=>{
-    const rows=[...g.l.values()].sort((a,b)=>b.v-a.v),top=rows.slice(0,6),rest=rows.slice(6).reduce((a,e)=>a+e.v,0);
+    const rows=[...g.l.values()].sort((a,b)=>b.v-a.v),top=rows.slice(0,3),rest=rows.slice(3).reduce((a,e)=>a+e.v,0);
     return'<div class="dgg"><div class="dgh"><span class="dgn"><i style="background:'+g.c+'"></i>'+g.n+'</span><b>'+fmt(g.t)+'</b><span class="dgp">'+pc(g.t)+'%</span></div><div class="dgbar"><div style="width:'+pc(g.t)+'%;background:'+g.c+'"></div></div><ul>'
       +top.map(e=>'<li><span>'+esc(e.n)+'</span><span>'+fmt(e.v)+'</span><span class="dgp">'+pc(e.v)+'%</span></li>').join('')
-      +(rest>0?'<li class="ms"><span>Otras</span><span>'+fmt(rest)+'</span><span class="dgp">'+pc(rest)+'%</span></li>':'')+'</ul></div>';}).join('');
+      +(rest>0?'<li class="ms"><span>Otros</span><span>'+fmt(rest)+'</span><span class="dgp">'+pc(rest)+'%</span></li>':'')+'</ul></div>';}).join('');
   if(an)h='<div class="dgy">'+h+'</div>';
-  if(sinCl>0)h+='<div class="ms dghint"><span>Sin clasificar</span> <b>'+fmt(sinCl)+'</b> · <span>cuenta según su sección (fijos: necesidades, cotidianos: deseos).</span> <a href="#ajustes">Clasificar categorías</a></div>';
   return h;
-}
-function catGruposHtml(){
-  catsAdopta();const uso=catUso(),pes=c=>uso.get(catLow(c))||0;
-  const opts=sel=>GRUPOS3.map(g=>'<option value="'+(g[0]||'-')+'"'+(g[0]===sel?' selected':'')+'>'+g[1]+'</option>').join('');
-  return '<div class="ms cgh">Se ordenan por lo que más usas. Cambia un nombre y se actualizan tus movimientos. Escribe el nombre de otra para unirlas.</div>'+GRUPOS3.map(g=>{
-    const its=cfg.cats.map((c,i)=>[c,i]).filter(x=>catG(x[0])===g[0]).sort((a,b)=>(pes(b[0])-pes(a[0]))||(a[1]-b[1]));
-    if(!its.length&&!g[0])return'';
-    return '<div class="cgg"><b>'+g[1]+'</b>'+(its.length?its.map(([c,i])=>'<div class="cgr"><input class="cgn" type="text" maxlength="28" autocomplete="off" data-catn="'+i+'" value="'+esc(c)+'" aria-label="Nombre de '+esc(c)+'"><span class="cgu" title="Movimientos">'+catCuenta(c)+'</span><select data-catg="'+i+'" aria-label="Grupo de '+esc(c)+'">'+opts(g[0])+'</select><button type="button" class="chip" data-cat="'+i+'" aria-label="Quitar '+esc(c)+'">×</button></div>').join(''):'<div class="ms">Ninguna todavía</div>')+'</div>';}).join('');
 }
 /* Antojos del mes (gastos cotidianos con la marca t:'ant'). «¿Valió la pena?» se guarda en la fila (v: 1 sí, 0 no) y se puede cambiar o quitar. */
 function antojosHtml(m){
@@ -180,7 +171,7 @@ function semanaData(){
     ['fij','hor'].forEach(s=>(mm[s]||[]).forEach(r=>{
       if(!usedRow(r)||!(+r.m>0))return;const dt=dayDate(y,mi,r.f);if(!dt)return;const v=(+r.m)*rateC(rowCur(s,r),mm);
       if(dt>=ini&&dt<=t0){w.tot+=v;w.n++;w.dias.add(dt.getTime());w.porDia.set(dt.getTime(),(w.porDia.get(dt.getTime())||0)+v);
-        const c=r.card?'Pago de tarjetas':((r.k||'').trim()||'Sin categoría');w.cats.set(c,(w.cats.get(c)||0)+v);
+        const c=r.card?'Pago de tarjetas':concNom(r);w.cats.set(c,(w.cats.get(c)||0)+v);
         if(s==='hor'&&r.t==='ant'){w.ant++;w.antTot+=v;if(r.v===0)w.antNo+=v;}}
       else if(dt>=iniP&&dt<=finP)p.tot+=v;}));});
   return{w,p};
@@ -209,8 +200,8 @@ function semanaHtml(i){
 function cierreData(y,i){
   const m=(S[y]||[])[i];if(!m)return null;const D=dv(m);if(!D.on)return null;
   const py=i>0?y:String(+y-1),pi=i>0?i-1:11,pm=(S[py]||[])[pi],P=pm?dv(pm):null,cats=new Map();let antNo=0;
-  ['fij','hor'].forEach(s=>(m[s]||[]).forEach(r=>{if(!usedRow(r)||!(+r.m>0))return;const v=(+r.m)*rateC(rowCur(s,r),m),c=r.card?'Pago de tarjetas':((r.k||'').trim()||'Sin categoría');cats.set(c,(cats.get(c)||0)+v);if(s==='hor'&&r.t==='ant'&&r.v===0)antNo+=v;}));
-  let top=null,topN=null;cats.forEach((v,k)=>{if(!top||v>top.v)top={k,v};if(k!=='Sin categoría'&&k!=='Pago de tarjetas'&&(!topN||v>topN.v))topN={k,v};});
+  ['fij','hor'].forEach(s=>(m[s]||[]).forEach(r=>{if(!usedRow(r)||!(+r.m>0))return;const v=(+r.m)*rateC(rowCur(s,r),m),c=r.card?'Pago de tarjetas':concNom(r);cats.set(c,(cats.get(c)||0)+v);if(s==='hor'&&r.t==='ant'&&r.v===0)antNo+=v;}));
+  let top=null,topN=null;cats.forEach((v,k)=>{if(!top||v>top.v)top={k,v};if(k!=='Sin descripción'&&k!=='Pago de tarjetas'&&(!topN||v>topN.v))topN={k,v};});
   const debt=CARDS.reduce((a,k)=>a+Math.max(0,cardEnding(y,i,k))*rateC(curOf(k),m),0);
   return{D,P:P&&P.on?P:null,pName:MES[pi].toLowerCase(),top,topN,antNo,debt};
 }
@@ -288,7 +279,7 @@ function viewMes(i){
   ${cierreBarHtml(i)}${avisosHtml(i)}${porPagarHtml(i)}<div class="board" id="board"><div class="kpis bcard bare" data-cid="mk">${kp('Ingreso total','kI',fmt(D.ing))}${kp('Total gastado','kG',fmt(D.gas))}${kp('Total invertido','kV',fmt(D.inv))}${kp('Ahorro del mes','kA',fmt(D.aho))}</div>
   <div class="secs">
     ${cierreHtml(i)}
-    <section class="card bcard" data-cid="pre" style="--h:var(--h-pre)">${secHead('pre','Presupuesto')}<div class="cb sbody"${isFold('pre')?' hidden':''}><div class="ms" style="margin-bottom:12px">Regla 50/30/20: necesidades, deseos y ahorro, según la categoría de cada gasto.</div>${pr}</div><div class="note" id="psum"></div></section>
+    <section class="card bcard" data-cid="pre" style="--h:var(--h-pre)">${secHead('pre','Presupuesto')}<div class="cb sbody"${isFold('pre')?' hidden':''}><div class="ms" style="margin-bottom:12px">Regla 50/30/20: necesidades, deseos y ahorro, según el grupo de cada gasto.</div>${pr}</div><div class="note" id="psum"></div></section>
     <section class="card bcard" data-cid="dg" style="--h:var(--h-pre)">${secHead('dg','¿Dónde gastas más?')}<div class="cb sbody" id="dgbox">${dgInner(m)}</div></section>
     ${semanaHtml(i)}
     ${sec(m,'ing','Ingresos','h-ing','ing')}

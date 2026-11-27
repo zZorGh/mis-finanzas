@@ -7,7 +7,7 @@ function insights(){
   if(cur>0&&ms[cur].on){const a=ms[cur].hor,b=ms[cur-1].hor;if(b>0){const d=Math.round((a-b)/b*100);out.push('En gastos cotidianos vas '+(d>=0?'+'+d:d)+'% frente a '+MES[cur-1]+'.');}}
   let bi=-1,bp=0;ms.forEach((x,i)=>{if(x.ing>0&&x.aho/x.ing>bp){bp=x.aho/x.ing;bi=i;}});
   if(bi>=0)out.push('Tu mejor mes de ahorro fue '+MES[bi]+' ('+pct(bp)+').');
-  if(cur>=0){const m=S[year][cur],cat={};['fij','hor'].forEach(sec=>(m[sec]||[]).forEach(r=>{if(+r.m&&(r.k||'').trim())cat[r.k]=(cat[r.k]||0)+(+r.m);}));const top=Object.keys(cat).sort((x,y)=>cat[y]-cat[x])[0];if(top)out.push('En '+MES[cur].toLowerCase()+', tu categoría con más gasto es '+esc(top)+' ('+fmt(cat[top])+').');}
+  if(cur>=0){const m=S[year][cur],cat={};['fij','hor'].forEach(sec=>(m[sec]||[]).forEach(r=>{if(+r.m&&!r.card&&(r.c||'').trim()){const n=concNom(r);cat[n]=(cat[n]||0)+(+r.m);}}));const top=Object.keys(cat).sort((x,y)=>cat[y]-cat[x])[0];if(top)out.push('En '+MES[cur].toLowerCase()+', tu mayor gasto es '+esc(top)+' ('+fmt(cat[top])+').');}
   const r7=recentCount(7);if(r7)out.push('Registraste '+r7+(r7===1?' movimiento':' movimientos')+' en los últimos 7 días.');
   return out.slice(0,4);
 }
@@ -67,12 +67,12 @@ function viewResumen(){
     ${chartCard('En qué se fue el año','Distribución de lo gastado, ahorrado e invertido.','r4',lg([['Gastos fijos','var(--c-fij)'],['Gastos cotidianos','var(--c-hor)'],['Ahorros','var(--c-aho)'],['Inversión','var(--c-inv)']]),true)}
   ${(()=>{const ins=insights();return ins.length?`<section class="card bcard" data-cid="ins"><div class="cb"><h2 class="ttl">En resumen</h2><ul class="inslist">${ins.map(t=>`<li>${t}</li>`).join('')}</ul></div></section>`:'';})()}
   </div>
-  <section class="card bcard" data-cid="dga"><div class="cb"><h2 class="ttl">¿Dónde gastaste más en ${year}?</h2><div class="cap">Todo lo que salió en el año, repartido en tus tres grupos y por categoría.</div>${any?dgInner(ms):emp(nodata)}</div></section>
+  <section class="card bcard" data-cid="dga"><div class="cb"><h2 class="ttl">¿Dónde gastaste más en ${year}?</h2><div class="cap">Todo lo que salió en el año, repartido en tus tres grupos y por concepto.</div>${any?dgInner(ms):emp(nodata)}</div></section>
   ${chartCard('A dónde fue tu ingreso','Cómo se repartió el ingreso del año: gastos, inversión, ahorro y lo que quedó disponible.','r6')}
   ${chartCard('Capital acumulado','Tu saldo de ahorros más lo invertido en el año, mes a mes.'+(year===String(now.getFullYear())?' El tramo punteado es el mes en curso.':''),'r7')}
   ${chartCard('Año contra año','Lo ahorrado en cada mes, un año contra otro.','r5','',true)}
   <section class="bcard bare" data-cid="rm"><h2 class="ttl" style="margin:0 0 10px">Meses de ${year}</h2><div class="mgrid">${cards}</div></section>
-  <section class="card bcard" data-cid="ra"><div class="cb aj-link"><div><h2 class="ttl">Ajustes</h2><div class="cap">Estilo, cuentas y tarjetas, categorías, metas, reportes y copias de tus datos.</div></div><button type="button" class="b" data-goto="ajustes">Abrir ajustes</button></div></section>
+  <section class="card bcard" data-cid="ra"><div class="cb aj-link"><div><h2 class="ttl">Ajustes</h2><div class="cap">Estilo, cuentas y tarjetas, metas, reportes y copias de tus datos.</div></div><button type="button" class="b" data-goto="ajustes">Abrir ajustes</button></div></section>
   </div>`;
 }
 /* Ajustes: pantalla propia, fuera del Resumen. */
@@ -118,11 +118,6 @@ function viewAjustes(){
     <div class="qa"><input type="text" id="nm-newl" maxlength="28" placeholder="Nueva cuenta, por ejemplo Interbank" aria-label="Nombre de la nueva cuenta" autocomplete="off"${liqNamesAll().length>=LIQMAX?' disabled':''}><button class="b" id="nm-addl" type="button"${liqNamesAll().length>=LIQMAX?' disabled':''}>Agregar cuenta</button></div>
     ${cardsAjHtml()}
     </div></div></section>
-  <section class="card ajc w7 tall"><div class="cb"><div class="gs"><h3 role="heading" aria-level="2">Categorías de gastos</h3>
-    <div class="ms" style="margin-bottom:8px">Pon cada categoría en uno de tus tres grupos para ver en cuál gastas más. Si no la clasificas, los gastos fijos cuentan como necesidades y los cotidianos como deseos.</div>
-    ${catGruposHtml()}
-    <div class="qa"><input type="text" id="nc" placeholder="Nueva categoría, por ejemplo Mascotas" aria-label="Nueva categoría"><select id="nc-g" aria-label="Grupo de la nueva categoría"><option value="-">Sin clasificar</option><option value="need">Necesidades</option><option value="want">Deseos</option><option value="ai">Ahorro e inversión</option></select><button class="b" id="addcat" type="button">Agregar categoría</button><button class="b" id="reset" type="button">Restablecer ejemplo</button></div>
-    </div></div></section>
   <section class="card ajc w5"><div class="cb"><div class="gs"><h3 role="heading" aria-level="2">Ahorros y metas</h3>
     <div class="ms">Ahorros</div>
     <div class="ms" style="margin-bottom:12px">Tu saldo se calcula solo: cada depósito suma y cada retiro resta, cuenta por cuenta. Si lo que ves no coincide con tu banco, usa «Ajustar saldo» en la tarjeta Ahorros y escribe el saldo real.</div>
@@ -133,8 +128,8 @@ function viewAjustes(){
     </div></div></section>
   <section class="card ajc w5"><div class="cb">    <div class="gs"><h3 role="heading" aria-level="2">Gastos recurrentes</h3>
       <div class="ms">Se cargan con «Cargar recurrentes» dentro de cada mes y no se duplican si ya existen.</div>
-      <div class="chips">${(cfg.rec||[]).map((r,i)=>`<span class="chip">${esc(r.c)} · ${num2(r.m)}${r.k?' · '+esc(r.k):''}${r.src&&r.src!=='none'?' · '+esc(liqNamesAll()[+r.src.slice(4)]||''):''} · día ${esc(r.f)}<button type="button" data-recdel="${i}" aria-label="Quitar ${esc(r.c)}">×</button></span>`).join('')||'<span class="ms">Todavía no hay recurrentes.</span>'}</div>
-      <div class="qa"><select id="rc-s" aria-label="Tipo"><option value="fij">Gasto fijo</option><option value="hor">Cotidiano</option></select><input id="rc-c" type="text" placeholder="Concepto, por ejemplo Internet" aria-label="Concepto"><input id="rc-m" type="number" step="0.01" placeholder="Monto" aria-label="Monto" style="width:100px"><select id="rc-k" aria-label="Categoría"><option value="">Categoría</option>${cfg.cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select><select id="rc-src" aria-label="De dónde sale"><option value="none">No descontar</option>${liqNamesAll().map((n,i)=>`<option value="liq:${i}">${esc(n)}</option>`).join('')}</select><input id="rc-d" type="number" min="1" max="31" value="1" aria-label="Día del mes" style="width:70px"><button class="b" id="rc-add" type="button">Agregar</button></div>
+      <div class="chips">${(cfg.rec||[]).map((r,i)=>`<span class="chip">${esc(r.c)} · ${num2(r.m)}${GLAB[catG(r.k)]?' · '+GLAB[catG(r.k)]:''}${r.src&&r.src!=='none'?' · '+esc(liqNamesAll()[+r.src.slice(4)]||''):''} · día ${esc(r.f)}<button type="button" data-recdel="${i}" aria-label="Quitar ${esc(r.c)}">×</button></span>`).join('')||'<span class="ms">Todavía no hay recurrentes.</span>'}</div>
+      <div class="qa"><select id="rc-s" aria-label="Tipo"><option value="fij">Gasto fijo</option><option value="hor">Cotidiano</option></select><input id="rc-c" type="text" placeholder="Concepto, por ejemplo Internet" aria-label="Concepto"><input id="rc-m" type="number" step="0.01" placeholder="Monto" aria-label="Monto" style="width:100px"><select id="rc-k" aria-label="Grupo"><option value="">Grupo</option>${GRUPOS3.map(g=>`<option value="${GNOM[g[0]]}">${g[1]}</option>`).join('')}</select><select id="rc-src" aria-label="De dónde sale"><option value="none">No descontar</option>${liqNamesAll().map((n,i)=>`<option value="liq:${i}">${esc(n)}</option>`).join('')}</select><input id="rc-d" type="number" min="1" max="31" value="1" aria-label="Día del mes" style="width:70px"><button class="b" id="rc-add" type="button">Agregar</button></div>
     </div></div></section>
   <section class="card ajc w6"><div class="cb">    ${(TRACK_DEFAULT||(()=>{try{return localStorage.getItem('cuadra-stats')!==null;}catch(e){return false;}})())?`<div class="gs"><h3 role="heading" aria-level="2">Privacidad</h3><label class="chk"><input type="checkbox" id="st-on"${statsOn()?' checked':''}> Ayudar a mejorar MiS²oles con estadísticas de uso anónimas</label><div class="ms">Contamos qué pantallas usas y dónde te trabas. Nunca enviamos montos, conceptos, cuentas ni tu correo. Puedes apagarlo cuando quieras.</div></div>`:''}
     ${SR_OK?'<div class="gs"><h3 role="heading" aria-level="2">Dictado por voz</h3><div class="ms">El micrófono del registro Automático solo se activa cuando tú lo tocas. El audio lo procesa el servicio de voz de tu navegador; MiS²oles solo recibe el texto.</div></div>':''}</div></section>
