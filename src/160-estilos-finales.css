@@ -10,8 +10,8 @@
 }
 /* Los tres grupos ocupan todo el ancho (con auto-fit quedaban columnas vacías por el título que cruza la rejilla) */
 .dgy{display:flex;flex-wrap:wrap}.dgy>*{flex:1 0 100%}.dgy>.dgg{flex:1 1 250px;min-width:0}
-/* Menú en una sola fila cuando cabe */
-@media (min-width:1400px){
+/* Menú en una sola fila cuando cabe (desde 1340 px: una laptop de 1366 deja ~1349 útiles por la barra de desplazamiento) */
+@media (min-width:1340px){
   #hdr{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:18px;padding:10px max(16px,calc((100% - 1528px)/2))}
   #hdr .hrow{display:contents}
   #hdr .brand{grid-column:1;grid-row:1}
@@ -19,6 +19,32 @@
   #hdr .tabs .tab{padding-left:9px;padding-right:9px}
   #hdr .ctl{grid-column:3;grid-row:1;flex-wrap:nowrap}
 }
+/* Entre 1340 y 1439 px se aprieta un poco para que entre con la sesión iniciada */
+@media (min-width:1340px) and (max-width:1439px){
+  #hdr{column-gap:10px;padding-left:12px;padding-right:12px}
+  #hdr .tabs{gap:0}#hdr .tabs .tab{padding-left:7px;padding-right:7px}
+  #hdr .ctl{gap:6px}#hdr .ctl button,#hdr .ctl select,#hdr .ctl .caplink{padding-left:9px;padding-right:9px}
+}
+/* Registro en escritorio: más ancho y compacto para no tener que bajar. Solo la pantalla rápida y el formulario completo;
+   el asistente por pasos y Automático siguen angostos (una decisión por pantalla). */
+@media (min-width:900px){
+  .sheet[data-quick],.sheet[data-mode=manual]:not([data-wiz]){width:min(720px,calc(100% - 32px));max-height:96dvh}
+  .sheet[data-quick]{gap:9px;padding-top:12px}
+  .sheet[data-quick] .amt{padding:0 16px}.sheet[data-quick] .amt input{height:58px;font-size:36px}.sheet[data-quick] .amt .amt-cur{font-size:28px}
+  .sheet[data-quick] .grp{gap:6px}.sheet[data-quick] .grp .cp{height:34px;padding:0 13px;font-size:13.5px}
+  .sheet[data-quick] input[type=text],.sheet[data-quick] input[type=number],.sheet[data-quick] select{height:38px}
+  .sheet[data-quick] .amt input[type=text]{height:58px}
+  .sheet[data-quick] .sact .b{height:42px}
+  .sheet[data-quick] #smodes{grid-template-columns:auto 1fr 1fr;align-items:center}.sheet[data-quick] .qko{grid-column:auto;margin:0}
+  .sheet[data-quick] .modeb{min-height:36px;padding:6px 10px}
+}
+@media (min-width:900px) and (max-height:800px){
+  .sheet[data-quick]{gap:6px;padding-top:8px}
+  .sheet[data-quick] .amt input,.sheet[data-quick] .amt input[type=text]{height:48px;font-size:32px}
+  .sheet[data-quick] .grp .cp{height:32px}
+}
+.atk{display:grid;gap:8px;margin:4px 0}.atk>div{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center}.atk dd{margin:0;font-size:14px}
+.atk kbd{display:inline-block;font:600 12.5px var(--font-num);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:3px 8px;background:var(--surface-2)}
 </style><script>(function(){var s='cuadre';try{var v=localStorage.getItem('mis-finanzas-prototipo-v1-skin');if(v==='original'||v==='cuadre'||v==='escalon')s=v;}catch(e){}document.documentElement.dataset.skin=s;['cuadre','escalon'].forEach(function(k){var e=document.getElementById('sk-'+k);if(e)e.disabled=(k!==s);});})();</script>
 
 <header id="hdr"></header>

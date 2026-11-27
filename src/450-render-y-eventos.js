@@ -229,6 +229,27 @@ function panelField(e,live){
 document.addEventListener('input',e=>panelField(e,true));
 document.addEventListener('change',e=>panelField(e,false));
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePanel();});
+/* Atajos de teclado. Los de una sola tecla se pueden apagar en Ajustes (accesibilidad, WCAG 2.1.4). Preferencia del dispositivo. */
+function openAtajos(){
+  closeSheet();closePanel();sheetFrom=document.activeElement;
+  const bg=document.createElement('div');bg.id='sheetbg';bg.className='sheetbg';
+  const sh=document.createElement('div');sh.id='sheet';sh.className='sheet';sh.setAttribute('role','dialog');sh.setAttribute('aria-modal','true');sh.setAttribute('aria-label','Atajos de teclado');
+  const filas=[['N','Registrar un movimiento'],['← →','Mes anterior o siguiente'],['R','Ir al resumen del año'],['?','Ver estos atajos'],['Esc','Cerrar la ventana'],['Ctrl + Enter','Guardar al registrar'],['Ctrl + Z','Deshacer lo último']];
+  sh.innerHTML='<div class="sh-h"><b>Atajos de teclado</b><button type="button" data-s="close" aria-label="Cerrar">×</button></div><dl class="atk">'+filas.map(f=>'<div><dt><kbd>'+f[0]+'</kbd></dt><dd>'+f[1]+'</dd></div>').join('')+'</dl><div class="ms">Puedes apagarlos en Ajustes.</div>';
+  document.body.append(bg,sh);sh.querySelector('button').focus();
+  bg.addEventListener('click',closeSheet);sh.addEventListener('click',e=>{if(e.target.closest('[data-s="close"]'))closeSheet();});
+  sh.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet();});
+}
+document.addEventListener('keydown',e=>{
+  if(e.defaultPrevented||e.isComposing||e.ctrlKey||e.metaKey||e.altKey||!atajosOn())return;
+  const t=e.target;if(t&&t.closest&&t.closest('input,textarea,select,[contenteditable="true"],[role=radiogroup],[role=tablist],[role=listbox],[role=slider]'))return;
+  if(document.querySelector('#sheet,#cpanel,.authbg,#onbg,#impbg,#tabwarn'))return;
+  const k=e.key;
+  if(k==='n'||k==='N'){if(e.repeat)return;e.preventDefault();openSheet(true);const c=document.querySelector('.caplink');if(c)sheetFrom=c;}
+  else if(k==='r'||k==='R'){if(e.repeat)return;e.preventDefault();location.hash='resumen';}
+  else if((k==='ArrowLeft'||k==='ArrowRight')&&!e.shiftKey&&typeof view==='number'){const j=view+(k==='ArrowRight'?1:-1);if(j>=0&&j<12){e.preventDefault();location.hash=SLUG[j];}}
+  else if(k==='?'){e.preventDefault();openAtajos();}
+});
 window.addEventListener('hashchange',()=>{const comp=location.hash==='#compartido';closePanel();if(document.getElementById('sheet'))closeSheet();parseHash();render();window.scrollTo(0,0);if(comp&&(!IS_SB||sbUser))shareAbrir();});
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);}catch(e){}
 try{const th=localStorage.getItem(KEY+'-tema');if(th==='dark'||th==='light')document.documentElement.dataset.theme=th;}catch(e){}
