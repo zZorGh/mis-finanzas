@@ -2,7 +2,7 @@
    Cuentan qué pantallas se usan y dónde se traba la gente. NUNCA llevan montos, conceptos, cuentas ni correo:
    solo un id aleatorio del dispositivo (cuadra-sid), el nombre del evento, un dato corto (modo, paso, tipo) y la versión.
    Apagado hasta que exista la tabla (TRACK_DEFAULT); cada persona puede apagarlo en Ajustes (cuadra-stats = 0/1). */
-const TRACK_DEFAULT=true,APPV='2026.11.26.2';
+const TRACK_DEFAULT=true,APPV='2026.11.26.3';
 /* En tu computadora (localhost, file) no se mide por defecto: así las pruebas y el desarrollo no ensucian las métricas reales. */
 const trLocal=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\]|)$/.test(location.hostname);
 const statsOn=()=>{let v=null;try{v=localStorage.getItem('cuadra-stats');}catch(e){}return v==='1'?true:v==='0'?false:(TRACK_DEFAULT&&!trLocal);};

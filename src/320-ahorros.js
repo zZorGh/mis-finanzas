@@ -117,9 +117,24 @@ const axes=yf=>({x:{ticks:{color:cv('--muted'),font:{size:11},autoSkip:false},gr
 const tipMoney={callbacks:{label:c=>' '+c.dataset.label+': '+fmt(c.parsed.y)}};
 const goMonth=(e,els)=>{if(els&&els.length)location.hash='#'+SLUG[els[0].index];};
 
+/* Con el menú en una fila (>=1340 px) los meses van antes que los botones también en el documento, para que el teclado siga el orden visual (WCAG 2.4.3). */
+const HDR1=window.matchMedia?matchMedia('(min-width:1340px)'):null;
 function header(){
-  return `<div class="wrap hrow"><div class="brand"><span class="logo" aria-hidden="true">S/</span><span class="bt" role="img" aria-label="MiSoles">Mi<span class="sw">S<sup class="sq">2</sup></span>oles</span></div>
-  <div class="ctl"><a class="caplink" href="#capturar"${atajosOn()?' aria-keyshortcuts="n" title="Registrar (N)"':''}>Registrar</a><label class="sr" for="yr">Año</label><select id="yr">${YEARS.map(y=>`<option${y===year?' selected':''}>${y}</option>`).join('')}</select><button id="syn" class="syn" type="button" hidden></button><button id="aj" type="button" aria-pressed="${view==='ajustes'}">Ajustes</button>${view==='ajustes'?'':`<button id="ed" type="button" aria-pressed="${edit}">Personalizar</button>`}<button id="th" type="button" aria-pressed="${themeDark()}">Tema</button><button id="lg" type="button" data-lang-toggle data-short="1" data-notr aria-label="${LANG==='en'?'ES · Cambiar a español':'EN · Switch to English'}">${langTxt(1)}</button></div></div>
-  <nav class="wrap tabs" aria-label="Meses"><a class="tab" href="#resumen"${view==='resumen'?' aria-current="page"':''}>Resumen ${year}</a>${MES.map((m,i)=>`<a class="tab${dv(S[year][i]).on?'':' off'}" href="#${SLUG[i]}"${view===i?' aria-current="page"':''}>${ABR[i]}${(String(year)===String(limaD().getFullYear())&&i===limaD().getMonth())?'<i class="cdot" aria-hidden="true"></i><span class="sr"> (mes actual)</span>':''}</a>`).join('')}</nav>`;
+  const marca=`<div class="brand"><span class="logo" aria-hidden="true">S/</span><span class="bt" role="img" aria-label="MiSoles">Mi<span class="sw">S<sup class="sq">2</sup></span>oles</span></div>`;
+  const ctl=`<div class="ctl"><a class="caplink" href="#capturar"${atajosOn()?' aria-keyshortcuts="n" title="Registrar (N)"':''}>Registrar</a><label class="sr" for="yr">Año</label><select id="yr">${YEARS.map(y=>`<option${y===year?' selected':''}>${y}</option>`).join('')}</select><button id="syn" class="syn" type="button" hidden></button><button id="aj" type="button" aria-pressed="${view==='ajustes'}">Ajustes</button>${view==='ajustes'?'':`<button id="ed" type="button" aria-pressed="${edit}">Personalizar</button>`}<button id="th" type="button" aria-pressed="${themeDark()}">Tema</button><button id="lg" type="button" data-lang-toggle data-short="1" data-notr aria-label="${LANG==='en'?'ES · Cambiar a español':'EN · Switch to English'}">${langTxt(1)}</button></div>`;
+  const nav=`<nav class="wrap tabs" aria-label="Meses"><a class="tab" href="#resumen"${view==='resumen'?' aria-current="page"':''}>Resumen ${year}</a>${MES.map((m,i)=>`<a class="tab${dv(S[year][i]).on?'':' off'}" href="#${SLUG[i]}"${view===i?' aria-current="page"':''}>${ABR[i]}${(String(year)===String(limaD().getFullYear())&&i===limaD().getMonth())?'<i class="cdot" aria-hidden="true"></i><span class="sr"> (mes actual)</span>':''}</a>`).join('')}</nav>`;
+  return HDR1&&HDR1.matches?`<div class="wrap hrow">${marca}</div>
+  ${nav}${ctl}`:`<div class="wrap hrow">${marca}${ctl}</div>
+  ${nav}`;
 }
+/* El nombre de la vista va en el título de la pestaña y se anuncia al cambiar (lectores de pantalla). */
+let vistaDicha=null;
+function anunciarVista(){
+  const n=view==='resumen'?T('Resumen')+' '+year:view==='ajustes'?T('Ajustes'):view==='capturar'?T('Registrar'):T(MES[view])+' '+year;
+  document.title=n+' · MiS²oles';
+  let a=document.getElementById('vivo');if(!a){a=document.createElement('div');a.id='vivo';a.className='sr';a.setAttribute('role','status');document.body.appendChild(a);}
+  if(vistaDicha!==null&&n!==vistaDicha)a.textContent=n;
+  vistaDicha=n;
+}
+if(HDR1&&HDR1.addEventListener)HDR1.addEventListener('change',()=>{const h=document.getElementById('hdr');if(!h||!h.firstElementChild)return;const fk=focusKey(document.activeElement);h.innerHTML=header();updateChip();if(fk)restoreFocus(fk);});
 

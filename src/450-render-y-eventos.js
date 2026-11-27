@@ -65,6 +65,7 @@ function render1(){
   if(view==='resumen')drawResumen();else if(typeof view==='number')refreshMonth(true);
   {const fh=histV!=='ajustes';histV=view;if(document.getElementById('hist'))loadHist(fh);}
   const cur=document.querySelector('.tab[aria-current]');if(cur&&cur.scrollIntoView)cur.scrollIntoView({inline:'center',block:'nearest'});
+  anunciarVista();
 }
 document.addEventListener('click',e=>{const g=e.target.closest&&e.target.closest('[data-goto]');if(g)location.hash='#'+g.dataset.goto;});
 const SKINS=['original','cuadre','escalon'];
