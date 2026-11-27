@@ -31,7 +31,7 @@ button.primary,.btn-p,.sheet .save,[data-s="save"],#fab{border-radius:3px;box-sh
 .liq .liq-n,.liq .hero-l{color:#5b6862!important;opacity:1!important}
 .liq .liq-t span{color:#12201C}
 .liq .x,.hero .liq .x{color:#5b6862!important}
-.liq .add,.liq-ed{border-color:#12201C!important;color:#12201C!important;background:transparent!important;border-radius:3px}
+.liq .add,.liq-ed{border-color:#12201C!important;color:#12201C!important;background-color:transparent!important;border-radius:3px}
 .liq-n{color:#5b6862;opacity:1}
 /* escalones del fondo de emergencia */
 .fond+.meter{height:48px;border:0;border-radius:0;background:var(--line);overflow:hidden;clip-path:polygon(0 75%,25% 75%,25% 50%,50% 50%,50% 25%,75% 25%,75% 0,100% 0,100% 100%,0 100%)}

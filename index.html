@@ -703,7 +703,7 @@ h1{letter-spacing:-.03em}
 #impbox{width:min(780px,100%);min-width:0;background:var(--surface);color:var(--ink);border-radius:16px;padding:20px;display:grid;gap:12px;margin:auto}
 #impbox>*{min-width:0}.imh{display:flex;align-items:center;justify-content:space-between;gap:10px}.imh h2{margin:0;font-size:22px}
 .imf{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.imf label{display:grid;gap:4px;font-size:13px;color:var(--muted);min-width:0}
-#impbox select{width:100%;min-width:0;min-height:44px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit}
+#impbox select{width:100%;min-width:0;min-height:44px;background-color:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit}
 #impbox input[type=checkbox]{width:20px;height:20px;margin:0;accent-color:var(--accent)}#impbox label.chk{display:flex;align-items:center;gap:8px;font-size:14px}
 .imcol summary{cursor:pointer;font-weight:600;min-height:32px}.imbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.imbar select{width:auto!important;max-width:190px}
 .imlist{border-top:1px solid var(--line)}.imr{display:grid;grid-template-columns:auto minmax(0,1fr) auto 128px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
@@ -955,7 +955,7 @@ button.primary,.btn-p,.sheet .save,[data-s="save"],#fab{border-radius:3px;box-sh
 .liq .liq-n,.liq .hero-l{color:#5b6862!important;opacity:1!important}
 .liq .liq-t span{color:#12201C}
 .liq .x,.hero .liq .x{color:#5b6862!important}
-.liq .add,.liq-ed{border-color:#12201C!important;color:#12201C!important;background:transparent!important;border-radius:3px}
+.liq .add,.liq-ed{border-color:#12201C!important;color:#12201C!important;background-color:transparent!important;border-radius:3px}
 .liq-n{color:#5b6862;opacity:1}
 /* escalones del fondo de emergencia */
 .fond+.meter{height:48px;border:0;border-radius:0;background:var(--line);overflow:hidden;clip-path:polygon(0 75%,25% 75%,25% 50%,50% 50%,50% 25%,75% 25%,75% 0,100% 0,100% 100%,0 100%)}
@@ -1043,6 +1043,12 @@ h1,.bt{letter-spacing:-.025em}
   .ajnav button[aria-current]{background:var(--surface);border-left-color:var(--accent);font-weight:700}
   .ajboard{grid-template-columns:minmax(0,1fr)}
   .ajboard .ajc{grid-column:1/-1;grid-row:auto;scroll-margin-top:calc(var(--hh,64px) + 12px)}
+}
+/* Al pasar el cursor, toda opción se sombrea con el color del estilo. Va como imagen de fondo para no borrar el fondo
+   que cada control ya tiene. No toca lo elegido (se confundiría), lo desactivado, los botones llenos ni las acciones de borrar. */
+@media (hover:hover) and (pointer:fine){
+  body :is(button,select,summary,label.chk,.mcard,a.tab,a.nav,a.cap-link):not(:disabled,[aria-pressed="true"],[aria-current],[aria-checked="true"],.p,.caplink,.cap-btn,.fab,.x,.capx,.dng):hover{
+    background-image:linear-gradient(color-mix(in srgb,var(--cc,var(--accent)) 9%,transparent),color-mix(in srgb,var(--cc,var(--accent)) 9%,transparent))}
 }
 </style><script>(function(){var s='cuadre';try{var v=localStorage.getItem('mis-finanzas-prototipo-v1-skin');if(v==='original'||v==='cuadre'||v==='escalon')s=v;}catch(e){}document.documentElement.dataset.skin=s;['cuadre','escalon'].forEach(function(k){var e=document.getElementById('sk-'+k);if(e)e.disabled=(k!==s);});})();</script>
 
@@ -3214,7 +3220,7 @@ const SB_URL=ES_PROD?'https://lmjhlghwthydpeismulb.supabase.co':'https://qfnqqhw
    Cuentan qué pantallas se usan y dónde se traba la gente. NUNCA llevan montos, conceptos, cuentas ni correo:
    solo un id aleatorio del dispositivo (cuadra-sid), el nombre del evento, un dato corto (modo, paso, tipo) y la versión.
    Apagado hasta que exista la tabla (TRACK_DEFAULT); cada persona puede apagarlo en Ajustes (cuadra-stats = 0/1). */
-const TRACK_DEFAULT=true,APPV='2026.11.26.4';
+const TRACK_DEFAULT=true,APPV='2026.11.27.1';
 /* En tu computadora (localhost, file) no se mide por defecto: así las pruebas y el desarrollo no ensucian las métricas reales. */
 const trLocal=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\]|)$/.test(location.hostname);
 const statsOn=()=>{let v=null;try{v=localStorage.getItem('cuadra-stats');}catch(e){}return v==='1'?true:v==='0'?false:(TRACK_DEFAULT&&!trLocal);};
