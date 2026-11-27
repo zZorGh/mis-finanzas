@@ -219,7 +219,7 @@ h1{letter-spacing:-.03em}
 }
 /* Alto contraste: lo seleccionado se distingue por contorno y no solo por el color de fondo */
 @media (forced-colors:active){
-  .cp[aria-checked="true"],button[aria-pressed="true"],.tab[aria-current],.bnav a[aria-current]{outline:3px solid Highlight;outline-offset:-3px;font-weight:700}
+  .cp[aria-checked="true"],button[aria-pressed="true"],.tab[aria-current],.bnav a[aria-current],.ajnav button[aria-current]{outline:3px solid Highlight;outline-offset:-3px;font-weight:700}
   .cp[aria-checked="true"]::before{content:"✓ "}
   .sheetbg{background:Canvas;opacity:.7}
   .sheet,.toast,.savewarn,.instbar,.card,.hmcell{border:1px solid CanvasText}

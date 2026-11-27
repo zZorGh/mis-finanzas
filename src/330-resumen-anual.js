@@ -77,8 +77,7 @@ function viewResumen(){
 }
 /* Ajustes: pantalla propia, fuera del Resumen. */
 function viewAjustes(){
-  return `<div class="aj-top"><h1>Ajustes</h1><p class="ms">Tu estilo, tus cuentas y tus datos. Lo que cambies aquí se guarda solo.</p></div>
-  <div class="board ajboard" id="board">
+  const tarjetas=`
   <section class="card ajc w4"><div class="cb"><div class="gs"><h3 role="heading" aria-level="2">Apariencia</h3>
     <div class="skins" role="group" aria-label="Estilo de la app"><span class="sk-l">Estilo de la app</span>${[['original','Original'],['cuadre','Cuadre'],['escalon','Escalón']].map(a=>`<button type="button" class="b" data-skin-set="${a[0]}" aria-pressed="${document.documentElement.dataset.skin===a[0]}">${a[1]}</button>`).join('')}</div>
     <div class="skins" role="group" aria-label="Tema de color"><span class="sk-l">Tema de color</span>${(()=>{const t=document.documentElement.dataset.theme||'sys';return [['light','Claro'],['dark','Oscuro'],['sys','Del sistema']].map(a=>`<button type="button" class="b" data-tema-set="${a[0]}" aria-pressed="${t===a[0]}">${a[1]}</button>`).join('');})()}</div>
@@ -162,9 +161,32 @@ function viewAjustes(){
       <div class="ms">«Recargar» trae lo guardado en tu cuenta; «Guardar» sube lo que ves aquí. Si no hay señal, tus cambios esperan en este dispositivo y se suben solos después.</div>
     </div>`:`<div class="gs"><h3 role="heading" aria-level="2">Dónde se guardan tus datos</h3>
       <div class="ms">Esta vista es una demostración: lo que registres queda solo en este navegador. En la app publicada tus datos se guardan en tu cuenta privada, protegida con inicio de sesión, y puedes entrar desde cualquier dispositivo.</div>
-    </div>`}</div></section>
-  </div>`;
+    </div>`}</div></section>`;
+  /* El índice sale de las mismas tarjetas (algunas son condicionales): una entrada por tarjeta, en su orden. */
+  const titulos=tarjetas.split('<section class="card ajc').slice(1).map(t=>(t.match(/<h3[^>]*>([^<]+)<\/h3>/)||[])[1]||'');
+  return `<div class="ajwrap"><div class="aj-top"><h1>Ajustes</h1><p class="ms">Tu estilo, tus cuentas y tus datos. Lo que cambies aquí se guarda solo.</p></div>
+  <nav class="ajnav" aria-label="Secciones de Ajustes">${titulos.map((t,i)=>t?`<button type="button" data-ajir="${i}">${t}</button>`:'').join('')}</nav>
+  <div class="board ajboard" id="board">${tarjetas}
+  </div></div>`;
 }
+/* Índice lateral de Ajustes (escritorio). No usa el hash: el hash es la ruta de la app. */
+let ajPin=null,ajRaf=0;
+function ajMarca(){
+  if(view!=='ajustes'){ajPin=null;return;}
+  const cs=document.querySelectorAll('.ajc'),bs=document.querySelectorAll('[data-ajir]');if(!bs.length)return;
+  let i=ajPin;
+  if(i===null){const linea=document.getElementById('hdr').offsetHeight+60;i=0;cs.forEach((c,j)=>{if(c.getBoundingClientRect().top<=linea)i=j;});
+    if(scrollY>0&&innerHeight+scrollY>=document.documentElement.scrollHeight-2)i=cs.length-1;}
+  bs.forEach(b=>{if(+b.dataset.ajir===i)b.setAttribute('aria-current','true');else b.removeAttribute('aria-current');});
+}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ajir]');if(!b)return;
+  const c=document.querySelectorAll('.ajc')[+b.dataset.ajir];if(!c)return;ajPin=+b.dataset.ajir;
+  c.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});
+  const h=c.querySelector('h3');if(h){h.tabIndex=-1;h.focus({preventScroll:true});}
+  ajMarca();});
+/* La elegida se queda marcada (las últimas no llegan arriba) hasta que la persona vuelve a moverse. */
+['wheel','touchstart','pointerdown','keydown'].forEach(t=>window.addEventListener(t,()=>{ajPin=null;},{passive:true,capture:true}));
+window.addEventListener('scroll',()=>{if(view!=='ajustes')return;cancelAnimationFrame(ajRaf);ajRaf=requestAnimationFrame(ajMarca);},{passive:true});
 function drawResumen(){
   const ms=S[year],D=ms.map(dv);if(!D.some(x=>x.on))return;
   const b=base(true),t=k=>D.reduce((a,x)=>a+x[k],0),curI=(year===String(now.getFullYear()))?now.getMonth():-1;
