@@ -59,10 +59,14 @@
   .ajboard .ajc{grid-column:1/-1;grid-row:auto;scroll-margin-top:calc(var(--hh,64px) + 12px)}
 }
 /* Al pasar el cursor, toda opción se sombrea con el color del estilo. Va como imagen de fondo para no borrar el fondo
-   que cada control ya tiene. No toca lo elegido (se confundiría), lo desactivado, los botones llenos ni las acciones de borrar. */
+   que cada control ya tiene. No toca lo elegido (se confundiría), lo desactivado ni los botones llenos. Lo que borra se
+   sombrea en rojo, para que no parezca una opción cualquiera. */
 @media (hover:hover) and (pointer:fine){
-  body :is(button,select,summary,label.chk,.mcard,a.tab,a.nav,a.cap-link):not(:disabled,[aria-pressed="true"],[aria-current],[aria-checked="true"],.p,.caplink,.cap-btn,.fab,.x,.capx,.dng):hover{
+  body :is(button,select,summary,label.chk,.mcard,a.tab,a.nav,a.cap-link):not(:disabled,[aria-pressed="true"],[aria-current],[aria-checked="true"],.p,.caplink,.cap-btn,.fab):hover{
     background-image:linear-gradient(color-mix(in srgb,var(--cc,var(--accent)) 9%,transparent),color-mix(in srgb,var(--cc,var(--accent)) 9%,transparent))}
+  body :is([data-del],[data-capdel],[data-act="adel"],[data-act="atasadel"],[data-metadel],[data-recdel],[data-cardrm],[data-pc="del"],[data-s="del-mov"],#fg-del,#del-go,#imp-undo,.dng,.danger>summary):hover{--cc:var(--bad)}
+  /* Los lápices se ponían rojos como el botón de borrar de al lado */
+  body :is(.ed-row,[data-act="aren"],[data-capedit]):hover{color:var(--ink)}
 }
 </style><script>(function(){var s='cuadre';try{var v=localStorage.getItem('mis-finanzas-prototipo-v1-skin');if(v==='original'||v==='cuadre'||v==='escalon')s=v;}catch(e){}document.documentElement.dataset.skin=s;['cuadre','escalon'].forEach(function(k){var e=document.getElementById('sk-'+k);if(e)e.disabled=(k!==s);});})();</script>
 

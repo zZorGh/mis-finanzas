@@ -4,7 +4,8 @@ const {chromium}=require('playwright');const fs=require('fs');
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
 const demo=JSON.parse(fs.readFileSync(__dirname+'/demo.json','utf8'));const K='mis-finanzas-prototipo-v1';
 let ok=0,bad=0;const T=(n,c)=>{c?ok++:(bad++,console.log('FALLA',n));};
-const EXC=':disabled,[aria-pressed="true"],[aria-current],[aria-checked="true"],.p,.caplink,.cap-btn,.fab,.x,.capx,.dng';
+const EXC=':disabled,[aria-pressed="true"],[aria-current],[aria-checked="true"],.p,.caplink,.cap-btn,.fab';
+const BORRA='[data-del],[data-capdel],[data-act="adel"],[data-act="atasadel"],[data-metadel],[data-recdel],[data-cardrm],[data-pc="del"],[data-s="del-mov"],#fg-del,#del-go,#imp-undo,.dng,.danger>summary';
 (async()=>{
  const b=await chromium.launch();
  const mk=async(skin,theme,x)=>{x=x||{};const c=await b.newContext({viewport:{width:x.w||1366,height:800},colorScheme:theme,reducedMotion:'reduce',hasTouch:!!x.touch,isMobile:!!x.touch});
@@ -13,13 +14,13 @@ const EXC=':disabled,[aria-pressed="true"],[aria-current],[aria-checked="true"],
   const p=await c.newPage();p.errs=[];p.on('pageerror',e=>p.errs.push(e.message));await p.goto('http://127.0.0.1:8765/wrap-repo.html#noviembre');await p.waitForSelector('#app .card');
   await p.addStyleTag({content:'*,*::before,*::after{transition:none!important;animation:none!important}'});return p;};
  // Marca una muestra de controles visibles (uno de cada clase) y los recorre con el cursor
- const marca=(p,raiz)=>p.evaluate(([raiz,exc])=>{document.querySelectorAll('[data-h]').forEach(e=>e.removeAttribute('data-h'));
+ const marca=(p,raiz)=>p.evaluate(([raiz,exc,borra])=>{document.querySelectorAll('[data-h]').forEach(e=>e.removeAttribute('data-h'));
    const vistos={},r=[];let n=0;
    document.querySelectorAll(raiz.split(',').map(z=>['button','select','summary','label.chk','.mcard','a.tab','a.nav','a.cap-link'].map(s=>z+' '+s).join(',')).join(',')).forEach(e=>{
      const q=e.getBoundingClientRect();if(!q.width||!q.height||getComputedStyle(e).visibility==='hidden')return;
      const k=e.tagName+'.'+e.className+(e.matches(exc)?'!':'')+(e.closest('.liq')?'liq':'')+(e.closest('.hero')?'hero':'');
-     if((vistos[k]=(vistos[k]||0)+1)>2)return;e.dataset.h=n;r.push({n:n++,k,exc:e.matches(exc)});});
-   return r;},[raiz,EXC]);
+     if((vistos[k]=(vistos[k]||0)+1)>2)return;e.dataset.h=n;r.push({n:n++,k,exc:e.matches(exc),borra:e.matches(borra),lapiz:e.matches('.ed-row,[data-act="aren"],[data-capedit]')});});
+   return r;},[raiz,EXC,BORRA]);
  const lee=(p,n)=>p.evaluate(n=>{const e=document.querySelector('[data-h="'+n+'"]');const cv=document.createElement('canvas');cv.width=cv.height=1;const g=cv.getContext('2d',{willReadFrequently:true});
    const rgba=c=>{g.clearRect(0,0,1,1);g.fillStyle='#000';g.fillStyle=c;g.fillRect(0,0,1,1);const d=g.getImageData(0,0,1,1).data;return[d[0],d[1],d[2],d[3]/255];};
    const mezcla=(base,c)=>base.map((v,i)=>c[i]*c[3]+v*(1-c[3]));
@@ -36,11 +37,15 @@ const EXC=':disabled,[aria-pressed="true"],[aria-current],[aria-checked="true"],
      const d=await lee(p,it.n);res.n++;
      if(it.exc){res.exc++;if(d.sombreado&&!antes.sombreado)res.elegidos.push(donde+' '+it.k);}
      else{if(!d.sombreado)res.sin.push(donde+' '+it.k);
+       // Rojo solo para lo que borra; lo demás (también los lápices) con el color del estilo
+       if(d.sombreado&&(it.borra||it.lapiz)){const rojo=await p.evaluate(n=>{const e=document.querySelector('[data-h="'+n+'"]'),cv=document.createElement('canvas');cv.width=cv.height=1;const g=cv.getContext('2d',{willReadFrequently:true}),px=c=>{g.clearRect(0,0,1,1);g.fillStyle=c;g.fillRect(0,0,1,1);return [...g.getImageData(0,0,1,1).data].slice(0,3);};const m=getComputedStyle(e).backgroundImage.match(/(color\([^)]*\)|rgba?\([^)]*\))/),t=px(m[1]),dist=v=>px(getComputedStyle(e).getPropertyValue(v)).reduce((a,x,i)=>a+Math.abs(x-t[i]),0);return dist('--bad')<dist('--accent');},it.n);
+         if(it.borra){res.borra++;if(!rojo)res.color.push(donde+' borrar sin rojo '+it.k);}else{res.lapiz++;if(rojo&&!it.borra)res.color.push(donde+' lápiz en rojo '+it.k);
+           if(await p.evaluate(n=>{const e=document.querySelector('[data-h="'+n+'"]'),x=document.createElement('i');x.style.color='var(--bad)';document.body.appendChild(x);const r=getComputedStyle(e).color===getComputedStyle(x).color;x.remove();return r;},it.n))res.color.push(donde+' icono de lápiz en rojo '+it.k);}}
        if(d.min<4.5&&d.min<antes.min-.05)res.bajo.push(donde+' '+it.k+' «'+d.quien+'» '+antes.min.toFixed(2)+'→'+d.min.toFixed(2));}}};
  const ir=async(p,h)=>{await p.evaluate(h=>location.hash=h,h);await p.waitForTimeout(350);};
  const esc=async p=>{await p.keyboard.press('Escape');await p.waitForTimeout(200);};
  for(const skin of ['cuadre','escalon','original'])for(const theme of ['light','dark']){
-  const p=await mk(skin,theme),res={n:0,exc:0,sin:[],elegidos:[],bajo:[]},id=skin+' '+theme;
+  const p=await mk(skin,theme),res={n:0,exc:0,sin:[],elegidos:[],bajo:[],color:[],borra:0,lapiz:0},id=skin+' '+theme;
   await recorre(p,'#hdr,#app','mes',res);
   await ir(p,'resumen');await recorre(p,'#app','resumen',res);
   await ir(p,'ajustes');await recorre(p,'#app','ajustes',res);
@@ -60,6 +65,7 @@ const EXC=':disabled,[aria-pressed="true"],[aria-current],[aria-checked="true"],
   T(id+': toda opción se sombrea',!res.sin.length);if(res.sin.length)console.log([...new Set(res.sin)].join('\n'));
   T(id+': lo elegido, lo lleno y lo desactivado no cambian',!res.elegidos.length);if(res.elegidos.length)console.log([...new Set(res.elegidos)].join('\n'));
   T(id+': el sombreado no deja textos por debajo de 4.5:1',!res.bajo.length);if(res.bajo.length)console.log([...new Set(res.bajo)].join('\n'));
+  T(id+': lo que borra va en rojo y los lápices con el color del estilo ('+res.borra+' y '+res.lapiz+')',res.borra>0&&res.lapiz>0&&!res.color.length);if(res.color.length)console.log([...new Set(res.color)].join('\n'));
   T(id+': sin errores',!p.errs.length);if(p.errs.length)console.log(p.errs.slice(0,3));
   await p.context().close();}
  {const p=await mk('cuadre','light',{w:390,touch:true});T('en celular no hay sombreado al tocar',await p.evaluate(()=>!matchMedia('(hover:hover) and (pointer:fine)').matches));await p.context().close();}
