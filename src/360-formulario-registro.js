@@ -518,7 +518,7 @@ function sheetInput(e){
   else if(t.id==='sday'){ent.day=+t.value||1;const su=g('smsum');if(su)syncSheet();}
 }
 function openSheet(ask){
-  liqAlDia();
+  liqAlDia();deudaAlDia();
   closeSheet();closePanel();sheetFrom=document.activeElement;
   const mi=(typeof view!=='number')?(year===String(now.getFullYear())?now.getMonth():0):view;
   ent={t:'hor',ax:'dep',card:'bbva',cat:'',src:'',g:'',from:'',to:'',cur:'',mo:mi,yr:year,day:now.getDate()};

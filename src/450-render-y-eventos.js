@@ -59,7 +59,7 @@ document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[da
 function render(){const fk=focusKey(document.activeElement);try{render0();}catch(err){try{console.error(err);}catch(x){}crashScreen(err);}if(fk)restoreFocus(fk);}
 function render0(){passBegin();try{render1();}finally{passEnd();}}
 function render1(){
-  liqAlDia();
+  liqAlDia();deudaAlDia();
   if(cfg.ahoV!==3)migrateAho();
   killCharts();
   document.body.classList.toggle('edit',edit);
@@ -112,7 +112,7 @@ app.addEventListener('input',e=>{
   if(d.ec!==undefined){cfg.eurCols[+d.ec]=t.value;save();return;}
   if(typeof view!=='number')return;
   const m=S[year][view];
-  if(d.copen!==undefined){if(!m.copen)m.copen={};m.copen[d.copen]=parseFloat(t.value)||0;save();refreshMonth(false);return;}
+  if(d.copen!==undefined){if(!m.copen)m.copen={};if(m.ch)delete m.ch[d.copen];m.copen[d.copen]=parseFloat(t.value)||0;save();refreshMonth(false);return;}
   if(d.nota){m.nota=t.value;save();return;}
   if(d.p!==undefined){const k=PM().k;if(!m.q)m.q=[50,30,20];m[k][+d.p]=parseFloat(t.value)||0;save();refreshMonth(false);return;}
   if(d.s){const r=m[d.s][+d.i];const wasM=d.k==='m';r[d.k]=(d.s==='eur'||d.k==='m')?(parseFloat(t.value)||0):t.value;if(wasM&&r.src)reconcile(m,r,d.s);if(wasM&&d.s==='liq')m.lb={x:1};if(d.s==='aho'&&wasM){if((m.aho||[]).some(x=>+x.m))delete m.az;else m.az=1;}save();refreshMonth(false);}

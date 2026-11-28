@@ -1221,6 +1221,7 @@ function saneMonth(m){
     if(m.tc.c!=null&&typeof m.tc.c!=='object')t.c=m.tc.c;
     if(Object.keys(t).length)o.tc=t;}
   if(isObj(m.copen)){const t={};CARD_ALL.forEach(k=>{const v=+m.copen[k];if(Number.isFinite(v))t[k]=v;});o.copen=t;}
+  if(isObj(m.ch)){const t={};CARD_ALL.forEach(k=>{if(m.ch[k])t[k]=1;});if(Object.keys(t).length)o.ch=t;}
   if(m.az)o.az=1;
   if(Array.isArray(m.lb))o.lb=m.lb.slice(0,40).map(b=>Array.isArray(b)?[String(b[0]).slice(0,60),fin(b[1])]:null);else if(isObj(m.lb))o.lb={x:1};
   return o;
@@ -1334,8 +1335,8 @@ document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[da
    Los guardados normales (botones, diálogos) siguen siendo inmediatos y cancelan la espera pendiente.
    Si la pestaña se oculta o se cierra, lo pendiente se guarda al instante. */
 let ssT=0;
-const save=()=>{clearTimeout(ssT);ssT=0;liqSync();localSave();queueSync();if(typeof localDaily==='function')localDaily();};
-const saveSoon=()=>{queueSync();clearTimeout(ssT);ssT=setTimeout(()=>{ssT=0;liqSync();localSave();if(typeof localDaily==='function')localDaily();},350);};
+const save=()=>{clearTimeout(ssT);ssT=0;liqSync();deudaSync();localSave();queueSync();if(typeof localDaily==='function')localDaily();};
+const saveSoon=()=>{queueSync();clearTimeout(ssT);ssT=setTimeout(()=>{ssT=0;liqSync();deudaSync();localSave();if(typeof localDaily==='function')localDaily();},350);};
 const flushSave=()=>{if(ssT){clearTimeout(ssT);ssT=0;localSave();if(typeof localDaily==='function')localDaily();}};
 window.addEventListener('pagehide',flushSave);
 window.addEventListener('beforeunload',flushSave);
@@ -2010,17 +2011,32 @@ function liqAlDia(){
   const de=liqCarry();if(!de)return;
   liqTraido=Date.now();save();setTimeout(()=>toast('Tus saldos siguen desde '+MES[de.i].toLowerCase()+'.'),400);
 }
-function autoOpen(i){
-  if(String(year)!==String(now.getFullYear())||i!==now.getMonth())return;
-  try{if(backend&&!sync.ready)return;}catch(e){return;}/* con sesión, espera a que cargue la nube: un cambio automático antes de eso se vería como una edición propia (conflicto) */
-  const m=S[year]&&S[year][i];if(!m||m.tot)return;
-  const prevY=i>0?year:String(+year-1),prevI=i>0?i-1:11;if(!(S[prevY]&&S[prevY][prevI]))return;
-  const got=[];
-  CARDS.forEach(k=>{if(m.copen&&m.copen[k]!=null)return;if((m[k]||[]).some(r=>+r.m))return;const pe=cardEnding(prevY,prevI,k);if(Math.abs(pe)>=0.005){if(!m.copen)m.copen={};m.copen[k]=pe;got.push(BANKN[k]+' '+fmtC(k,pe));}});
-  if(got.length){save();setTimeout(()=>toast('Traje del mes anterior lo que debes en tarjetas: '+got.join(', ')+'.'),Date.now()-liqTraido<1000?6600:400);/* si acaba de salir el de los saldos, este espera su turno */}
+/* La deuda de tarjetas pasa sola al mes nuevo. m.ch={tarjeta:1} marca el «Saldo anterior» heredado: se vuelve a
+   calcular en cada guardado (deudaSync), así un pago o una compra anotados después en el mes anterior también cuentan.
+   Escribir en «Saldo anterior» quita la marca. Un mes que ya tiene consumos y nunca heredó no se toca (quizá la deuda se anotó como consumo). */
+const usaTarj=(m,k)=>(m[k]||[]).some(r=>+r.m);
+function hereda(m,k,v){(m.copen=m.copen||{})[k]=v;(m.ch=m.ch||{})[k]=1;}
+function deudaSync(){
+  try{const ms=liqMeses();for(let j=1;j<ms.length;j++){const m=ms[j].m;if(!m.ch)continue;const p=ms[j-1];
+    CARDS.forEach(k=>{if(m.ch[k])(m.copen=m.copen||{})[k]=cardEnding(p.y,p.i,k);});}}catch(e){}
+}
+/* Hereda hasta el mes en curso, también los meses saltados. Devuelve lo que trajo al mes en curso. */
+function deudaCarry(){
+  try{if((IS_SB||backend)&&!sync.ready)return null;}catch(e){return null;}
+  try{const ms=liqMeses(),y=String(now.getFullYear()),t=ms.findIndex(x=>x.y===y&&x.i===now.getMonth());if(t<1)return null;
+    const got=[];let cambio=false;
+    CARDS.forEach(k=>{
+      let s=t-1;while(s>=0&&!usaTarj(ms[s].m,k)&&!(ms[s].m.copen&&ms[s].m.copen[k]!=null))s--;if(s<0)return;
+      for(let j=s+1;j<=t;j++){const m=ms[j].m;if(m.tot||(m.copen&&m.copen[k]!=null)||usaTarj(m,k))continue;
+        const pe=cardEnding(ms[j-1].y,ms[j-1].i,k);hereda(m,k,pe);cambio=true;if(j===t&&Math.abs(pe)>=.005)got.push(BANKN[k]+' '+fmtC(k,pe));}
+    });
+    return cambio?got:null;}catch(e){return null;}
+}
+function deudaAlDia(){
+  const got=deudaCarry();if(!got)return;
+  save();if(got.length)setTimeout(()=>toast('Traje del mes anterior lo que debes en tarjetas: '+got.join(', ')+'.'),Date.now()-liqTraido<1000?6600:400);/* si acaba de salir el de los saldos, este espera su turno */
 }
 function viewMes(i){
-  autoOpen(i);
   const m=S[year][i],D=dv(m);
   const today=(year===String(now.getFullYear()))?now.getMonth():-1;
   const kp=(l,id,v)=>`<div class="kpi"><div class="kl">${l}</div><div class="kv" id="${id}">${v}</div></div>`;
@@ -2821,7 +2837,7 @@ function sheetInput(e){
   else if(t.id==='sday'){ent.day=+t.value||1;const su=g('smsum');if(su)syncSheet();}
 }
 function openSheet(ask){
-  liqAlDia();
+  liqAlDia();deudaAlDia();
   closeSheet();closePanel();sheetFrom=document.activeElement;
   const mi=(typeof view!=='number')?(year===String(now.getFullYear())?now.getMonth():0):view;
   ent={t:'hor',ax:'dep',card:'bbva',cat:'',src:'',g:'',from:'',to:'',cur:'',mo:mi,yr:year,day:now.getDate()};
@@ -3137,7 +3153,7 @@ function cardRm(k){
   if(!CARD_X.includes(k)||cardHas(k))return false;
   cfg.tarjetasX=(cfg.tarjetasX||[]).filter(x=>x.k!==k);
   [cfg.credito,cfg.corteDia,cfg.pagoDia].forEach(o=>{if(o)delete o[k];});
-  Object.keys(S).forEach(y=>(S[y]||[]).forEach(m=>{delete m[k];if(m.copen)delete m.copen[k];}));
+  Object.keys(S).forEach(y=>(S[y]||[]).forEach(m=>{delete m[k];if(m.copen)delete m.copen[k];if(m.ch)delete m.ch[k];}));
   Object.keys(LAY||{}).forEach(g=>{const l=LAY[g];if(l&&l.c)delete l.c[k];if(l&&Array.isArray(l.order))l.order=l.order.filter(i=>i!==k);});
   applyBanks();return true;
 }
@@ -3180,7 +3196,7 @@ function showOnboard(force){
     st.bal.forEach((b,j)=>{const x=parseMonto(b);if(b&&Number.isFinite(x)&&m.liq[j]){m.liq[j].m=Math.round(x*100)/100;m.lb={x:1};}});
     ['bbva','bcp','oh'].forEach((k,j)=>{const c=st.cards[j],l=parseMonto(c.l),d=parseMonto(c.d);
       if(c.l&&Number.isFinite(l)&&l>=0){cfg.credito=Object.assign({bbva:0,bcp:0,oh:0},cfg.credito);cfg.credito[k]=l;}
-      if(c.d&&Number.isFinite(d)&&d>0){if(!m.copen)m.copen={};m.copen[k]=d;}
+      if(c.d&&Number.isFinite(d)&&d>0){if(!m.copen)m.copen={};if(m.ch)delete m.ch[k];m.copen[k]=d;}
       const kd=Math.round(parseFloat(c.cd)),pd=Math.round(parseFloat(c.pd));
       if(c.cd&&kd>=1&&kd<=31){cfg.corteDia=Object.assign({},cfg.corteDia);cfg.corteDia[k]=kd;}
       if(c.pd&&pd>=1&&pd<=31){cfg.pagoDia=Object.assign({},cfg.pagoDia);cfg.pagoDia[k]=pd;}});
@@ -3247,7 +3263,7 @@ const SB_URL=ES_PROD?'https://lmjhlghwthydpeismulb.supabase.co':'https://qfnqqhw
    Cuentan qué pantallas se usan y dónde se traba la gente. NUNCA llevan montos, conceptos, cuentas ni correo:
    solo un id aleatorio del dispositivo (cuadra-sid), el nombre del evento, un dato corto (modo, paso, tipo) y la versión.
    Apagado hasta que exista la tabla (TRACK_DEFAULT); cada persona puede apagarlo en Ajustes (cuadra-stats = 0/1). */
-const TRACK_DEFAULT=true,APPV='2026.11.28.2';
+const TRACK_DEFAULT=true,APPV='2026.11.28.3';
 /* En tu computadora (localhost, file) no se mide por defecto: así las pruebas y el desarrollo no ensucian las métricas reales. */
 const trLocal=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\]|)$/.test(location.hostname);
 const statsOn=()=>{let v=null;try{v=localStorage.getItem('cuadra-stats');}catch(e){}return v==='1'?true:v==='0'?false:(TRACK_DEFAULT&&!trLocal);};
@@ -3324,7 +3340,8 @@ function toRows(wantX){
       out.push(base.concat(['_Mes',JSON.stringify(Object.assign({p:m.p,q:m.q||[50,30,20],nota:m.nota||'',tot:!!m.tot},m.az?{az:1}:{})),0,'','','','','','','','','']));
     if(m.lb)out.push(base.concat(['_Liq',JSON.stringify(m.lb),0,'','','','','','','','','']));
     if(m.mov&&m.mov.length)out.push(base.concat(['_Mov',JSON.stringify(m.mov),0,'','','','','','','','','']));
-    if(m.copen&&Object.keys(m.copen).some(k=>+m.copen[k]))out.push(base.concat(['_Card',JSON.stringify(m.copen),0,'','','','','','','','','']));
+    /* Se sube aunque valga cero: «Saldo anterior 0» es un dato. _h: tarjetas cuyo saldo anterior es heredado */
+    if(m.copen&&Object.keys(m.copen).length)out.push(base.concat(['_Card',JSON.stringify(Object.assign({},m.copen,m.ch?{_h:Object.keys(m.ch).filter(k=>m.ch[k])}:{})),0,'','','','','','','','','']));
     if(m.tc&&(+m.tc['$']||+m.tc['€']))out.push(base.concat(['_TC',JSON.stringify(m.tc),0,'','','','','','','','','']));
   }));
   return out;
@@ -3338,7 +3355,7 @@ function fromRows(rows){
     const m=years[y][mi],ap=String(r[3]||'').trim();
     if(ap==='_Mes'){try{const j=JSON.parse(r[4]);if(j.p)m.p=j.p;if(j.q)m.q=j.q;m.nota=j.nota||'';m.tot=!!j.tot;if(j.az)m.az=1;}catch(e){}return;}
     if(ap==='_Liq'){try{m.lb=JSON.parse(r[4]);}catch(e){}return;}
-    if(ap==='_Card'){try{m.copen=JSON.parse(r[4]);}catch(e){}return;}
+    if(ap==='_Card'){try{const j=JSON.parse(r[4]);if(Array.isArray(j._h)){m.ch={};j._h.forEach(k=>{m.ch[String(k)]=1;});}delete j._h;m.copen=j;}catch(e){}return;}
     if(ap==='_TC'){try{m.tc=JSON.parse(r[4]);}catch(e){}return;}
     if(ap==='_Mov'){try{m.mov=JSON.parse(r[4]);}catch(e){}return;}
     if(ap==='Apuntes'){m.eur.push({a:num(r[8]),b:num(r[9]),d:num(r[10]),s:num(r[11]),p:num(r[12])});return;}
@@ -3937,7 +3954,7 @@ function doPrev(){
   let saldos=0;
   if(!m.lb&&liqIntacto(m)&&(pm.liq||[]).some(r=>+r.m)){liqHereda(pm,m);saldos=1;}
   const prevY=view>0?year:String(+year-1),prevI=view>0?view-1:11;let nc=0;
-  CARDS.forEach(k=>{if(m.copen&&m.copen[k]!=null)return;if((m[k]||[]).some(r=>+r.m))return;const pe=cardEnding(prevY,prevI,k);if(pe){if(!m.copen)m.copen={};m.copen[k]=pe;nc++;}});
+  CARDS.forEach(k=>{if(m.copen&&m.copen[k]!=null)return;if((m[k]||[]).some(r=>+r.m))return;const pe=cardEnding(prevY,prevI,k);if(pe){hereda(m,k,pe);nc++;}});
   save();render();
   if(!saldos&&!nc){toast('No había nada que traer: este mes ya tiene sus saldos.');return;}
   toast(saldos&&nc?'Traje del mes anterior los saldos de tus cuentas y lo que debes en tarjetas.':saldos?'Traje del mes anterior los saldos de tus cuentas.':'Traje del mes anterior lo que debes en tarjetas.');
@@ -4666,7 +4683,7 @@ document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[da
 function render(){const fk=focusKey(document.activeElement);try{render0();}catch(err){try{console.error(err);}catch(x){}crashScreen(err);}if(fk)restoreFocus(fk);}
 function render0(){passBegin();try{render1();}finally{passEnd();}}
 function render1(){
-  liqAlDia();
+  liqAlDia();deudaAlDia();
   if(cfg.ahoV!==3)migrateAho();
   killCharts();
   document.body.classList.toggle('edit',edit);
@@ -4719,7 +4736,7 @@ app.addEventListener('input',e=>{
   if(d.ec!==undefined){cfg.eurCols[+d.ec]=t.value;save();return;}
   if(typeof view!=='number')return;
   const m=S[year][view];
-  if(d.copen!==undefined){if(!m.copen)m.copen={};m.copen[d.copen]=parseFloat(t.value)||0;save();refreshMonth(false);return;}
+  if(d.copen!==undefined){if(!m.copen)m.copen={};if(m.ch)delete m.ch[d.copen];m.copen[d.copen]=parseFloat(t.value)||0;save();refreshMonth(false);return;}
   if(d.nota){m.nota=t.value;save();return;}
   if(d.p!==undefined){const k=PM().k;if(!m.q)m.q=[50,30,20];m[k][+d.p]=parseFloat(t.value)||0;save();refreshMonth(false);return;}
   if(d.s){const r=m[d.s][+d.i];const wasM=d.k==='m';r[d.k]=(d.s==='eur'||d.k==='m')?(parseFloat(t.value)||0):t.value;if(wasM&&r.src)reconcile(m,r,d.s);if(wasM&&d.s==='liq')m.lb={x:1};if(d.s==='aho'&&wasM){if((m.aho||[]).some(x=>+x.m))delete m.az;else m.az=1;}save();refreshMonth(false);}

@@ -16,7 +16,7 @@ function doPrev(){
   let saldos=0;
   if(!m.lb&&liqIntacto(m)&&(pm.liq||[]).some(r=>+r.m)){liqHereda(pm,m);saldos=1;}
   const prevY=view>0?year:String(+year-1),prevI=view>0?view-1:11;let nc=0;
-  CARDS.forEach(k=>{if(m.copen&&m.copen[k]!=null)return;if((m[k]||[]).some(r=>+r.m))return;const pe=cardEnding(prevY,prevI,k);if(pe){if(!m.copen)m.copen={};m.copen[k]=pe;nc++;}});
+  CARDS.forEach(k=>{if(m.copen&&m.copen[k]!=null)return;if((m[k]||[]).some(r=>+r.m))return;const pe=cardEnding(prevY,prevI,k);if(pe){hereda(m,k,pe);nc++;}});
   save();render();
   if(!saldos&&!nc){toast('No había nada que traer: este mes ya tiene sus saldos.');return;}
   toast(saldos&&nc?'Traje del mes anterior los saldos de tus cuentas y lo que debes en tarjetas.':saldos?'Traje del mes anterior los saldos de tus cuentas.':'Traje del mes anterior lo que debes en tarjetas.');

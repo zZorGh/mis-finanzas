@@ -2,7 +2,7 @@
    Cuentan qué pantallas se usan y dónde se traba la gente. NUNCA llevan montos, conceptos, cuentas ni correo:
    solo un id aleatorio del dispositivo (cuadra-sid), el nombre del evento, un dato corto (modo, paso, tipo) y la versión.
    Apagado hasta que exista la tabla (TRACK_DEFAULT); cada persona puede apagarlo en Ajustes (cuadra-stats = 0/1). */
-const TRACK_DEFAULT=true,APPV='2026.11.28.2';
+const TRACK_DEFAULT=true,APPV='2026.11.28.3';
 /* En tu computadora (localhost, file) no se mide por defecto: así las pruebas y el desarrollo no ensucian las métricas reales. */
 const trLocal=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\]|)$/.test(location.hostname);
 const statsOn=()=>{let v=null;try{v=localStorage.getItem('cuadra-stats');}catch(e){}return v==='1'?true:v==='0'?false:(TRACK_DEFAULT&&!trLocal);};
@@ -79,7 +79,8 @@ function toRows(wantX){
       out.push(base.concat(['_Mes',JSON.stringify(Object.assign({p:m.p,q:m.q||[50,30,20],nota:m.nota||'',tot:!!m.tot},m.az?{az:1}:{})),0,'','','','','','','','','']));
     if(m.lb)out.push(base.concat(['_Liq',JSON.stringify(m.lb),0,'','','','','','','','','']));
     if(m.mov&&m.mov.length)out.push(base.concat(['_Mov',JSON.stringify(m.mov),0,'','','','','','','','','']));
-    if(m.copen&&Object.keys(m.copen).some(k=>+m.copen[k]))out.push(base.concat(['_Card',JSON.stringify(m.copen),0,'','','','','','','','','']));
+    /* Se sube aunque valga cero: «Saldo anterior 0» es un dato. _h: tarjetas cuyo saldo anterior es heredado */
+    if(m.copen&&Object.keys(m.copen).length)out.push(base.concat(['_Card',JSON.stringify(Object.assign({},m.copen,m.ch?{_h:Object.keys(m.ch).filter(k=>m.ch[k])}:{})),0,'','','','','','','','','']));
     if(m.tc&&(+m.tc['$']||+m.tc['€']))out.push(base.concat(['_TC',JSON.stringify(m.tc),0,'','','','','','','','','']));
   }));
   return out;
@@ -93,7 +94,7 @@ function fromRows(rows){
     const m=years[y][mi],ap=String(r[3]||'').trim();
     if(ap==='_Mes'){try{const j=JSON.parse(r[4]);if(j.p)m.p=j.p;if(j.q)m.q=j.q;m.nota=j.nota||'';m.tot=!!j.tot;if(j.az)m.az=1;}catch(e){}return;}
     if(ap==='_Liq'){try{m.lb=JSON.parse(r[4]);}catch(e){}return;}
-    if(ap==='_Card'){try{m.copen=JSON.parse(r[4]);}catch(e){}return;}
+    if(ap==='_Card'){try{const j=JSON.parse(r[4]);if(Array.isArray(j._h)){m.ch={};j._h.forEach(k=>{m.ch[String(k)]=1;});}delete j._h;m.copen=j;}catch(e){}return;}
     if(ap==='_TC'){try{m.tc=JSON.parse(r[4]);}catch(e){}return;}
     if(ap==='_Mov'){try{m.mov=JSON.parse(r[4]);}catch(e){}return;}
     if(ap==='Apuntes'){m.eur.push({a:num(r[8]),b:num(r[9]),d:num(r[10]),s:num(r[11]),p:num(r[12])});return;}

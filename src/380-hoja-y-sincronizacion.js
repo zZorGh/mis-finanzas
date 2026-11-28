@@ -71,7 +71,7 @@ function cardRm(k){
   if(!CARD_X.includes(k)||cardHas(k))return false;
   cfg.tarjetasX=(cfg.tarjetasX||[]).filter(x=>x.k!==k);
   [cfg.credito,cfg.corteDia,cfg.pagoDia].forEach(o=>{if(o)delete o[k];});
-  Object.keys(S).forEach(y=>(S[y]||[]).forEach(m=>{delete m[k];if(m.copen)delete m.copen[k];}));
+  Object.keys(S).forEach(y=>(S[y]||[]).forEach(m=>{delete m[k];if(m.copen)delete m.copen[k];if(m.ch)delete m.ch[k];}));
   Object.keys(LAY||{}).forEach(g=>{const l=LAY[g];if(l&&l.c)delete l.c[k];if(l&&Array.isArray(l.order))l.order=l.order.filter(i=>i!==k);});
   applyBanks();return true;
 }
@@ -114,7 +114,7 @@ function showOnboard(force){
     st.bal.forEach((b,j)=>{const x=parseMonto(b);if(b&&Number.isFinite(x)&&m.liq[j]){m.liq[j].m=Math.round(x*100)/100;m.lb={x:1};}});
     ['bbva','bcp','oh'].forEach((k,j)=>{const c=st.cards[j],l=parseMonto(c.l),d=parseMonto(c.d);
       if(c.l&&Number.isFinite(l)&&l>=0){cfg.credito=Object.assign({bbva:0,bcp:0,oh:0},cfg.credito);cfg.credito[k]=l;}
-      if(c.d&&Number.isFinite(d)&&d>0){if(!m.copen)m.copen={};m.copen[k]=d;}
+      if(c.d&&Number.isFinite(d)&&d>0){if(!m.copen)m.copen={};if(m.ch)delete m.ch[k];m.copen[k]=d;}
       const kd=Math.round(parseFloat(c.cd)),pd=Math.round(parseFloat(c.pd));
       if(c.cd&&kd>=1&&kd<=31){cfg.corteDia=Object.assign({},cfg.corteDia);cfg.corteDia[k]=kd;}
       if(c.pd&&pd>=1&&pd<=31){cfg.pagoDia=Object.assign({},cfg.pagoDia);cfg.pagoDia[k]=pd;}});

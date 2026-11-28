@@ -283,17 +283,32 @@ function liqAlDia(){
   const de=liqCarry();if(!de)return;
   liqTraido=Date.now();save();setTimeout(()=>toast('Tus saldos siguen desde '+MES[de.i].toLowerCase()+'.'),400);
 }
-function autoOpen(i){
-  if(String(year)!==String(now.getFullYear())||i!==now.getMonth())return;
-  try{if(backend&&!sync.ready)return;}catch(e){return;}/* con sesión, espera a que cargue la nube: un cambio automático antes de eso se vería como una edición propia (conflicto) */
-  const m=S[year]&&S[year][i];if(!m||m.tot)return;
-  const prevY=i>0?year:String(+year-1),prevI=i>0?i-1:11;if(!(S[prevY]&&S[prevY][prevI]))return;
-  const got=[];
-  CARDS.forEach(k=>{if(m.copen&&m.copen[k]!=null)return;if((m[k]||[]).some(r=>+r.m))return;const pe=cardEnding(prevY,prevI,k);if(Math.abs(pe)>=0.005){if(!m.copen)m.copen={};m.copen[k]=pe;got.push(BANKN[k]+' '+fmtC(k,pe));}});
-  if(got.length){save();setTimeout(()=>toast('Traje del mes anterior lo que debes en tarjetas: '+got.join(', ')+'.'),Date.now()-liqTraido<1000?6600:400);/* si acaba de salir el de los saldos, este espera su turno */}
+/* La deuda de tarjetas pasa sola al mes nuevo. m.ch={tarjeta:1} marca el «Saldo anterior» heredado: se vuelve a
+   calcular en cada guardado (deudaSync), así un pago o una compra anotados después en el mes anterior también cuentan.
+   Escribir en «Saldo anterior» quita la marca. Un mes que ya tiene consumos y nunca heredó no se toca (quizá la deuda se anotó como consumo). */
+const usaTarj=(m,k)=>(m[k]||[]).some(r=>+r.m);
+function hereda(m,k,v){(m.copen=m.copen||{})[k]=v;(m.ch=m.ch||{})[k]=1;}
+function deudaSync(){
+  try{const ms=liqMeses();for(let j=1;j<ms.length;j++){const m=ms[j].m;if(!m.ch)continue;const p=ms[j-1];
+    CARDS.forEach(k=>{if(m.ch[k])(m.copen=m.copen||{})[k]=cardEnding(p.y,p.i,k);});}}catch(e){}
+}
+/* Hereda hasta el mes en curso, también los meses saltados. Devuelve lo que trajo al mes en curso. */
+function deudaCarry(){
+  try{if((IS_SB||backend)&&!sync.ready)return null;}catch(e){return null;}
+  try{const ms=liqMeses(),y=String(now.getFullYear()),t=ms.findIndex(x=>x.y===y&&x.i===now.getMonth());if(t<1)return null;
+    const got=[];let cambio=false;
+    CARDS.forEach(k=>{
+      let s=t-1;while(s>=0&&!usaTarj(ms[s].m,k)&&!(ms[s].m.copen&&ms[s].m.copen[k]!=null))s--;if(s<0)return;
+      for(let j=s+1;j<=t;j++){const m=ms[j].m;if(m.tot||(m.copen&&m.copen[k]!=null)||usaTarj(m,k))continue;
+        const pe=cardEnding(ms[j-1].y,ms[j-1].i,k);hereda(m,k,pe);cambio=true;if(j===t&&Math.abs(pe)>=.005)got.push(BANKN[k]+' '+fmtC(k,pe));}
+    });
+    return cambio?got:null;}catch(e){return null;}
+}
+function deudaAlDia(){
+  const got=deudaCarry();if(!got)return;
+  save();if(got.length)setTimeout(()=>toast('Traje del mes anterior lo que debes en tarjetas: '+got.join(', ')+'.'),Date.now()-liqTraido<1000?6600:400);/* si acaba de salir el de los saldos, este espera su turno */
 }
 function viewMes(i){
-  autoOpen(i);
   const m=S[year][i],D=dv(m);
   const today=(year===String(now.getFullYear()))?now.getMonth():-1;
   const kp=(l,id,v)=>`<div class="kpi"><div class="kl">${l}</div><div class="kv" id="${id}">${v}</div></div>`;
