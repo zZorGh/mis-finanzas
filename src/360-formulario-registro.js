@@ -108,7 +108,7 @@ function reconcile(m,r,sec){if(!r.src)return;revDed(m,r);applyDed(m,r,sec);}
 function paymentsTo(m,k){let d=0;(m.fij||[]).forEach(r=>{if(r.card===k)d+=(+r.m||0)*rateC(rowCur('fij',r),m)/rate(k,m);});return d;}
 function cardDebt(m,k){return Math.round((sumIn(m,k)-paymentsTo(m,k))*100)/100;}
 function cardEnding(y,i,k){const m=S[y]&&S[y][i];if(!m)return 0;const open=+((m.copen||{})[k])||0;return Math.round((open+cardDebt(m,k))*100)/100;}
-function delMov(m,sec,i){const a=m[sec];if(!a||!a[i])return;const r=a[i];if(r.src)revDed(m,r);if(sec==='aho'&&r.t&&r.t.indexOf('tr:')===0){m.aho=a.filter(x=>x.t!==r.t);if(!m.aho.length)m.aho.push(row());return;}a.splice(i,1);if(!a.length)a.push(sec==='eur'?{a:0,b:0,d:0,s:0,p:0}:row());}
+function delMov(m,sec,i){const a=m[sec];if(!a||!a[i])return;const r=a[i];if(r.src)revDed(m,r);if(sec==='liq'&&Array.isArray(m.lb))m.lb.splice(i,1);if(sec==='aho'&&r.t&&r.t.indexOf('tr:')===0){m.aho=a.filter(x=>x.t!==r.t);if(!m.aho.length)m.aho.push(row());return;}a.splice(i,1);if(!a.length)a.push(sec==='eur'?{a:0,b:0,d:0,s:0,p:0}:row());}
 let ent=null,lastUndo=null,toastT=0,pf=null,sheetFrom=null;
 const tsec=()=>ent.t==='compra'?ent.card:ent.t==='pago'?'fij':ent.t==='mov'?'aho':ent.t;
 const lastType=()=>{try{const t=localStorage.getItem(KEY+'-tipo')||'hor';return TIPOS.some(x=>x[0]===t)?t:'hor';}catch(e){return 'hor';}};
@@ -518,6 +518,7 @@ function sheetInput(e){
   else if(t.id==='sday'){ent.day=+t.value||1;const su=g('smsum');if(su)syncSheet();}
 }
 function openSheet(ask){
+  liqAlDia();
   closeSheet();closePanel();sheetFrom=document.activeElement;
   const mi=(typeof view!=='number')?(year===String(now.getFullYear())?now.getMonth():0):view;
   ent={t:'hor',ax:'dep',card:'bbva',cat:'',src:'',g:'',from:'',to:'',cur:'',mo:mi,yr:year,day:now.getDate()};

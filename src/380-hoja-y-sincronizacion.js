@@ -111,7 +111,7 @@ function showOnboard(force){
   const aplicar=()=>{
     applyNames(nombres(),st.cards.map((c,j)=>c.n||('Tarjeta '+(j+1))));
     const m=mm();
-    st.bal.forEach((b,j)=>{const x=parseMonto(b);if(b&&Number.isFinite(x)&&m.liq[j])m.liq[j].m=Math.round(x*100)/100;});
+    st.bal.forEach((b,j)=>{const x=parseMonto(b);if(b&&Number.isFinite(x)&&m.liq[j]){m.liq[j].m=Math.round(x*100)/100;m.lb={x:1};}});
     ['bbva','bcp','oh'].forEach((k,j)=>{const c=st.cards[j],l=parseMonto(c.l),d=parseMonto(c.d);
       if(c.l&&Number.isFinite(l)&&l>=0){cfg.credito=Object.assign({bbva:0,bcp:0,oh:0},cfg.credito);cfg.credito[k]=l;}
       if(c.d&&Number.isFinite(d)&&d>0){if(!m.copen)m.copen={};m.copen[k]=d;}

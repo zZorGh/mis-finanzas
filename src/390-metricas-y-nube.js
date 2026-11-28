@@ -2,7 +2,7 @@
    Cuentan qué pantallas se usan y dónde se traba la gente. NUNCA llevan montos, conceptos, cuentas ni correo:
    solo un id aleatorio del dispositivo (cuadra-sid), el nombre del evento, un dato corto (modo, paso, tipo) y la versión.
    Apagado hasta que exista la tabla (TRACK_DEFAULT); cada persona puede apagarlo en Ajustes (cuadra-stats = 0/1). */
-const TRACK_DEFAULT=true,APPV='2026.11.28.1';
+const TRACK_DEFAULT=true,APPV='2026.11.28.2';
 /* En tu computadora (localhost, file) no se mide por defecto: así las pruebas y el desarrollo no ensucian las métricas reales. */
 const trLocal=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\]|)$/.test(location.hostname);
 const statsOn=()=>{let v=null;try{v=localStorage.getItem('cuadra-stats');}catch(e){}return v==='1'?true:v==='0'?false:(TRACK_DEFAULT&&!trLocal);};
@@ -77,6 +77,7 @@ function toRows(wantX){
     const dflt=JSON.stringify([50,30,20]);
     if(out.length>n0||m.tot||m.nota||m.az||JSON.stringify(m.p)!==dflt||JSON.stringify(m.q||[50,30,20])!==dflt)
       out.push(base.concat(['_Mes',JSON.stringify(Object.assign({p:m.p,q:m.q||[50,30,20],nota:m.nota||'',tot:!!m.tot},m.az?{az:1}:{})),0,'','','','','','','','','']));
+    if(m.lb)out.push(base.concat(['_Liq',JSON.stringify(m.lb),0,'','','','','','','','','']));
     if(m.mov&&m.mov.length)out.push(base.concat(['_Mov',JSON.stringify(m.mov),0,'','','','','','','','','']));
     if(m.copen&&Object.keys(m.copen).some(k=>+m.copen[k]))out.push(base.concat(['_Card',JSON.stringify(m.copen),0,'','','','','','','','','']));
     if(m.tc&&(+m.tc['$']||+m.tc['€']))out.push(base.concat(['_TC',JSON.stringify(m.tc),0,'','','','','','','','','']));
@@ -91,6 +92,7 @@ function fromRows(rows){
     if(!years[y])years[y]=Array.from({length:12},mk);
     const m=years[y][mi],ap=String(r[3]||'').trim();
     if(ap==='_Mes'){try{const j=JSON.parse(r[4]);if(j.p)m.p=j.p;if(j.q)m.q=j.q;m.nota=j.nota||'';m.tot=!!j.tot;if(j.az)m.az=1;}catch(e){}return;}
+    if(ap==='_Liq'){try{m.lb=JSON.parse(r[4]);}catch(e){}return;}
     if(ap==='_Card'){try{m.copen=JSON.parse(r[4]);}catch(e){}return;}
     if(ap==='_TC'){try{m.tc=JSON.parse(r[4]);}catch(e){}return;}
     if(ap==='_Mov'){try{m.mov=JSON.parse(r[4]);}catch(e){}return;}

@@ -245,6 +245,41 @@ function cierreBarHtml(i){
 /* Saldo anterior solo: al abrir el MES ACTUAL, si una tarjeta no tiene saldo anterior anotado (ni siquiera 0) y todavía no tiene consumos,
    se trae lo que quedó debiendo el mes anterior (la misma regla de «Traer del mes anterior», pero sin tener que acordarse). Si la persona
    anotó un saldo (aunque sea 0) o ya hay consumos, no se toca. Los meses pasados y futuros tampoco. */
+/* Los saldos de las cuentas pasan solos al mes nuevo. m.lb dice de dónde partió cada cuenta ([nombre, saldo del mes anterior]):
+   así, si luego anotas algo en el mes anterior («ayer taxi» el día 1), el mes nuevo se mueve igual (liqSync, en cada guardado).
+   {x:1} = saldo puesto a mano (cuadrar, editar, alta): ese mes ya no sigue al anterior.
+   Solo se hereda a un mes que nadie ha tocado: su saldo es exactamente lo que movieron sus filas. Nunca pisa saldos reales. */
+const nomL=r=>String((r&&r.c)||'').trim().toLowerCase();
+const r2L=v=>Math.round(v*100)/100;
+function liqMeses(){const o=[];Object.keys(S).sort().forEach(y=>(S[y]||[]).forEach((m,i)=>o.push({y,i,m})));return o;}
+function liqIntacto(m){return (m.liq||[]).every((r,i)=>{let d=0;['ing','fij','hor','aho'].forEach(s=>(m[s]||[]).forEach(x=>{if(x.src==='liq:'+i&&x._d!=null)d+=+x._d||0;}));return Math.abs((+r.m||0)+d)<.005;});}
+/* Qué cuenta del mes anterior es cada cuenta de este: la misma posición si se llama igual; si no, por nombre. -1: ninguna. */
+function liqPares(p,m){const usadas={};return (m.liq||[]).map((r,i)=>{const n=nomL(r),q=p.liq||[];let j=(q[i]&&nomL(q[i])===n&&!usadas[i])?i:q.findIndex((x,k)=>!usadas[k]&&nomL(x)===n);if(!n||j<0)return -1;usadas[j]=1;return j;});}
+function liqHereda(p,m){
+  m.liq=m.liq||[];
+  (p.liq||[]).forEach(a=>{const n=nomL(a);if(n&&+a.m&&!m.liq.some(x=>nomL(x)===n))m.liq.push(row(a.c,0));});
+  const par=liqPares(p,m);
+  m.lb=m.liq.map((r,i)=>{if(par[i]<0)return null;const v=+p.liq[par[i]].m||0;r.m=r2L((+r.m||0)+v);return[nomL(r),v];});
+}
+function liqSync(){
+  try{const ms=liqMeses();for(let k=1;k<ms.length;k++){const m=ms[k].m;if(!Array.isArray(m.lb))continue;const p=ms[k-1].m,par=liqPares(p,m);
+    (m.liq||[]).forEach((r,i)=>{if(par[i]<0)return;const v=+p.liq[par[i]].m||0,b=m.lb[i];if(b){const d=r2L(v-b[1]);if(d)r.m=r2L((+r.m||0)+d);}m.lb[i]=[nomL(r),v];});}}catch(e){}
+}
+/* Hereda hasta el mes en curso (también los que se saltaron). Devuelve el mes del que salieron los saldos si trajo algo. */
+function liqCarry(){
+  try{if(backend&&!sync.ready)return null;}catch(e){return null;}
+  const ms=liqMeses(),y=String(now.getFullYear()),t=ms.findIndex(x=>x.y===y&&x.i===now.getMonth());if(t<1)return null;
+  let s=t-1;while(s>=0&&!ms[s].m.lb&&liqIntacto(ms[s].m))s--;if(s<0)return null;
+  let de=null;
+  for(let k=s+1;k<=t;k++){const m=ms[k].m,p=ms[k-1].m;if(m.lb||m.tot||!liqIntacto(m))continue;
+    if(!(p.liq||[]).some(r=>+r.m))continue;liqHereda(p,m);de=ms[s];}
+  return de;
+}
+let liqTraido=0;
+function liqAlDia(){
+  const de=liqCarry();if(!de)return;
+  liqTraido=Date.now();save();setTimeout(()=>toast('Tus saldos siguen desde '+MES[de.i].toLowerCase()+'.'),400);
+}
 function autoOpen(i){
   if(String(year)!==String(now.getFullYear())||i!==now.getMonth())return;
   try{if(backend&&!sync.ready)return;}catch(e){return;}/* con sesión, espera a que cargue la nube: un cambio automático antes de eso se vería como una edición propia (conflicto) */
@@ -252,7 +287,7 @@ function autoOpen(i){
   const prevY=i>0?year:String(+year-1),prevI=i>0?i-1:11;if(!(S[prevY]&&S[prevY][prevI]))return;
   const got=[];
   CARDS.forEach(k=>{if(m.copen&&m.copen[k]!=null)return;if((m[k]||[]).some(r=>+r.m))return;const pe=cardEnding(prevY,prevI,k);if(Math.abs(pe)>=0.005){if(!m.copen)m.copen={};m.copen[k]=pe;got.push(BANKN[k]+' '+fmtC(k,pe));}});
-  if(got.length){save();setTimeout(()=>toast('Traje del mes anterior lo que debes en tarjetas: '+got.join(', ')+'.'),400);}
+  if(got.length){save();setTimeout(()=>toast('Traje del mes anterior lo que debes en tarjetas: '+got.join(', ')+'.'),Date.now()-liqTraido<1000?6600:400);/* si acaba de salir el de los saldos, este espera su turno */}
 }
 function viewMes(i){
   autoOpen(i);

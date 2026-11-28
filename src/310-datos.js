@@ -38,6 +38,7 @@ function saneMonth(m){
     if(Object.keys(t).length)o.tc=t;}
   if(isObj(m.copen)){const t={};CARD_ALL.forEach(k=>{const v=+m.copen[k];if(Number.isFinite(v))t[k]=v;});o.copen=t;}
   if(m.az)o.az=1;
+  if(Array.isArray(m.lb))o.lb=m.lb.slice(0,40).map(b=>Array.isArray(b)?[String(b[0]).slice(0,60),fin(b[1])]:null);else if(isObj(m.lb))o.lb={x:1};
   return o;
 }
 function saneS(s0){
@@ -149,8 +150,8 @@ document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[da
    Los guardados normales (botones, diálogos) siguen siendo inmediatos y cancelan la espera pendiente.
    Si la pestaña se oculta o se cierra, lo pendiente se guarda al instante. */
 let ssT=0;
-const save=()=>{clearTimeout(ssT);ssT=0;localSave();queueSync();if(typeof localDaily==='function')localDaily();};
-const saveSoon=()=>{queueSync();clearTimeout(ssT);ssT=setTimeout(()=>{ssT=0;localSave();if(typeof localDaily==='function')localDaily();},350);};
+const save=()=>{clearTimeout(ssT);ssT=0;liqSync();localSave();queueSync();if(typeof localDaily==='function')localDaily();};
+const saveSoon=()=>{queueSync();clearTimeout(ssT);ssT=setTimeout(()=>{ssT=0;liqSync();localSave();if(typeof localDaily==='function')localDaily();},350);};
 const flushSave=()=>{if(ssT){clearTimeout(ssT);ssT=0;localSave();if(typeof localDaily==='function')localDaily();}};
 window.addEventListener('pagehide',flushSave);
 window.addEventListener('beforeunload',flushSave);

@@ -141,7 +141,7 @@ function doRec(){
 function openCierre(){
   closeSheet();closePanel();sheetFrom=document.activeElement;
   const pn=view>0?MES[view-1].toLowerCase():'diciembre';
-  const it=[['cuad','Cuadrar cuentas','Escribe el saldo real de Yape, Plin y efectivo; la app ajusta las diferencias.'],['rec','Cargar recurrentes','Agrega tus gastos de cada mes: alquiler, servicios, estudios. No se duplican.'],['prev','Traer del mes anterior','Copia tus gastos fijos, tu liquidez y el saldo de tus tarjetas de '+pn+'.'],['rep','Descargar reporte','Tu estado de cuenta en PDF o Excel.']];
+  const it=[['cuad','Cuadrar cuentas','Escribe el saldo real de Yape, Plin y efectivo; la app ajusta las diferencias.'],['rec','Cargar recurrentes','Agrega tus gastos de cada mes: alquiler, servicios, estudios. No se duplican.'],['prev','Traer del mes anterior','Trae tus saldos y lo que debes en tarjetas de '+pn+'. Los gastos de cada mes se marcan en «Por pagar».'],['rep','Descargar reporte','Tu estado de cuenta en PDF o Excel.']];
   const bg=document.createElement('div');bg.id='sheetbg';bg.className='sheetbg';
   const sh=document.createElement('div');sh.id='sheet';sh.className='sheet';sh.setAttribute('role','dialog');sh.setAttribute('aria-modal','true');sh.setAttribute('aria-label','Cierre de mes');
   sh.innerHTML=`<div class="sh-h"><b>Cierre de ${MES[view].toLowerCase()}</b><button type="button" data-s="close" aria-label="Cerrar">×</button></div><div class="ms">Lo que conviene hacer al empezar o terminar el mes.</div><div class="cmenu">${it.map(x=>`<button type="button" class="cm-i" data-act="${x[0]}"><b>${x[1]}</b><span>${x[2]}</span></button>`).join('')}</div>`;
@@ -210,7 +210,7 @@ function openCuadre(){
     else if(b.dataset.s==='apply'){
       let n=0;
       items.forEach((it,j)=>{const v=val(j);if(v===null)return;const d=Math.round((v-it.val)*100)/100;if(d===0)return;
-        if(it.k==='liq')m.liq[it.i].m=v;n++;});
+        if(it.k==='liq'){m.liq[it.i].m=v;m.lb={x:1};}n++;});
       if(!n){document.getElementById('cmsg').textContent='No hay diferencias para ajustar.';return;}
       save();closeSheet();render();toast('Ajusté '+n+(n===1?' cuenta':' cuentas')+' para que cuadren con tu saldo real');
     }});

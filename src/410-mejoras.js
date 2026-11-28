@@ -12,11 +12,12 @@ const emptyArr=a=>!a.some(r=>(r.c||'').trim()||+r.m);
 function doPrev(){
   const m=S[year][view],pm=view>0?S[year][view-1]:(S[String(+year-1)]||[])[11];
   if(!pm){toast('No hay un mes anterior para copiar.');return;}
-  let n=0;
-  if(emptyArr(m.fij)){const rows=pm.fij.filter(r=>(r.c||'').trim()&&+r.m);if(rows.length){m.fij=rows.map(r=>row(r.c,r.m,'',r.k));n+=rows.length;}}
-  if(m.liq.every(r=>!(+r.m))){const rows=pm.liq.filter(r=>(r.c||'').trim());if(rows.some(r=>+r.m)){m.liq=rows.map(r=>row(r.c,r.m));n+=rows.length;}}
+  liqCarry();
+  let saldos=0;
+  if(!m.lb&&liqIntacto(m)&&(pm.liq||[]).some(r=>+r.m)){liqHereda(pm,m);saldos=1;}
   const prevY=view>0?year:String(+year-1),prevI=view>0?view-1:11;let nc=0;
   CARDS.forEach(k=>{if(m.copen&&m.copen[k]!=null)return;if((m[k]||[]).some(r=>+r.m))return;const pe=cardEnding(prevY,prevI,k);if(pe){if(!m.copen)m.copen={};m.copen[k]=pe;nc++;}});
-  if(!n&&!nc){const had=!emptyArr(m.fij)||m.liq.some(r=>+r.m);toast(had?'Este mes ya tiene gastos fijos o liquidez, no copié nada para no duplicar.':'El mes anterior no tiene gastos fijos ni liquidez para copiar.');return;}
-  save();render();toast('Traído del mes anterior: '+n+' filas'+(nc?' y saldo de '+nc+(nc===1?' tarjeta':' tarjetas'):''));
+  save();render();
+  if(!saldos&&!nc){toast('No había nada que traer: este mes ya tiene sus saldos.');return;}
+  toast(saldos&&nc?'Traje del mes anterior los saldos de tus cuentas y lo que debes en tarjetas.':saldos?'Traje del mes anterior los saldos de tus cuentas.':'Traje del mes anterior lo que debes en tarjetas.');
 }

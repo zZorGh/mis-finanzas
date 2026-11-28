@@ -59,6 +59,7 @@ document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[da
 function render(){const fk=focusKey(document.activeElement);try{render0();}catch(err){try{console.error(err);}catch(x){}crashScreen(err);}if(fk)restoreFocus(fk);}
 function render0(){passBegin();try{render1();}finally{passEnd();}}
 function render1(){
+  liqAlDia();
   if(cfg.ahoV!==3)migrateAho();
   killCharts();
   document.body.classList.toggle('edit',edit);
@@ -114,7 +115,7 @@ app.addEventListener('input',e=>{
   if(d.copen!==undefined){if(!m.copen)m.copen={};m.copen[d.copen]=parseFloat(t.value)||0;save();refreshMonth(false);return;}
   if(d.nota){m.nota=t.value;save();return;}
   if(d.p!==undefined){const k=PM().k;if(!m.q)m.q=[50,30,20];m[k][+d.p]=parseFloat(t.value)||0;save();refreshMonth(false);return;}
-  if(d.s){const r=m[d.s][+d.i];const wasM=d.k==='m';r[d.k]=(d.s==='eur'||d.k==='m')?(parseFloat(t.value)||0):t.value;if(wasM&&r.src)reconcile(m,r,d.s);if(d.s==='aho'&&wasM){if((m.aho||[]).some(x=>+x.m))delete m.az;else m.az=1;}save();refreshMonth(false);}
+  if(d.s){const r=m[d.s][+d.i];const wasM=d.k==='m';r[d.k]=(d.s==='eur'||d.k==='m')?(parseFloat(t.value)||0):t.value;if(wasM&&r.src)reconcile(m,r,d.s);if(wasM&&d.s==='liq')m.lb={x:1};if(d.s==='aho'&&wasM){if((m.aho||[]).some(x=>+x.m))delete m.az;else m.az=1;}save();refreshMonth(false);}
 });
 app.addEventListener('change',e=>{if(e.target.id==='bk-file'){const f=e.target.files&&e.target.files[0];if(f){const r=new FileReader();r.onload=()=>restoreFrom(String(r.result));r.onerror=()=>bkMsg('No pude leer el archivo.',true);r.readAsText(f);}e.target.value='';return;}if(e.target.dataset.cfgt){cfg[e.target.dataset.cfgt]=e.target.value;save();render();return;}if(e.target.dataset.gs==='auto'){sync.auto=e.target.checked;persistSync();if(sync.auto&&sync.dirty&&sync.ready)queueSync();return;}if(e.target.dataset.gs==='id'){e.target.value=sync.id;return;}if(e.target.dataset.fx==='auto'){cfg.tcAuto=e.target.checked;save();if(cfg.tcAuto)fxUpdate(true);return;}if(e.target.dataset.tcm){return;}if(e.target.dataset.cfg||e.target.dataset.tc){if(PTRBTN&&Date.now()-PTRBTN<600)setTimeout(render,450);else setTimeout(()=>{const a=document.activeElement;if(a&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)&&app.contains(a)){NEEDR=1;return;}render();},0);}});
 let NEEDR=0;document.addEventListener('focusout',e=>{if(!NEEDR)return;setTimeout(()=>{const a=document.activeElement;if(a&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)&&app.contains(a))return;if(PTRBTN&&Date.now()-PTRBTN<600)return;NEEDR=0;render();},0);});
