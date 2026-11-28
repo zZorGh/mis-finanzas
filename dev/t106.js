@@ -58,13 +58,13 @@ const sinDesborde=p=>p.evaluate(()=>document.documentElement.scrollWidth<=docume
    T('estilo '+sk+' ('+th+'): encabezado a pantalla completa y sin desborde',!!h&&h.x<=1&&Math.abs(h.w-vw)<=1&&await sinDesborde(p));await p.context().close();}
   // Inglés
   {const p=await mes(b,1280,{lang:'en'});T('en inglés se mantiene el layout y se traduce («You have available»)',/available/i.test(await p.innerText('.hero'))&&(await card(p,'pre'))!==null);await p.context().close();}
-  // Tira de papel en oscuro (Cuadre): gris, no blanca, y con todo legible, también un saldo negativo. En claro sigue blanca.
+  // Tira de papel (Cuadre): blanco cálido en claro y papel oscuro en oscuro, con todo legible, también un saldo negativo.
   for(const [tema,neg] of [["dark",false],["dark",true],["light",false]]){const c=await b.newContext({viewport:{width:1366,height:800},colorScheme:tema});await c.route("**/*",r=>r.request().url().startsWith("http://127.0.0.1:8765")?r.continue():r.abort());
    const d=require("./demo.json"),S=JSON.parse(JSON.stringify(d.S));if(neg)S["2026"][10].liq[0].m=-5000;
    await c.addInitScript(([x,k])=>{localStorage.setItem(k,x);localStorage.setItem(k+"-instalar","1");localStorage.setItem(k+"-skin","cuadre");},[JSON.stringify({v:1,S,cfg:Object.assign({},d.cfg,{onb:1})}),"mis-finanzas-prototipo-v1"]);
    const q=await c.newPage();await q.goto("http://127.0.0.1:8765/wrap-repo.html#noviembre");await q.waitForSelector("#app .hero .liq");await q.waitForTimeout(600);
    const m=await q.evaluate(()=>{const L=s=>{const [r,g,b]=s.match(/[0-9.]+/g).map(Number),f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4);};return .2126*f(r)+.7152*f(g)+.0722*f(b);};
      const l=document.querySelector("#app .hero .liq"),bg=getComputedStyle(l).backgroundColor;let min=99;for(const e of l.querySelectorAll("*")){if(!e.getClientRects().length||![...e.childNodes].some(n=>n.nodeType===3&&n.textContent.trim()))continue;const a=L(getComputedStyle(e).color),z=L(bg);min=Math.min(min,(Math.max(a,z)+.05)/(Math.min(a,z)+.05));}return{bg,min};});
-   T("tira "+tema+(neg?" con saldo negativo":"")+": "+(tema==="dark"?"gris":"blanca")+" y legible ("+m.min.toFixed(1)+":1)",(tema==="dark"?m.bg==="rgb(195, 203, 198)":m.bg==="rgb(255, 255, 255)")&&m.min>=4.5);await c.close();}
+   T("tira "+tema+(neg?" con saldo negativo":"")+": "+(tema==="dark"?"papel oscuro":"blanco cálido")+" y legible ("+m.min.toFixed(1)+":1)",(tema==="dark"?m.bg==="rgb(32, 36, 34)":m.bg==="rgb(233, 231, 226)")&&m.min>=4.5);await c.close();}
   console.log('Total '+(ok+bad)+' ok '+ok+' fallas '+bad);await b.close();process.exit(bad?1:0);
 })().catch(e=>{console.log('ERR',e);process.exit(1);});

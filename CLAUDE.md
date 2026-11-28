@@ -89,7 +89,7 @@ El idioma vive en `localStorage['cuadra-lang']` (por defecto `es`). La app tradu
 ### Estilos (Original / Cuadre / Escalón)
 Selector en Ajustes → «Estilo de la app»; se guarda en `localStorage['mis-finanzas-prototipo-v1-skin']` (por defecto `cuadre`). Se implementan con `<style id="sk-cuadre">` y `<style id="sk-escalon">` que un script temprano activa o desactiva; «Original» = ambos desactivados. Tema claro/oscuro es aparte (botón «Tema»).
 - **Esos dos `<style>` deben ir DESPUÉS del CSS principal.** Antes estaban delante y las reglas de igual especificidad perdían (causó el bug de «Editar cuentas» invisible).
-- En Cuadre, el panel «Dónde está tu dinero» es una tira de papel **blanca** (en tema oscuro, gris verdoso `#C3CBC6` con textos `#343F39`, desde el 27 nov. 2026; un saldo negativo ahí va en `#8E1313`): sus textos/campos van con colores forzados (`!important`) porque el hero original usa letra blanca. Cualquier control nuevo dentro de ese panel debe probarse en los 3 estilos.
+- En Cuadre, el panel «Dónde está tu dinero» es una tira de papel: **blanco cálido `#E9E7E2` en claro y papel oscuro `#202422` en oscuro** (elegido por el dueño el 27 nov. 2026; rechazó un gris verdoso). Sus colores salen de las variables `--hoja*` de `140-piel-cuadre.css` y sus textos/campos van forzados (`!important`) porque el hero original usa letra blanca. Cualquier control nuevo dentro de ese panel debe probarse en los 3 estilos.
 - Identidad: Cuadre = papel cuadriculado, tira de sumadora, Instrument Sans + Geist Mono. Escalón = índigo y ámbar, Familjen Grotesk + Figtree, con barras en escalones (inspiradas en la chakana) para el fondo de emergencia.
 
 ## Respaldo externo (23 nov. 2026)
