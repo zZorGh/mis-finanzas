@@ -33,6 +33,19 @@ button.primary,.btn-p,.sheet .save,[data-s="save"],#fab{border-radius:3px;box-sh
 .liq .x,.hero .liq .x{color:#5b6862!important}
 .liq .add,.liq-ed{border-color:#12201C!important;color:#12201C!important;background-color:transparent!important;border-radius:3px}
 .liq-n{color:#5b6862;opacity:1}
+/* De noche la tira blanca deslumbraba: en oscuro es un papel gris verdoso */
+@media (prefers-color-scheme:dark){
+:root:not([data-theme="light"]) .liq{background:#C3CBC6!important}
+:root:not([data-theme="light"]) .liq b.neg{color:#8E1313!important}
+:root:not([data-theme="light"]) .liq .liq-n,:root:not([data-theme="light"]) .hero .liq .hero-l,:root:not([data-theme="light"]) .liq .hero-l,:root:not([data-theme="light"]) .liq .x,:root:not([data-theme="light"]) .hero .liq .x{color:#343F39!important}
+:root:not([data-theme="light"]) .liq .rw input,:root:not([data-theme="light"]) .hero .liq .rw input{background:#D8DEDA!important;border-color:#98A39D!important}
+:root:not([data-theme="light"]) .liq .rw input::placeholder{color:#475249!important}
+}
+:root[data-theme="dark"] .liq{background:#C3CBC6!important}
+:root[data-theme="dark"] .liq b.neg{color:#8E1313!important}
+:root[data-theme="dark"] .liq .liq-n,:root[data-theme="dark"] .hero .liq .hero-l,:root[data-theme="dark"] .liq .hero-l,:root[data-theme="dark"] .liq .x,:root[data-theme="dark"] .hero .liq .x{color:#343F39!important}
+:root[data-theme="dark"] .liq .rw input,:root[data-theme="dark"] .hero .liq .rw input{background:#D8DEDA!important;border-color:#98A39D!important}
+:root[data-theme="dark"] .liq .rw input::placeholder{color:#475249!important}
 /* escalones del fondo de emergencia */
 .fond+.meter{height:48px;border:0;border-radius:0;background:var(--line);overflow:hidden;clip-path:polygon(0 75%,25% 75%,25% 50%,50% 50%,50% 25%,75% 25%,75% 0,100% 0,100% 100%,0 100%)}
 .fond+.meter div{border-radius:0;background:var(--amber)}

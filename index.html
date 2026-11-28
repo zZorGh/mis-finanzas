@@ -972,6 +972,19 @@ button.primary,.btn-p,.sheet .save,[data-s="save"],#fab{border-radius:3px;box-sh
 .liq .x,.hero .liq .x{color:#5b6862!important}
 .liq .add,.liq-ed{border-color:#12201C!important;color:#12201C!important;background-color:transparent!important;border-radius:3px}
 .liq-n{color:#5b6862;opacity:1}
+/* De noche la tira blanca deslumbraba: en oscuro es un papel gris verdoso */
+@media (prefers-color-scheme:dark){
+:root:not([data-theme="light"]) .liq{background:#C3CBC6!important}
+:root:not([data-theme="light"]) .liq b.neg{color:#8E1313!important}
+:root:not([data-theme="light"]) .liq .liq-n,:root:not([data-theme="light"]) .hero .liq .hero-l,:root:not([data-theme="light"]) .liq .hero-l,:root:not([data-theme="light"]) .liq .x,:root:not([data-theme="light"]) .hero .liq .x{color:#343F39!important}
+:root:not([data-theme="light"]) .liq .rw input,:root:not([data-theme="light"]) .hero .liq .rw input{background:#D8DEDA!important;border-color:#98A39D!important}
+:root:not([data-theme="light"]) .liq .rw input::placeholder{color:#475249!important}
+}
+:root[data-theme="dark"] .liq{background:#C3CBC6!important}
+:root[data-theme="dark"] .liq b.neg{color:#8E1313!important}
+:root[data-theme="dark"] .liq .liq-n,:root[data-theme="dark"] .hero .liq .hero-l,:root[data-theme="dark"] .liq .hero-l,:root[data-theme="dark"] .liq .x,:root[data-theme="dark"] .hero .liq .x{color:#343F39!important}
+:root[data-theme="dark"] .liq .rw input,:root[data-theme="dark"] .hero .liq .rw input{background:#D8DEDA!important;border-color:#98A39D!important}
+:root[data-theme="dark"] .liq .rw input::placeholder{color:#475249!important}
 /* escalones del fondo de emergencia */
 .fond+.meter{height:48px;border:0;border-radius:0;background:var(--line);overflow:hidden;clip-path:polygon(0 75%,25% 75%,25% 50%,50% 50%,50% 25%,75% 25%,75% 0,100% 0,100% 100%,0 100%)}
 .fond+.meter div{border-radius:0;background:var(--amber)}
@@ -1068,6 +1081,17 @@ h1,.bt{letter-spacing:-.025em}
   body :is([data-del],[data-capdel],[data-act="adel"],[data-act="atasadel"],[data-metadel],[data-recdel],[data-cardrm],[data-pc="del"],[data-s="del-mov"],#fg-del,#del-go,#imp-undo,.dng,.danger>summary):hover{--cc:var(--bad)}
   /* Los lápices se ponían rojos como el botón de borrar de al lado */
   body :is(.ed-row,[data-act="aren"],[data-capedit]):hover{color:var(--ink)}
+}
+/* Registro en celular: la ficha «Ahorro e inversión» quedaba debajo de «Guardar» */
+@media (max-width:899px){
+  #sheet[data-quick] #sqk .grp{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:6px}
+  #sheet[data-quick] #sqk .grp .cp{min-width:0;padding:4px 6px;font-size:13px;line-height:1.15;white-space:normal;justify-content:center;text-align:center}
+}
+@media (max-width:899px) and (max-height:800px){
+  #sheet[data-quick]{gap:8px}
+  #sheet[data-quick] .amt{padding-top:2px;padding-bottom:2px}
+  #sheet[data-quick] .amt input,#sheet[data-quick] .amt input[type=text]{height:56px;font-size:34px}
+  #sheet[data-quick] .amt .amt-cur{font-size:28px}
 }
 </style><script>(function(){var s='cuadre';try{var v=localStorage.getItem('mis-finanzas-prototipo-v1-skin');if(v==='original'||v==='cuadre'||v==='escalon')s=v;}catch(e){}document.documentElement.dataset.skin=s;['cuadre','escalon'].forEach(function(k){var e=document.getElementById('sk-'+k);if(e)e.disabled=(k!==s);});})();</script>
 
@@ -3187,7 +3211,7 @@ const SB_URL=ES_PROD?'https://lmjhlghwthydpeismulb.supabase.co':'https://qfnqqhw
    Cuentan qué pantallas se usan y dónde se traba la gente. NUNCA llevan montos, conceptos, cuentas ni correo:
    solo un id aleatorio del dispositivo (cuadra-sid), el nombre del evento, un dato corto (modo, paso, tipo) y la versión.
    Apagado hasta que exista la tabla (TRACK_DEFAULT); cada persona puede apagarlo en Ajustes (cuadra-stats = 0/1). */
-const TRACK_DEFAULT=true,APPV='2026.11.27.6';
+const TRACK_DEFAULT=true,APPV='2026.11.27.7';
 /* En tu computadora (localhost, file) no se mide por defecto: así las pruebas y el desarrollo no ensucian las métricas reales. */
 const trLocal=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\]|)$/.test(location.hostname);
 const statsOn=()=>{let v=null;try{v=localStorage.getItem('cuadra-stats');}catch(e){}return v==='1'?true:v==='0'?false:(TRACK_DEFAULT&&!trLocal);};
