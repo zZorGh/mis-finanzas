@@ -2,24 +2,43 @@
 const ahoKind=r=>{const x=(r&&r.t)||'';return x==='aj'?'aj':x.indexOf('tr')===0?'tr':((+(r&&r.m)||0)<0?'ret':'dep');};
 const ahoName=r=>((r&&r.c)||'').trim()||'Sin nombre';
 function ahoPos(m){for(const y of Object.keys(S)){const i=S[y].indexOf(m);if(i>=0)return [y,i];}return null;}
-/* Cuentas con su saldo (en soles) al cierre del mes (y,i): suma de todos sus movimientos hasta ahí */
+/* Tipo de cambio del ahorro en un mes: el propio; si no tiene, el del último mes anterior que sí; si ninguno, el de respaldo.
+   Lo usan el saldo, los movimientos de ahorro y lo que descuentan de liquidez: si difirieran, retirar todo no daría cero. */
+function ahoTc(c,m){
+  if(c==='S/')return 1;
+  if(m&&m.tc&&+m.tc[c])return +m.tc[c];
+  const p=m&&ahoPos(m);
+  if(p)for(const yy of Object.keys(S).sort().reverse()){if(yy>p[0])continue;for(let ii=yy===p[0]?p[1]:11;ii>=0;ii--){const t=S[yy][ii]&&S[yy][ii].tc;if(t&&+t[c])return +t[c];}}
+  return rateC(c,null);
+}
+/* Si una moneda de la cuenta queda en negativo y otra tiene saldo, se cambia a la tasa de ese mes (retirar en soles de una
+   cuenta en dólares gasta dólares). Así no quedan «dólares y soles que se anulan» y vuelven a descuadrar al moverse el cambio. */
+function ahoCruza(n,tasa){
+  Object.keys(n).forEach(d=>Object.keys(n).forEach(p=>{if(!(n[d]<0)||!(n[p]>0))return;const sol=Math.min(-n[d]*tasa(d),n[p]*tasa(p));n[d]+=sol/tasa(d);n[p]-=sol/tasa(p);}));
+  Object.keys(n).forEach(c=>{if(Math.abs(n[c])<.005)delete n[c];});
+}
+/* Cuentas con su saldo al cierre del mes (y,i): cada una guarda lo que tiene en cada moneda (n) y se valora en soles (v)
+   al tipo de cambio de ese mes */
 function ahoAccts(y,i){
-  const acc=new Map();
+  const acc=new Map(),tc={},tasa=c=>c==='S/'?1:tc[c]||rateC(c,null);
   for(const yy of Object.keys(S).sort()){
     if(yy>y)break;
     for(let ii=0;ii<12;ii++){
       if(yy===y&&ii>i)break;
       const m=S[yy][ii];
-      (m.aho||[]).forEach(r=>{if(!(r.c||'').trim()&&!+r.m)return;const n=ahoName(r),k=n.toLowerCase(),a=acc.get(k)||{c:n,v:0};a.v+=(+r.m||0)*rateC(rowCur('aho',r),m);acc.set(k,a);});
+      ['$','€'].forEach(c=>{if(m.tc&&+m.tc[c])tc[c]=+m.tc[c];});
+      const del=new Set();
+      (m.aho||[]).forEach(r=>{if(!(r.c||'').trim()&&!+r.m)return;const n=ahoName(r),k=n.toLowerCase(),a=acc.get(k)||{c:n,n:{}},cu=rowCur('aho',r);a.n[cu]=(a.n[cu]||0)+(+r.m||0);acc.set(k,a);del.add(a);});
+      del.forEach(a=>ahoCruza(a.n,tasa));
     }
   }
-  return [...acc.values()].map(a=>({c:a.c,v:Math.round(a.v*100)/100}));
+  return [...acc.values()].map(a=>({c:a.c,n:a.n,v:Math.round(Object.keys(a.n).reduce((s,c)=>s+a.n[c]*tasa(c),0)*100)/100}));
 }
 const ahoHid=a=>Math.abs(a.v)<.005&&(cfg.ahoOcultas||[]).includes(a.c.toLowerCase());
 const ahoOf=(y,i,name)=>ahoAccts(y,i).find(a=>a.c.toLowerCase()===String(name).toLowerCase());
 const ahoBal=(y,i)=>(S[y]&&S[y][i])?Math.round(ahoAccts(y,i).reduce((a,x)=>a+x.v,0)*100)/100:null;
 /* Lo que depositaste menos lo que retiraste en el mes (ajustes y traspasos no cuentan) */
-const ahoFlow=m=>Math.round(((m&&m.aho)||[]).reduce((a,r)=>{const k=ahoKind(r);return(k==='dep'||k==='ret')?a+(+r.m||0)*rateC(rowCur('aho',r),m):a;},0)*100)/100;
+const ahoFlow=m=>Math.round(((m&&m.aho)||[]).reduce((a,r)=>{const k=ahoKind(r);return(k==='dep'||k==='ret')?a+(+r.m||0)*ahoTc(rowCur('aho',r),m):a;},0)*100)/100;
 const lastIdx=y=>y===String(now.getFullYear())?now.getMonth():11;
 const ahoNow=y=>ahoBal(y,lastIdx(y))||0;
 /* Tasa anual de cada cuenta (TREA o TEA) y ganancia estimada: interés compuesto, año de 360 días como los bancos de Perú */

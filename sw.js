@@ -1,6 +1,6 @@
 /* Service worker: la app siempre trae lo último de la red; el caché es solo para
    abrir sin conexión (muestra tus últimos datos locales). */
-const CACHE = 'mis-finanzas-v16';
+const CACHE = 'mis-finanzas-v17';
 const PREF = 'misoles-pref';
 const SHARE = 'misoles-share';
 /* Librerías pesadas de reportes: no se precargan; se guardan la primera vez que se usan. */

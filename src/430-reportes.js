@@ -24,7 +24,7 @@ function repData(a,b){
     Object.keys(T).forEach(k=>{T[k]+=d[k];});
     const per=perOf(y,i),liqN=r=>{const l=liqRef(m,r.src);return l?(l.c||'').trim():'';};
     const push=(sec,r,tipo,sent,concepto,cuenta,catg,sign)=>{
-      const cur=rowCur(sec,r),tc=rateC(cur,m),amt=+r.m||0;
+      const cur=rowCur(sec,r),tc=(sec==='aho'?ahoTc:rateC)(cur,m),amt=+r.m||0;
       if(cur!=='S/')fx.set(cur+'|'+per,{cur,per,tc});
       const sol=r2(amt*tc),o={sec,fecha:dayDate(y,i,r.f),y,i,dia:parseInt(r.f,10)||99,per,tipo,sent,concepto:(concepto||'').trim(),cat:catg||'',cuenta:cuenta||'',cur,amt,tc,sol,firm:sign?r2(sign*sol):sol};mov.push(o);return o;
     };
@@ -59,8 +59,10 @@ function repData(a,b){
   const names=new Map();[...ini.values(),...fin.values()].forEach(a=>names.set(a.c.toLowerCase(),a.c));
   mov.filter(x=>x.sec==='aho').forEach(x=>{if(!names.has(x.cuenta.toLowerCase()))names.set(x.cuenta.toLowerCase(),x.cuenta);});
   const ahorros=[...names.entries()].map(([k,c])=>{const a=am.get(k)||{dep:0,ret:0,aj:0,tr:0},i0=(ini.get(k)||{v:0}).v,f0=(fin.get(k)||{v:0}).v,tz=tasaOf(c);
-    return {c,ini:r2(i0),dep:r2(a.dep),ret:r2(a.ret),aj:r2(a.aj),tr:r2(a.tr),fin:r2(f0),tasa:tz?tz.t+' '+(+tz.v).toFixed(2)+'%':'',gana:r2(ahoGana(f0,tz,360))};})
-    .filter(a=>[a.ini,a.dep,a.ret,a.aj,a.tr,a.fin].some(v=>Math.abs(v)>=.005)).sort((p,q)=>q.fin-p.fin);
+    /* Lo que el saldo cambió solo por el tipo de cambio: así inicial + movimientos + diferencia = final */
+    const dc=r2(f0-i0-a.dep+a.ret-a.aj-a.tr);
+    return {c,dc,ini:r2(i0),dep:r2(a.dep),ret:r2(a.ret),aj:r2(a.aj),tr:r2(a.tr),fin:r2(f0),tasa:tz?tz.t+' '+(+tz.v).toFixed(2)+'%':'',gana:r2(ahoGana(f0,tz,360))};})
+    .filter(a=>[a.ini,a.dep,a.ret,a.aj,a.tr,a.dc,a.fin].some(v=>Math.abs(v)>=.005)).sort((p,q)=>q.fin-p.fin);
   /* Tarjetas de crédito */
   const tarjetas=CARDS.map(ck=>{let cons=0,pag=0;ms.forEach(({m})=>{cons+=sumIn(m,ck);pag+=paymentsTo(m,ck);});const deuda=cardEnding(last.y,last.i,ck),cur=curOf(ck);
     return {k:ck,n:SECN[ck],cur,cons:r2(cons),pag:r2(pag),deuda:r2(deuda),deudaS:r2(deuda*rateC(cur,last.m))};}).filter(t=>t.cons||t.pag||t.deuda);
@@ -73,7 +75,7 @@ function repData(a,b){
 function repWho(){return {nombre:(cfg.titular||'').trim(),correo:(typeof sbUser!=='undefined'&&sbUser&&sbUser.email)||''};}
 /* Reportes en segundo plano: el armado de PDF y Excel (lo pesado) corre en un Web Worker (reportes.js)
    y la pantalla sigue respondiendo. Si el navegador no permite workers, se carga el mismo archivo y corre aquí. */
-const REP_JS='reportes.js?v=5';
+const REP_JS='reportes.js?v=6';
 function mkReport(fmt,R,o){
   const ctx={MES,who:repWho(),lang:LANG},job={fmt,R,o:{det:o.det},ctx};
   const viaMain=()=>new Promise((res,rej)=>{

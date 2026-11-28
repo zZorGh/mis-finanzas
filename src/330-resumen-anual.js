@@ -1,5 +1,5 @@
 /* ---------- Resumen del año ---------- */
-function metaProg(name){let s=0;YEARS.forEach(y=>(S[y]||[]).forEach(m=>(m.aho||[]).forEach(r=>{if((r.k||'')===name&&ahoKind(r)!=='tr')s+=(+r.m||0)*rateC(rowCur('aho',r),m);})));return Math.round(s*100)/100;}
+function metaProg(name){let s=0;YEARS.forEach(y=>(S[y]||[]).forEach(m=>(m.aho||[]).forEach(r=>{if((r.k||'')===name&&ahoKind(r)!=='tr')s+=(+r.m||0)*ahoTc(rowCur('aho',r),m);})));return Math.round(s*100)/100;}
 function insights(){
   const out=[],ms=S[year].map(dv),cur=(year===String(now.getFullYear()))?now.getMonth():-1;
   const wi=ms.filter(x=>x.ing>0);

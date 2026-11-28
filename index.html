@@ -794,7 +794,7 @@ h1{letter-spacing:-.03em}
 @media (max-width:560px){.aml{grid-template-columns:66px minmax(0,1fr) auto auto;padding:7px 12px}.aa-b .b{font-size:12px}}
 .sprev{margin:-4px 0 12px;padding:9px 12px;border-radius:10px;background:color-mix(in srgb,var(--c-aho) 11%,var(--surface-2));font-size:13px;font-variant-numeric:tabular-nums;line-height:1.35}
 .aa-l{display:flex;align-items:center;gap:2px;min-width:0}.aa-ed{width:26px;height:26px;flex:none}.aa-h:has(.aa-ren){gap:8px;align-items:center}.aa-ren{flex:1;min-width:0;height:34px;border:1px solid var(--accent);border-radius:8px;padding:0 10px;font:inherit;background:var(--surface);color:var(--ink)}
-.aa-t{margin-top:-2px}
+.aa-t{margin-top:-2px}.aa-fx{margin:-2px 0 2px;text-align:right;font-variant-numeric:tabular-nums}
 .aa-tb{display:block;width:100%;text-align:left;border:none;background:none;padding:2px 0;font:inherit;font-size:12.5px;color:var(--muted);cursor:pointer;line-height:1.4}
 @media (hover:hover) and (pointer:fine){.aa-tb:hover{color:var(--ink)}}.aa-tb.on{color:var(--ink)}.aa-tb.on b{color:var(--c-aho)}
 .aa-te{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
@@ -1370,24 +1370,43 @@ const mixedCur=(m,k)=>(m[k]||[]).some(r=>r.cur&&r.cur!==curOf(k)&&+r.m);
 const ahoKind=r=>{const x=(r&&r.t)||'';return x==='aj'?'aj':x.indexOf('tr')===0?'tr':((+(r&&r.m)||0)<0?'ret':'dep');};
 const ahoName=r=>((r&&r.c)||'').trim()||'Sin nombre';
 function ahoPos(m){for(const y of Object.keys(S)){const i=S[y].indexOf(m);if(i>=0)return [y,i];}return null;}
-/* Cuentas con su saldo (en soles) al cierre del mes (y,i): suma de todos sus movimientos hasta ahí */
+/* Tipo de cambio del ahorro en un mes: el propio; si no tiene, el del último mes anterior que sí; si ninguno, el de respaldo.
+   Lo usan el saldo, los movimientos de ahorro y lo que descuentan de liquidez: si difirieran, retirar todo no daría cero. */
+function ahoTc(c,m){
+  if(c==='S/')return 1;
+  if(m&&m.tc&&+m.tc[c])return +m.tc[c];
+  const p=m&&ahoPos(m);
+  if(p)for(const yy of Object.keys(S).sort().reverse()){if(yy>p[0])continue;for(let ii=yy===p[0]?p[1]:11;ii>=0;ii--){const t=S[yy][ii]&&S[yy][ii].tc;if(t&&+t[c])return +t[c];}}
+  return rateC(c,null);
+}
+/* Si una moneda de la cuenta queda en negativo y otra tiene saldo, se cambia a la tasa de ese mes (retirar en soles de una
+   cuenta en dólares gasta dólares). Así no quedan «dólares y soles que se anulan» y vuelven a descuadrar al moverse el cambio. */
+function ahoCruza(n,tasa){
+  Object.keys(n).forEach(d=>Object.keys(n).forEach(p=>{if(!(n[d]<0)||!(n[p]>0))return;const sol=Math.min(-n[d]*tasa(d),n[p]*tasa(p));n[d]+=sol/tasa(d);n[p]-=sol/tasa(p);}));
+  Object.keys(n).forEach(c=>{if(Math.abs(n[c])<.005)delete n[c];});
+}
+/* Cuentas con su saldo al cierre del mes (y,i): cada una guarda lo que tiene en cada moneda (n) y se valora en soles (v)
+   al tipo de cambio de ese mes */
 function ahoAccts(y,i){
-  const acc=new Map();
+  const acc=new Map(),tc={},tasa=c=>c==='S/'?1:tc[c]||rateC(c,null);
   for(const yy of Object.keys(S).sort()){
     if(yy>y)break;
     for(let ii=0;ii<12;ii++){
       if(yy===y&&ii>i)break;
       const m=S[yy][ii];
-      (m.aho||[]).forEach(r=>{if(!(r.c||'').trim()&&!+r.m)return;const n=ahoName(r),k=n.toLowerCase(),a=acc.get(k)||{c:n,v:0};a.v+=(+r.m||0)*rateC(rowCur('aho',r),m);acc.set(k,a);});
+      ['$','€'].forEach(c=>{if(m.tc&&+m.tc[c])tc[c]=+m.tc[c];});
+      const del=new Set();
+      (m.aho||[]).forEach(r=>{if(!(r.c||'').trim()&&!+r.m)return;const n=ahoName(r),k=n.toLowerCase(),a=acc.get(k)||{c:n,n:{}},cu=rowCur('aho',r);a.n[cu]=(a.n[cu]||0)+(+r.m||0);acc.set(k,a);del.add(a);});
+      del.forEach(a=>ahoCruza(a.n,tasa));
     }
   }
-  return [...acc.values()].map(a=>({c:a.c,v:Math.round(a.v*100)/100}));
+  return [...acc.values()].map(a=>({c:a.c,n:a.n,v:Math.round(Object.keys(a.n).reduce((s,c)=>s+a.n[c]*tasa(c),0)*100)/100}));
 }
 const ahoHid=a=>Math.abs(a.v)<.005&&(cfg.ahoOcultas||[]).includes(a.c.toLowerCase());
 const ahoOf=(y,i,name)=>ahoAccts(y,i).find(a=>a.c.toLowerCase()===String(name).toLowerCase());
 const ahoBal=(y,i)=>(S[y]&&S[y][i])?Math.round(ahoAccts(y,i).reduce((a,x)=>a+x.v,0)*100)/100:null;
 /* Lo que depositaste menos lo que retiraste en el mes (ajustes y traspasos no cuentan) */
-const ahoFlow=m=>Math.round(((m&&m.aho)||[]).reduce((a,r)=>{const k=ahoKind(r);return(k==='dep'||k==='ret')?a+(+r.m||0)*rateC(rowCur('aho',r),m):a;},0)*100)/100;
+const ahoFlow=m=>Math.round(((m&&m.aho)||[]).reduce((a,r)=>{const k=ahoKind(r);return(k==='dep'||k==='ret')?a+(+r.m||0)*ahoTc(rowCur('aho',r),m):a;},0)*100)/100;
 const lastIdx=y=>y===String(now.getFullYear())?now.getMonth():11;
 const ahoNow=y=>ahoBal(y,lastIdx(y))||0;
 /* Tasa anual de cada cuenta (TREA o TEA) y ganancia estimada: interés compuesto, año de 360 días como los bancos de Perú */
@@ -1514,7 +1533,7 @@ function anunciarVista(){
 if(HDR1&&HDR1.addEventListener)HDR1.addEventListener('change',()=>{const h=document.getElementById('hdr');if(!h||!h.firstElementChild)return;const fk=focusKey(document.activeElement);h.innerHTML=header();updateChip();if(fk)restoreFocus(fk);});
 
 /* ---------- Resumen del año ---------- */
-function metaProg(name){let s=0;YEARS.forEach(y=>(S[y]||[]).forEach(m=>(m.aho||[]).forEach(r=>{if((r.k||'')===name&&ahoKind(r)!=='tr')s+=(+r.m||0)*rateC(rowCur('aho',r),m);})));return Math.round(s*100)/100;}
+function metaProg(name){let s=0;YEARS.forEach(y=>(S[y]||[]).forEach(m=>(m.aho||[]).forEach(r=>{if((r.k||'')===name&&ahoKind(r)!=='tr')s+=(+r.m||0)*ahoTc(rowCur('aho',r),m);})));return Math.round(s*100)/100;}
 function insights(){
   const out=[],ms=S[year].map(dv),cur=(year===String(now.getFullYear()))?now.getMonth():-1;
   const wi=ms.filter(x=>x.ing>0);
@@ -1778,17 +1797,22 @@ function tasaHtml(a){
   const mes=ahoGana(a.v,tz,30),anio=ahoGana(a.v,tz,360);
   return `<button type="button" class="aa-tb on" data-act="atasa" data-acct="${k}" title="Cambiar la tasa"><b>${esc(tz.t)} ${num2(tz.v)}%</b> · ganas ≈ ${fmt(mes)} al mes · ${fmt(anio)} al año <svg class="ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>`;
 }
+/* Lo que la cuenta tiene en otra moneda y el cambio con que se valora */
+function ahoFx(a,m){
+  const ex=Object.keys(a.n||{}).filter(c=>c!=='S/');if(!ex.length)return'';
+  return '<div class="ms aa-fx">'+Object.keys(a.n).map(c=>c+' '+num2(a.n[c])).join(' + ')+' · '+ex.map(c=>'1 '+c+' = S/ '+tc3(ahoTc(c,m))).join(' · ')+'</div>';
+}
 function ahoCard(m){
   const p=ahoPos(m),y=p?p[0]:year,i=p?p[1]:0,accs=ahoAccts(y,i),ml=m.aho||[];
   const touched={};ml.forEach(r=>{if((r.c||'').trim()||+r.m)touched[ahoName(r).toLowerCase()]=1;});
   const isLeg=a=>/^total ahorrado$/i.test(a.c),list=accs.filter(a=>!isLeg(a)&&!ahoHid(a)&&(Math.abs(a.v)>=.005||touched[a.c.toLowerCase()])),hasLeg=accs.some(a=>isLeg(a)&&Math.abs(a.v)>=.005),bal=ahoBal(y,i)||0;
   let dp=0,rt=0,aj=0;
-  ml.forEach(r=>{const v=(+r.m||0)*rateC(rowCur('aho',r),m),k=ahoKind(r);if(k==='dep')dp+=v;else if(k==='ret')rt-=v;else if(k==='aj')aj+=v;});
+  ml.forEach(r=>{const v=(+r.m||0)*ahoTc(rowCur('aho',r),m),k=ahoKind(r);if(k==='dep')dp+=v;else if(k==='ret')rt-=v;else if(k==='aj')aj+=v;});
   const parts=[];if(dp)parts.push('depositaste '+fmt(dp));if(rt)parts.push('retiraste '+fmt(rt));if(Math.abs(aj)>=.005)parts.push('ajustaste '+(aj>0?'+':'−')+fmt(Math.abs(aj)));
   let gm=0,ga=0,conT=0;list.forEach(a=>{const tz=tasaOf(a.c);if(tz&&a.v>0){conT++;gm+=ahoGana(a.v,tz,30);ga+=ahoGana(a.v,tz,360);}});
   const gana=conT?`<div class="ms ahogana">Con las tasas que anotaste ganarías ≈ <b>${fmt(gm)}</b> al mes y <b>${fmt(ga)}</b> al año${conT<list.length?' (solo cuentas con tasa)':''}.</div>`:'';
   const sum=parts.length?`<div class="ms ahoflow">En ${MES[i].toLowerCase()} ${parts.join(' y ')}.</div>`:'';
-  const accH=list.length?list.map(a=>`<div class="aacct"><div class="aa-h"><span class="aa-l"><b class="aa-n" title="${esc(a.c)}">${esc(a.c)}</b><button type="button" class="x aa-ed" data-act="aren" data-acct="${esc(a.c)}" aria-label="Cambiar el nombre de ${esc(a.c)}" title="Cambiar nombre"><svg class="ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button><button type="button" class="x aa-ed" data-act="adel" data-acct="${esc(a.c)}" aria-label="Quitar cuenta ${esc(a.c)}" title="Quitar cuenta"><svg class="ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg></button></span><b class="aa-v">${fmt(a.v)}</b></div><div class="aa-t">${tasaHtml(a)}</div></div>`).join(''):(hasLeg?'<div class="empty ahoempty">Tu saldo viene de meses que solo traían totales. Crea tus cuentas con «+ Nueva cuenta».</div>':'<div class="empty ahoempty">Todavía no tienes cuentas de ahorro. Crea la primera con «+ Nueva cuenta» y tu saldo actual.</div>');
+  const accH=list.length?list.map(a=>`<div class="aacct"><div class="aa-h"><span class="aa-l"><b class="aa-n" title="${esc(a.c)}">${esc(a.c)}</b><button type="button" class="x aa-ed" data-act="aren" data-acct="${esc(a.c)}" aria-label="Cambiar el nombre de ${esc(a.c)}" title="Cambiar nombre"><svg class="ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button><button type="button" class="x aa-ed" data-act="adel" data-acct="${esc(a.c)}" aria-label="Quitar cuenta ${esc(a.c)}" title="Quitar cuenta"><svg class="ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg></button></span><b class="aa-v">${fmt(a.v)}</b></div>${ahoFx(a,m)}<div class="aa-t">${tasaHtml(a)}</div></div>`).join(''):(hasLeg?'<div class="empty ahoempty">Tu saldo viene de meses que solo traían totales. Crea tus cuentas con «+ Nueva cuenta».</div>':'<div class="empty ahoempty">Todavía no tienes cuentas de ahorro. Crea la primera con «+ Nueva cuenta» y tu saldo actual.</div>');
   const led=ml.map((r,j)=>({r,j})).filter(x=>(x.r.c||'').trim()||+x.r.m),nm={dep:'Depósito',ret:'Retiro',aj:'Ajuste',tr:'Traspaso'};
   const ledH=led.length?`<div class="movl"><div class="ms">Movimientos de ${MES[i].toLowerCase()}</div>${led.map(({r,j})=>{const k=ahoKind(r),v=+r.m||0,cu=rowCur('aho',r);return `<div class="aml"><span class="amt-t ${k}">${nm[k]}</span><span class="aml-c">${esc(ahoName(r))}${r.f?' · '+esc(r.f):''}</span><b class="aml-v${v<0?' neg':''}">${v>0?'+':v<0?'−':''}${cu} ${num2(Math.abs(v))}</b><span class="rwx">${(k==='dep'||k==='ret')?`<button type="button" class="x ed-row" data-edit="aho" data-i="${j}" aria-label="Editar movimiento" title="Editar"><svg class="ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>`:''}<button type="button" class="x" data-del="aho" data-i="${j}" aria-label="Quitar movimiento">×</button></span></div>`;}).join('')}</div>`:'';
   return `<section class="card bcard ahocard" data-cid="aho" style="--h:var(--h-aho)">${secHead('aho','Ahorros')}<div class="sbody"${isFold('aho')?' hidden':''}><div class="ahobody">${sum}${accH}${gana}</div>${ledH}<button type="button" class="b add" data-act="anew">+ Nueva cuenta</button><button type="button" class="b add" data-act="mover">Mover dinero</button></div><div class="tot"><span>Saldo total</span><span id="t-aho">${fmt(bal)}</span></div></section>`;
@@ -2344,7 +2368,7 @@ function shortInfo(){
     const l=liqAt(ent.src);if(!l)return null;id=ent.src;name=(l.c||'').trim();bal=+l.m||0;need=dedAmt(m,{m:amt,cur:ent.cur},t==='pago'?'fij':t);
     if(ent.edit){const o=((S[ent.edit.yr][ent.edit.mo]||{})[ent.edit.s]||[])[ent.edit.i];if(o&&o.src===ent.src&&o._d!=null)bal+=o._d;}
   }else if(t==='aho'){
-    const cur=entCur(),sol=Math.round(amt*rateC(cur,m)*100)/100;
+    const cur=entCur(),sol=Math.round(amt*ahoTc(cur,m)*100)/100;
     if(ent.ax==='dep'){const l=liqAt(ent.src);if(!l)return null;id=ent.src;name=(l.c||'').trim();bal=+l.m||0;need=dedAmt(m,{m:amt,cur:ent.cur},'aho');}
     else if(ent.ax==='mov'&&liqAt(ent.from)){const l=liqAt(ent.from);id=ent.from;fld='from';name=(l.c||'').trim();bal=+l.m||0;need=Math.round(sol/rate('liq',m)*100)/100;}
     else if((ent.ax==='ret'||ent.ax==='mov')&&ent.from&&ent.from.slice(0,4)==='aho:'&&ent.from!=='aho:+'){
@@ -2424,7 +2448,7 @@ function srcList(none){
   return out;
 }
 function liqRef(m,src){return (src&&src.slice(0,4)==='liq:')?m.liq[+src.slice(4)]:null;}
-function dedAmt(m,r,sec){return Math.round((+r.m||0)*rateC(rowCur(sec,r),m)/rate('liq',m)*100)/100;}
+function dedAmt(m,r,sec){return Math.round((+r.m||0)*(sec==='aho'?ahoTc:rateC)(rowCur(sec,r),m)/rate('liq',m)*100)/100;}
 function applyDed(m,r,sec){const l=liqRef(m,r.src);if(!l)return'';const a=(sec==='ing'?-1:1)*dedAmt(m,r,sec);l.m=Math.round(((+l.m||0)-a)*100)/100;r._d=a;return sec==='ing'?' · sumado a '+l.c:' · descontado de '+l.c+(l.m<0?' (quedó en negativo)':'');}
 function revDed(m,r){const l=liqRef(m,r.src);if(l&&r._d!=null)l.m=Math.round(((+l.m||0)+r._d)*100)/100;delete r._d;}
 function reconcile(m,r,sec){if(!r.src)return;revDed(m,r);applyDed(m,r,sec);}
@@ -3287,7 +3311,7 @@ const SB_URL=ES_PROD?'https://lmjhlghwthydpeismulb.supabase.co':'https://qfnqqhw
    Cuentan qué pantallas se usan y dónde se traba la gente. NUNCA llevan montos, conceptos, cuentas ni correo:
    solo un id aleatorio del dispositivo (cuadra-sid), el nombre del evento, un dato corto (modo, paso, tipo) y la versión.
    Apagado hasta que exista la tabla (TRACK_DEFAULT); cada persona puede apagarlo en Ajustes (cuadra-stats = 0/1). */
-const TRACK_DEFAULT=true,APPV='2026.11.28.4';
+const TRACK_DEFAULT=true,APPV='2026.11.28.5';
 /* En tu computadora (localhost, file) no se mide por defecto: así las pruebas y el desarrollo no ensucian las métricas reales. */
 const trLocal=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\]|)$/.test(location.hostname);
 const statsOn=()=>{let v=null;try{v=localStorage.getItem('cuadra-stats');}catch(e){}return v==='1'?true:v==='0'?false:(TRACK_DEFAULT&&!trLocal);};
@@ -3996,7 +4020,7 @@ function ahoPreview(){
   if(ax==='mov')return 'No es gasto ni ingreso: solo cambia dónde está tu dinero';
   const id=ent.from||'';
   if(!id)return ax==='aj'?'Elige la cuenta y escribe su saldo real':'Elige la cuenta';
-  const nm=(id.slice(0,4)==='aho:'&&id!=='aho:+')?id.slice(4):'',a=nm?ahoOf(ent.yr,+ent.mo,nm):null,cur0=a?a.v:0,lbl=nm||'Cuenta nueva',sol=amt*rateC(entCur(),m);
+  const nm=(id.slice(0,4)==='aho:'&&id!=='aho:+')?id.slice(4):'',a=nm?ahoOf(ent.yr,+ent.mo,nm):null,cur0=a?a.v:0,lbl=nm||'Cuenta nueva',sol=amt*ahoTc(entCur(),m);
   if(ax==='aj'){const d=sol-cur0;return lbl+': '+fmt(cur0)+' → '+fmt(sol)+(Math.abs(d)>=.005?' (ajuste '+(d>0?'+':'−')+fmt(Math.abs(d))+')':'')+' · No cambia lo que te queda';}
   if(!amt)return lbl+': saldo '+fmt(cur0);
   const sg=ax==='dep'?1:-1;
@@ -4015,9 +4039,9 @@ function doAho(o){
     return (sg>0?'Depositaste ':'Retiraste ')+cur+' '+num2(o.amt)+(sg>0?' en ':' de ')+nm+dd+' · saldo '+fmt(bal(nm));
   }
   if(o.ax==='aj'){
-    const nm=nameOf(o.from),b0=bal(nm),target=o.amt*rateC(cur,m),d=Math.round((target-b0)*100)/100;
+    const nm=nameOf(o.from),b0=bal(nm),target=o.amt*ahoTc(cur,m),d=Math.round((target-b0)*100)/100;
     if(Math.abs(d)<.005)return nm+' ya tenía ese saldo: '+fmt(b0);
-    const r=mk(nm,d/rateC(cur,m));r.t='aj';add(r);
+    const r=mk(nm,d/ahoTc(cur,m));r.t='aj';add(r);
     return 'Saldo de '+nm+' ajustado: '+fmt(b0)+' → '+fmt(target)+' (no cuenta como ahorro del mes)';
   }
   const fa=o.from.slice(0,4)==='aho:',ta=o.to.slice(0,4)==='aho:';
@@ -4452,7 +4476,7 @@ function repData(a,b){
     Object.keys(T).forEach(k=>{T[k]+=d[k];});
     const per=perOf(y,i),liqN=r=>{const l=liqRef(m,r.src);return l?(l.c||'').trim():'';};
     const push=(sec,r,tipo,sent,concepto,cuenta,catg,sign)=>{
-      const cur=rowCur(sec,r),tc=rateC(cur,m),amt=+r.m||0;
+      const cur=rowCur(sec,r),tc=(sec==='aho'?ahoTc:rateC)(cur,m),amt=+r.m||0;
       if(cur!=='S/')fx.set(cur+'|'+per,{cur,per,tc});
       const sol=r2(amt*tc),o={sec,fecha:dayDate(y,i,r.f),y,i,dia:parseInt(r.f,10)||99,per,tipo,sent,concepto:(concepto||'').trim(),cat:catg||'',cuenta:cuenta||'',cur,amt,tc,sol,firm:sign?r2(sign*sol):sol};mov.push(o);return o;
     };
@@ -4487,8 +4511,10 @@ function repData(a,b){
   const names=new Map();[...ini.values(),...fin.values()].forEach(a=>names.set(a.c.toLowerCase(),a.c));
   mov.filter(x=>x.sec==='aho').forEach(x=>{if(!names.has(x.cuenta.toLowerCase()))names.set(x.cuenta.toLowerCase(),x.cuenta);});
   const ahorros=[...names.entries()].map(([k,c])=>{const a=am.get(k)||{dep:0,ret:0,aj:0,tr:0},i0=(ini.get(k)||{v:0}).v,f0=(fin.get(k)||{v:0}).v,tz=tasaOf(c);
-    return {c,ini:r2(i0),dep:r2(a.dep),ret:r2(a.ret),aj:r2(a.aj),tr:r2(a.tr),fin:r2(f0),tasa:tz?tz.t+' '+(+tz.v).toFixed(2)+'%':'',gana:r2(ahoGana(f0,tz,360))};})
-    .filter(a=>[a.ini,a.dep,a.ret,a.aj,a.tr,a.fin].some(v=>Math.abs(v)>=.005)).sort((p,q)=>q.fin-p.fin);
+    /* Lo que el saldo cambió solo por el tipo de cambio: así inicial + movimientos + diferencia = final */
+    const dc=r2(f0-i0-a.dep+a.ret-a.aj-a.tr);
+    return {c,dc,ini:r2(i0),dep:r2(a.dep),ret:r2(a.ret),aj:r2(a.aj),tr:r2(a.tr),fin:r2(f0),tasa:tz?tz.t+' '+(+tz.v).toFixed(2)+'%':'',gana:r2(ahoGana(f0,tz,360))};})
+    .filter(a=>[a.ini,a.dep,a.ret,a.aj,a.tr,a.dc,a.fin].some(v=>Math.abs(v)>=.005)).sort((p,q)=>q.fin-p.fin);
   /* Tarjetas de crédito */
   const tarjetas=CARDS.map(ck=>{let cons=0,pag=0;ms.forEach(({m})=>{cons+=sumIn(m,ck);pag+=paymentsTo(m,ck);});const deuda=cardEnding(last.y,last.i,ck),cur=curOf(ck);
     return {k:ck,n:SECN[ck],cur,cons:r2(cons),pag:r2(pag),deuda:r2(deuda),deudaS:r2(deuda*rateC(cur,last.m))};}).filter(t=>t.cons||t.pag||t.deuda);
@@ -4501,7 +4527,7 @@ function repData(a,b){
 function repWho(){return {nombre:(cfg.titular||'').trim(),correo:(typeof sbUser!=='undefined'&&sbUser&&sbUser.email)||''};}
 /* Reportes en segundo plano: el armado de PDF y Excel (lo pesado) corre en un Web Worker (reportes.js)
    y la pantalla sigue respondiendo. Si el navegador no permite workers, se carga el mismo archivo y corre aquí. */
-const REP_JS='reportes.js?v=5';
+const REP_JS='reportes.js?v=6';
 function mkReport(fmt,R,o){
   const ctx={MES,who:repWho(),lang:LANG},job={fmt,R,o:{det:o.det},ctx};
   const viaMain=()=>new Promise((res,rej)=>{

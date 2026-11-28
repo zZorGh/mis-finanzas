@@ -21,7 +21,7 @@ function shortInfo(){
     const l=liqAt(ent.src);if(!l)return null;id=ent.src;name=(l.c||'').trim();bal=+l.m||0;need=dedAmt(m,{m:amt,cur:ent.cur},t==='pago'?'fij':t);
     if(ent.edit){const o=((S[ent.edit.yr][ent.edit.mo]||{})[ent.edit.s]||[])[ent.edit.i];if(o&&o.src===ent.src&&o._d!=null)bal+=o._d;}
   }else if(t==='aho'){
-    const cur=entCur(),sol=Math.round(amt*rateC(cur,m)*100)/100;
+    const cur=entCur(),sol=Math.round(amt*ahoTc(cur,m)*100)/100;
     if(ent.ax==='dep'){const l=liqAt(ent.src);if(!l)return null;id=ent.src;name=(l.c||'').trim();bal=+l.m||0;need=dedAmt(m,{m:amt,cur:ent.cur},'aho');}
     else if(ent.ax==='mov'&&liqAt(ent.from)){const l=liqAt(ent.from);id=ent.from;fld='from';name=(l.c||'').trim();bal=+l.m||0;need=Math.round(sol/rate('liq',m)*100)/100;}
     else if((ent.ax==='ret'||ent.ax==='mov')&&ent.from&&ent.from.slice(0,4)==='aho:'&&ent.from!=='aho:+'){
@@ -101,7 +101,7 @@ function srcList(none){
   return out;
 }
 function liqRef(m,src){return (src&&src.slice(0,4)==='liq:')?m.liq[+src.slice(4)]:null;}
-function dedAmt(m,r,sec){return Math.round((+r.m||0)*rateC(rowCur(sec,r),m)/rate('liq',m)*100)/100;}
+function dedAmt(m,r,sec){return Math.round((+r.m||0)*(sec==='aho'?ahoTc:rateC)(rowCur(sec,r),m)/rate('liq',m)*100)/100;}
 function applyDed(m,r,sec){const l=liqRef(m,r.src);if(!l)return'';const a=(sec==='ing'?-1:1)*dedAmt(m,r,sec);l.m=Math.round(((+l.m||0)-a)*100)/100;r._d=a;return sec==='ing'?' · sumado a '+l.c:' · descontado de '+l.c+(l.m<0?' (quedó en negativo)':'');}
 function revDed(m,r){const l=liqRef(m,r.src);if(l&&r._d!=null)l.m=Math.round(((+l.m||0)+r._d)*100)/100;delete r._d;}
 function reconcile(m,r,sec){if(!r.src)return;revDed(m,r);applyDed(m,r,sec);}

@@ -1,0 +1,75 @@
+// t139: el ahorro en otra moneda se valora al tipo de cambio del mes que se mira. Retirar todo deja cero, suba o baje el
+// cambio, y la liquidez recibe lo que valen hoy. Por la interfaz. Datos inventados.
+const {chromium}=require('playwright');const fs=require('fs');const zlib=require('zlib');
+const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
+const demo=JSON.parse(fs.readFileSync(__dirname+'/demo.json','utf8'));const K='mis-finanzas-prototipo-v1';
+let ok=0,bad=0;const T=(n,c)=>{c?ok++:(bad++,console.log('FALLA',n));};
+const JS={contentType:'application/javascript',headers:{'access-control-allow-origin':'*'}};
+const unzip=buf=>{const out={};let e=buf.length-22;while(buf.readUInt32LE(e)!==0x06054b50)e--;const n=buf.readUInt16LE(e+10);let p=buf.readUInt32LE(e+16);
+  for(let i=0;i<n;i++){const m=buf.readUInt16LE(p+10),cs=buf.readUInt32LE(p+20),nl=buf.readUInt16LE(p+28),xl=buf.readUInt16LE(p+30),cl=buf.readUInt16LE(p+32),lo=buf.readUInt32LE(p+42),name=buf.slice(p+46,p+46+nl).toString();
+    const ln=buf.readUInt16LE(lo+26),lx=buf.readUInt16LE(lo+28),d=buf.slice(lo+30+ln+lx,lo+30+ln+lx+cs);out[name]=m===8?zlib.inflateRawSync(d):d;p+=46+nl+xl+cl;}return out;};
+const fila=(m,dia,cur,extra)=>Object.assign({c:'Dólares',m,f:dia,k:''},cur?{cur}:{},extra||{});
+// aho: {mes: filas}; tc: {mes: dólar}. Respaldo 3.50 a propósito, distinto de los de cada mes
+const datos=(aho,tc,cfgx)=>{const d=JSON.parse(JSON.stringify({v:1,S:demo.S,cfg:Object.assign({},demo.cfg,{onb:1,ahoV:3,rec:[],tcAuto:false,tc:{'$':3.5,'€':4}},cfgx)}));
+  Object.values(d.S).forEach(a=>a.forEach(m=>{m.aho=[{c:'',m:0,f:'',k:''}];delete m.tc;}));
+  Object.entries(aho).forEach(([i,r])=>d.S['2026'][i].aho=r);Object.entries(tc).forEach(([i,v])=>d.S['2026'][i].tc={'$':v});return JSON.stringify(d);};
+const DEP={9:[fila(100,'5-oct','$')]};
+(async()=>{
+ const b=await chromium.launch();
+ const abre=async(local,hash,fecha)=>{const c=await b.newContext({viewport:{width:1366,height:800},acceptDownloads:true,locale:'es-PE',timezoneId:'America/Lima'});await c.clock.setFixedTime(new Date((fecha||'2026-11-22')+'T12:00:00-05:00'));
+  await c.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({...JS,body:chart});if(/cdn\.jsdelivr\.net\/npm\/(exceljs|jspdf)/.test(u))return r.continue();return r.abort();});
+  await c.addInitScript(([d,k])=>{if(sessionStorage.getItem('__s'))return;sessionStorage.setItem('__s','1');localStorage.setItem(k,d);localStorage.setItem(k+'-instalar','1');},[local,K]);
+  const p=await c.newPage();p.errs=[];p.on('pageerror',e=>p.errs.push(e.message));p.on('dialog',x=>x.accept());await p.goto('http://127.0.0.1:8765/wrap-repo.html#'+(hash||'noviembre'));await p.waitForTimeout(900);return p;};
+ const cierra=async p=>{T('sin errores',!p.errs.length);if(p.errs.length)console.log(p.errs);await p.context().close();};
+ const total=async p=>(await p.locator('#t-aho').innerText()).trim();
+ const guardado=p=>p.evaluate(k=>JSON.parse(localStorage.getItem(k)),K);
+ const cartera=async p=>(await p.locator('#app .ahocard .aacct').innerText()).replace(/\s+/g,' ');
+ const ahorro=async(p,ax,monto,cur,liq)=>{await p.click('.caplink');await p.waitForSelector('#sheet');await p.click('#stype [data-g="ahorro"]');await p.click('#sheet [data-ax="'+ax+'"]');await p.click('#sheet [data-from="aho:Dólares"]');
+  await p.fill('#sa',monto);for(let i=0;i<3&&(await p.locator('#scur').innerText()).trim().indexOf(cur)!==0;i++)await p.click('#scur');
+  if(liq)await p.click('#ssrc [data-src="'+liq+'"]');await p.waitForTimeout(300);
+  const v={aviso:await p.locator('#sshort').isVisible()?await p.locator('#sshort').innerText():'',prev:await p.locator('#sprev').innerText(),boton:await p.locator('#sheet .sact button.p').isDisabled()};return v;};
+ const guarda=async p=>{await p.click('#sheet .sact button.p');await p.waitForTimeout(700);};
+
+ // 1. El cambio sube y baja: saldo al cambio del mes, retirar todo con el bloqueo puesto, cero y la liquidez recibe su valor
+ for(const [de,a,vale] of [[3.4,3.8,380],[3.8,3.4,340]]){
+  const p=await abre(datos(DEP,{9:de,10:a},{bloquearNeg:true}));const n=de+'→'+a;
+  T(n+' saldo al cambio de noviembre',await total(p)==='S/ '+vale+'.00');
+  T(n+' muestra los dólares y el cambio usado',(await cartera(p)).includes('$ 100.00 · 1 $ = S/ '+a));
+  const liq0=+(await guardado(p)).S['2026'][10].liq[0].m;
+  const v=await ahorro(p,'ret','100','$','liq:0');
+  T(n+' retirar todo no avisa ni se bloquea',!v.aviso&&!v.boton);
+  T(n+' la vista previa llega a cero',/→ S\/ 0\.00/.test(v.prev));
+  await guarda(p);T(n+' queda en cero',await total(p)==='S/ 0.00');
+  T(n+' la liquidez recibe lo que valen',Math.abs(+(await guardado(p)).S['2026'][10].liq[0].m-liq0-vale)<.005);
+  await p.locator('#app [data-act="adel"]').click();await p.waitForTimeout(500);T(n+' la cuenta vacía se puede quitar',await p.locator('#app .ahocard .aacct').count()===0);
+  await cierra(p);
+ }
+ // 2. Retirar en soles (la moneda que sale por defecto) gasta dólares: no vuelve a descuadrar cuando cambia el tipo de cambio
+ {const p=await abre(datos(DEP,{9:3.4,10:3.8}));await ahorro(p,'ret','380','S/','liq:0');await guarda(p);
+  T('2 retirar S/ 380 deja cero',await total(p)==='S/ 0.00');
+  const d=await guardado(p);d.S['2026'][11].tc={'$':3.2};const q=await abre(JSON.stringify(d),'diciembre','2026-12-02');T('2 y sigue en cero con otro cambio en diciembre',await total(q)==='S/ 0.00');await cierra(q);
+  await cierra(p);}
+ // 3. Lo anotado antes de este cambio: se retiró en soles el mismo mes
+ {const p=await abre(datos({9:[fila(100,'5-oct','$'),fila(-340,'20-oct')]},{9:3.4,10:3.8}));T('3 un retiro antiguo en soles sigue dando cero',await total(p)==='S/ 0.00');await cierra(p);}
+ // 4. Mes sin tipo de cambio propio: usa el último, no el de respaldo, y todo coincide
+ {const p=await abre(datos(DEP,{9:3.4,10:3.8}),'diciembre','2026-12-02');T('4 diciembre usa el de noviembre',await total(p)==='S/ 380.00');
+  const v=await ahorro(p,'ret','100','$','liq:0');T('4 retirar todo no avisa',!v.aviso&&/→ S\/ 0\.00/.test(v.prev));await guarda(p);T('4 queda en cero',await total(p)==='S/ 0.00');await cierra(p);}
+ // 5. Soles y dólares en la misma cuenta
+ {const p=await abre(datos({9:[fila(50,'4-oct'),fila(100,'5-oct','$')]},{9:3.4,10:3.8}));T('5 suma las dos monedas',await total(p)==='S/ 430.00');
+  T('5 y las muestra',(await cartera(p)).includes('S/ 50.00 + $ 100.00'));await cierra(p);}
+ // 6. Ajustar saldo en dólares deja justo lo escrito; ajustar a 0 en soles deja la cuenta vacía en las dos monedas
+ {const p=await abre(datos(DEP,{9:3.4,10:3.8}));await ahorro(p,'aj','90','$');await guarda(p);
+  T('6 quedan $ 90',(await cartera(p)).includes('$ 90.00')&&await total(p)==='S/ 342.00');
+  await ahorro(p,'aj','0','S/');await guarda(p);T('6 ajustar a cero',await total(p)==='S/ 0.00'&&!(await cartera(p)).includes('$'));await cierra(p);}
+ // 7. Solo soles: nada cambia ni aparece la línea del cambio
+ {const p=await abre(datos({9:[fila(200,'5-oct')],10:[fila(-50,'5-nov')]},{9:3.4,10:3.8}));T('7 en soles igual que siempre',await total(p)==='S/ 150.00'&&await p.locator('#app .aa-fx').count()===0);await cierra(p);}
+ // 8. El reporte cuadra: la diferencia de cambio tiene su columna
+ {const p=await abre(datos(DEP,{9:3.4,10:3.8}),'resumen');
+  await p.locator('[data-act="rep"]').first().scrollIntoViewIfNeeded();await p.locator('[data-act="rep"]').first().click();await p.waitForTimeout(300);
+  await p.locator('#sheet button',{hasText:/^Excel/}).first().click();const w=p.waitForEvent('download',{timeout:60000});await p.locator('[data-s="rep"]').click();const f=await (await w).path();
+  const z=unzip(fs.readFileSync(f));const ss=z['xl/sharedStrings.xml'].toString();T('8 columna «Dif. de cambio»',/Dif\. de cambio/.test(ss));
+  const hojas=Object.keys(z).filter(n=>/worksheets\/sheet/.test(n)).map(n=>z[n].toString());T('8 aparecen los S/ 40 de diferencia (340 + 40 = 380)',hojas.some(x=>/<v>40<\/v>/.test(x)&&/<v>380<\/v>/.test(x)&&/<v>340<\/v>/.test(x)));
+  await p.locator('#sheet button',{hasText:/^PDF/}).first().click();await p.waitForTimeout(300);const w2=p.waitForEvent('download',{timeout:60000});await p.locator('[data-s="rep"]').click();T('8 el PDF sale',/\.pdf$/i.test((await w2).suggestedFilename()));
+  await cierra(p);}
+ console.log('Total '+(ok+bad)+' ok '+ok+' fallas '+bad);await b.close();process.exit(bad?1:0);
+})().catch(e=>{console.log('ERR',e.message.slice(0,600));process.exit(1);});

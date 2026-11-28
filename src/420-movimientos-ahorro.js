@@ -11,7 +11,7 @@ function ahoPreview(){
   if(ax==='mov')return 'No es gasto ni ingreso: solo cambia dónde está tu dinero';
   const id=ent.from||'';
   if(!id)return ax==='aj'?'Elige la cuenta y escribe su saldo real':'Elige la cuenta';
-  const nm=(id.slice(0,4)==='aho:'&&id!=='aho:+')?id.slice(4):'',a=nm?ahoOf(ent.yr,+ent.mo,nm):null,cur0=a?a.v:0,lbl=nm||'Cuenta nueva',sol=amt*rateC(entCur(),m);
+  const nm=(id.slice(0,4)==='aho:'&&id!=='aho:+')?id.slice(4):'',a=nm?ahoOf(ent.yr,+ent.mo,nm):null,cur0=a?a.v:0,lbl=nm||'Cuenta nueva',sol=amt*ahoTc(entCur(),m);
   if(ax==='aj'){const d=sol-cur0;return lbl+': '+fmt(cur0)+' → '+fmt(sol)+(Math.abs(d)>=.005?' (ajuste '+(d>0?'+':'−')+fmt(Math.abs(d))+')':'')+' · No cambia lo que te queda';}
   if(!amt)return lbl+': saldo '+fmt(cur0);
   const sg=ax==='dep'?1:-1;
@@ -30,9 +30,9 @@ function doAho(o){
     return (sg>0?'Depositaste ':'Retiraste ')+cur+' '+num2(o.amt)+(sg>0?' en ':' de ')+nm+dd+' · saldo '+fmt(bal(nm));
   }
   if(o.ax==='aj'){
-    const nm=nameOf(o.from),b0=bal(nm),target=o.amt*rateC(cur,m),d=Math.round((target-b0)*100)/100;
+    const nm=nameOf(o.from),b0=bal(nm),target=o.amt*ahoTc(cur,m),d=Math.round((target-b0)*100)/100;
     if(Math.abs(d)<.005)return nm+' ya tenía ese saldo: '+fmt(b0);
-    const r=mk(nm,d/rateC(cur,m));r.t='aj';add(r);
+    const r=mk(nm,d/ahoTc(cur,m));r.t='aj';add(r);
     return 'Saldo de '+nm+' ajustado: '+fmt(b0)+' → '+fmt(target)+' (no cuenta como ahorro del mes)';
   }
   const fa=o.from.slice(0,4)==='aho:',ta=o.to.slice(0,4)==='aho:';
