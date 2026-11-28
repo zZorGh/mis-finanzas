@@ -47,9 +47,12 @@ const datos=mod=>{const d=JSON.parse(JSON.stringify({v:1,S:demo.S,cfg:Object.ass
  await recarga(p);T('5 el cero escrito a mano no vuelve tras la nube',await deuda(p,11)===0);
  await tarjeta(p,'compra',200,9,28);T('5 y no lo mueve una compra de meses pasados',await deuda(p,11)===0&&await deuda(p,10)===1200);await p.context().close();
 
- // 6. Un mes con consumos que nunca heredó no se toca (la deuda pudo anotarse como consumo)
- p=await abre('2026-11-02','#noviembre',datos(S=>{S['2026'][10].bbva=[{c:'Saldo',m:40,f:'1-nov',k:''}];}));
- T('6 mes con consumos sin heredar: queda en 40',await deuda(p,10)===40);await p.context().close();
+ // 6. Compra anotada antes de heredar (adelantada, o el día 1 sin conexión): la deuda anterior se suma igual
+ p=await abre('2026-11-02','#noviembre',datos(S=>{S['2026'][10].bbva=[{c:'Cine',m:40,f:'1-nov',k:''}];}));
+ T('6 mes que ya tenía una compra: 1,000 + 40',await deuda(p,10)===1040);T('6 la pantalla dice lo mismo',/1,040\.00/.test(await p.evaluate(()=>(document.getElementById('cd-bbva')||{}).textContent||'')));await p.context().close();
+ // 6b. Los meses anteriores a noviembre de 2026 no se rellenan
+ p=await abre('2026-11-22','#noviembre',datos(S=>{S['2026'][9].bbva=[{c:'',m:0,f:'',k:''}];S['2026'][2].bbva=[{c:'Marzo',m:300,f:'5-mar',k:''}];}));
+ T('6b una deuda antigua no aparece en meses viejos ni en noviembre',await deuda(p,5)===0&&await deuda(p,9)===0&&await deuda(p,10)===0);await p.context().close();
  // 7. Registrar desde el Resumen el día 1: la deuda llega antes de la compra
  p=await abre('2026-11-02','#resumen',datos());await tarjeta(p,'compra',50,10,2);
  T('7 la compra del día 1 se suma a lo que ya se debía',await deuda(p,10)===1050);await p.context().close();

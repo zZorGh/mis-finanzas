@@ -285,7 +285,9 @@ function liqAlDia(){
 }
 /* La deuda de tarjetas pasa sola al mes nuevo. m.ch={tarjeta:1} marca el «Saldo anterior» heredado: se vuelve a
    calcular en cada guardado (deudaSync), así un pago o una compra anotados después en el mes anterior también cuentan.
-   Escribir en «Saldo anterior» quita la marca. Un mes que ya tiene consumos y nunca heredó no se toca (quizá la deuda se anotó como consumo). */
+   Hereda aunque el mes ya tenga consumos; escribir en «Saldo anterior» quita la marca. Los meses anteriores a
+   noviembre de 2026 no se rellenan (decisiones del dueño del 28 nov. 2026). */
+const DEUDA_DESDE=["2026",10];
 const usaTarj=(m,k)=>(m[k]||[]).some(r=>+r.m);
 function hereda(m,k,v){(m.copen=m.copen||{})[k]=v;(m.ch=m.ch||{})[k]=1;}
 function deudaSync(){
@@ -295,12 +297,13 @@ function deudaSync(){
 /* Hereda hasta el mes en curso, también los meses saltados. Devuelve lo que trajo al mes en curso. */
 function deudaCarry(){
   try{if((IS_SB||backend)&&!sync.ready)return null;}catch(e){return null;}
-  try{const ms=liqMeses(),y=String(now.getFullYear()),t=ms.findIndex(x=>x.y===y&&x.i===now.getMonth());if(t<1)return null;
+  try{const ms=liqMeses(),y=String(now.getFullYear()),t=ms.findIndex(x=>x.y===y&&x.i===now.getMonth());
+    const d=ms.findIndex(x=>x.y===DEUDA_DESDE[0]&&x.i===DEUDA_DESDE[1]);if(t<1||d<1)return null;
     const got=[];let cambio=false;
     CARDS.forEach(k=>{
-      let s=t-1;while(s>=0&&!usaTarj(ms[s].m,k)&&!(ms[s].m.copen&&ms[s].m.copen[k]!=null))s--;if(s<0)return;
-      for(let j=s+1;j<=t;j++){const m=ms[j].m;if(m.tot||(m.copen&&m.copen[k]!=null)||usaTarj(m,k))continue;
-        const pe=cardEnding(ms[j-1].y,ms[j-1].i,k);hereda(m,k,pe);cambio=true;if(j===t&&Math.abs(pe)>=.005)got.push(BANKN[k]+' '+fmtC(k,pe));}
+      let ini=ms.findIndex(x=>usaTarj(x.m,k)||(x.m.copen&&x.m.copen[k]!=null));if(ini<0)return;/* tarjeta sin historia */
+      for(let j=Math.max(d,ini+1);j<=t;j++){const m=ms[j].m;if(m.tot||(m.copen&&m.copen[k]!=null))continue;
+        const pe=cardEnding(ms[j-1].y,ms[j-1].i,k);hereda(m,k,pe);cambio=true;if(j===t&&Math.abs(pe)>=.005)got.push(BANKN[k]+" "+fmtC(k,pe));}
     });
     return cambio?got:null;}catch(e){return null;}
 }

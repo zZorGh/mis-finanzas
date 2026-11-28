@@ -1,4 +1,4 @@
-// t117: el saldo anterior de las tarjetas se trae solo al mes actual al abrir la app (si no hay saldo anotado ni consumos); no toca lo que la persona ya puso, ni meses pasados.
+// t117: el saldo anterior de las tarjetas se trae solo al mes actual al abrir la app (si no hay saldo anotado); no toca lo que la persona ya puso, ni meses pasados.
 const {chromium}=require('playwright');const fs=require('fs');
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
 const demo=JSON.parse(fs.readFileSync(__dirname+'/demo.json','utf8'));const K='mis-finanzas-prototipo-v1';
@@ -18,7 +18,7 @@ const deuda=p=>p.evaluate(()=>(document.getElementById('cd-bbva')||{}).textConte
   T('octubre termina debiendo 200 (300 − 100) y noviembre lo trae solo',((await copen(p))||{}).bbva===200&&/200\.00/.test(await deuda(p)));
   T('avisa con un mensaje lo que trajo',/Traje del mes anterior/.test(await p.evaluate(()=>(document.getElementById('toast')||{}).textContent||'')));
   T('sin errores de JavaScript',p.errs.length===0);await p.context().close();
-  p=await nueva(b,{compras:true});T('si noviembre ya tiene consumos, no se toca',((await copen(p))||{}).bbva===undefined&&/40\.00/.test(await deuda(p)));await p.context().close();
+  p=await nueva(b,{compras:true});T('si noviembre ya tiene consumos, la deuda anterior se suma igual (200 + 40)',((await copen(p))||{}).bbva===200&&/240\.00/.test(await deuda(p)));await p.context().close();
   p=await nueva(b,{copen:0});T('si la persona anotó 0 a propósito, se respeta',((await copen(p))||{}).bbva===0&&/0\.00/.test(await deuda(p)));await p.context().close();
   p=await nueva(b,{copen:75});T('si ya anotó un saldo (75), se respeta',((await copen(p))||{}).bbva===75);await p.context().close();
   // Desde el 28 nov. 2026 la deuda llega al mes en curso al abrir la app, se mire el mes que se mire; el mes pasado no se toca
