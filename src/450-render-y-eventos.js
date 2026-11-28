@@ -16,12 +16,13 @@ function tagMes(ap){
   if(typeof view!=='number'){delete ap.dataset.mtab;return;}
   ap.dataset.mtab=mesTab;
   ap.querySelectorAll('.bcard[data-cid]').forEach(c=>{const g=TABMAP[c.dataset.cid];if(g)c.dataset.t=g;});
-  ap.querySelectorAll('.ppcard').forEach(c=>{c.dataset.t='resumen';});
+  ap.querySelectorAll('.ppcard,.avcard,.ciebar').forEach(c=>{c.dataset.t='resumen';});
 }
 function setMesTab(id){
   if(!MTABS.some(x=>x[0]===id))return;mesTab=id;try{localStorage.setItem(KEY+'-tab',id);}catch(e){}
   const ap=document.getElementById('app');if(ap&&typeof view==='number')ap.dataset.mtab=id;
   document.querySelectorAll('#mtabs [data-mtab]').forEach(b=>{if(b.dataset.mtab===id)b.setAttribute('aria-current','true');else b.removeAttribute('aria-current');});
+  fitSoon();
   const s0=document.getElementById('mtabs0');if(s0){const hh=(document.getElementById('hdr')||{}).offsetHeight||0,y=s0.getBoundingClientRect().top+scrollY-hh;if(scrollY>y)scrollTo(0,Math.max(0,y));}
   try{window.dispatchEvent(new Event('resize'));}catch(e){}
 }

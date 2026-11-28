@@ -76,5 +76,24 @@ const solo=async(p,grupo)=>{const v=await visibles(p,todas);return todas.every((
   {const x=await p.innerText('#mtabs');T('en inglés se traducen las pestañas',/Summary/.test(x)&&/Transactions/.test(x)&&/Cards/.test(x)&&/Savings/.test(x)&&/Analysis/.test(x)&&/All/.test(x));}
   await p.context().close();
 
+  // Fuera de Resumen el contenido empieza arriba: encabezado de una línea y sin «Para tener en cuenta»
+  {const q=await (await b.newContext({viewport:{width:390,height:760},isMobile:true,hasTouch:true})).newPage();
+   await q.route('**/*',r=>r.request().url().startsWith('http://127.0.0.1:8765')?r.continue():r.abort());
+   await q.addInitScript(([d,k])=>{localStorage.setItem(k,d);localStorage.setItem(k+'-instalar','1');},[JSON.stringify({v:1,S:require('./demo.json').S,cfg:Object.assign({},require('./demo.json').cfg,{onb:1})}),'mis-finanzas-prototipo-v1']);
+   await q.goto('http://127.0.0.1:8765/wrap-repo.html?tabs=on#noviembre');await q.waitForSelector('#mtabs');await q.waitForTimeout(600);
+   const ve=s=>q.evaluate(s=>[...document.querySelectorAll(s)].some(e=>e.getClientRects().length),s);
+   T('el aviso se ve en «Resumen»',await ve('#app .avcard'));
+   for(const id of ['mov','tar','aho','ana']){await q.click('#mtabs [data-mtab="'+id+'"]');await q.waitForTimeout(500);
+     const m=await q.evaluate(()=>{scrollTo(0,0);const c=[...document.querySelectorAll('#app .board .bcard')].find(e=>e.getClientRects().length),h=document.querySelector('#app .hero'),v=h.querySelector('.hero-v');return{y:Math.round(c.getBoundingClientRect().top),alto:Math.round(h.getBoundingClientRect().height),cabe:v.scrollWidth<=v.clientWidth+1,desb:document.documentElement.scrollWidth-innerWidth};});
+     T(id+': el primer contenido empieza antes de 320 px ('+m.y+'), con encabezado de una línea ('+m.alto+')',m.y<320&&m.alto<90&&m.cabe&&m.desb<=0);
+     T(id+': sin el aviso, con el mes y el disponible a la vista',!(await ve('#app .avcard'))&&await ve('#app .hero h1')&&/Tienes disponible/.test(await q.innerText('#app .hero')));}
+   await q.click('#mtabs [data-mtab="todo"]');await q.waitForTimeout(400);T('el aviso vuelve en «Todo»',await ve('#app .avcard'));
+   await q.context().close();}
+  // Un saldo de cinco cifras cabe en la misma línea en un celular angosto
+  {const q=await (await b.newContext({viewport:{width:360,height:640},isMobile:true,hasTouch:true})).newPage();await q.route('**/*',r=>r.request().url().startsWith('http://127.0.0.1:8765')?r.continue():r.abort());
+   const d=require('./demo.json'),S=JSON.parse(JSON.stringify(d.S));S['2026'][8].liq[0].c='Yape';S['2026'][8].liq[0].m=12345.67;
+   await q.addInitScript(([x,k])=>{localStorage.setItem(k,x);localStorage.setItem(k+'-instalar','1');localStorage.setItem(k+'-tab','mov');},[JSON.stringify({v:1,S,cfg:Object.assign({},d.cfg,{onb:1})}),'mis-finanzas-prototipo-v1']);
+   await q.goto('http://127.0.0.1:8765/wrap-repo.html?tabs=on#septiembre');await q.waitForSelector('#mtabs');await q.waitForTimeout(800);
+   const h=await q.evaluate(()=>Math.round(document.querySelector('#app .hero').getBoundingClientRect().height));T('360 px: «Septiembre» y cinco cifras en una línea ('+h+')',h<90);await q.context().close();}
   console.log('Total '+(ok+bad)+' ok '+ok+' fallas '+bad);await b.close();process.exit(bad?1:0);
 })().catch(e=>{console.log('ERR',e);process.exit(1);});
