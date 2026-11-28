@@ -3207,7 +3207,7 @@ const SB_URL=ES_PROD?'https://lmjhlghwthydpeismulb.supabase.co':'https://qfnqqhw
    Cuentan qué pantallas se usan y dónde se traba la gente. NUNCA llevan montos, conceptos, cuentas ni correo:
    solo un id aleatorio del dispositivo (cuadra-sid), el nombre del evento, un dato corto (modo, paso, tipo) y la versión.
    Apagado hasta que exista la tabla (TRACK_DEFAULT); cada persona puede apagarlo en Ajustes (cuadra-stats = 0/1). */
-const TRACK_DEFAULT=true,APPV='2026.11.27.8';
+const TRACK_DEFAULT=true,APPV='2026.11.28.1';
 /* En tu computadora (localhost, file) no se mide por defecto: así las pruebas y el desarrollo no ensucian las métricas reales. */
 const trLocal=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\]|)$/.test(location.hostname);
 const statsOn=()=>{let v=null;try{v=localStorage.getItem('cuadra-stats');}catch(e){}return v==='1'?true:v==='0'?false:(TRACK_DEFAULT&&!trLocal);};
@@ -3264,8 +3264,8 @@ async function ensureTabs(){
   if(add.length)await gs('update_spreadsheet',{spreadsheetId:sync.id,requests:add});
   sync.tabs=true;
 }
-/* Columna 16 de cada movimiento en la nube: lo que no tiene columna propia (id, antojo, «¿valió la pena?», importación…) en JSON. Las versiones anteriores la ignoran. */
-const XSKIP={c:1,m:1,k:1,f:1,cur:1,src:1,card:1,_d:1};
+/* Columna 16 de cada movimiento en la nube: lo que no tiene columna propia (id, antojo, «¿valió la pena?», importación y `_d`, lo que la fila movió de su cuenta) en JSON. Las versiones anteriores la ignoran. */
+const XSKIP={c:1,m:1,k:1,f:1,cur:1,src:1,card:1};
 const xOk=k=>k!=='__proto__'&&k!=='constructor'&&k!=='prototype'&&!XSKIP[k]&&k.length<=24;
 const xVal=v=>typeof v==='string'||typeof v==='boolean'||(typeof v==='number'&&Number.isFinite(v));
 const xJson=r=>{const o={};Object.keys(r).forEach(k=>{if(xOk(k)&&xVal(r[k]))o[k]=r[k];});return Object.keys(o).length?JSON.stringify(o):'';};
@@ -3316,7 +3316,8 @@ function applyRemote(rows,conf){
   Object.keys(yrs).forEach(y=>{if(YEARS.indexOf(y)<0)YEARS.push(y);});
   YEARS.sort();
   const ns={};YEARS.forEach(y=>{ns[y]=yrs[y]||Array.from({length:12},blank);});
-  Object.keys(ns).forEach(y=>ns[y].forEach(m=>['fij','hor','aho'].forEach(sec=>(m[sec]||[]).forEach(r=>{if(r.src&&r._d==null)r._d=dedAmt(m,r,sec);}))));
+  /* Solo para filas que llegan sin `_d` (guardadas por versiones anteriores): se recalcula. Un ingreso suma, por eso va en negativo. */
+  Object.keys(ns).forEach(y=>ns[y].forEach(m=>['ing','fij','hor','aho'].forEach(sec=>(m[sec]||[]).forEach(r=>{if(r.src&&r.src.slice(0,4)==='liq:'&&r._d==null)r._d=(sec==='ing'?-1:1)*dedAmt(m,r,sec);}))));
   S=saneS(ns);
   (conf||[]).forEach(r=>{
     try{
