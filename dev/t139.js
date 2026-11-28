@@ -64,6 +64,26 @@ const DEP={9:[fila(100,'5-oct','$')]};
  // 2e. Una fila manipulada no mete nada en la pantalla
  {const p=await abre(datos({9:[fila(100,'5-oct','$'),fila(-10,'6-oct','S/',{tvc:'<img src=x onerror=window.__x=1>',tv:2,tvm:10})]},{9:3.4,10:3.8}));
   T('2e moneda falsa descartada',await p.evaluate(()=>!window.__x&&!document.querySelector('#app .ahocard img')));await cierra(p);}
+ // 2f. Editar un retiro en soles: se vuelve a calcular, sin arrastrar el cambio guardado
+ {const p=await abre(datos(DEP,{9:3.4,10:3.8}));await ahorro(p,'ret','380','S/','liq:0');await guarda(p);
+  const edita=async(monto,cur)=>{await p.evaluate(()=>{const l=document.querySelectorAll('#app [data-edit="aho"]');l[l.length-1].click();});await p.waitForSelector('#sheet');await p.waitForTimeout(300);await p.fill('#sa',monto);for(let i=0;i<3&&(await p.locator('#scur').innerText()).trim().indexOf(cur)!==0;i++)await p.click('#scur');await guarda(p);};
+  const conCambio=async tc=>{const d=await guardado(p);d.S['2026'][10].tc={'$':tc};const q=await abre(JSON.stringify(d));const v={t:await total(q),c:await q.locator('#app .ahocard .aacct').count()?await cartera(q):''};await cierra(q);return v;};
+  await edita('190','S/');let v=await conCambio(4);T('2f S/ 380 → S/ 190 deja $ 50',v.t==='S/ 200.00'&&v.c.includes('$ 50.00'));
+  await edita('100','$');v=await conCambio(4);T('2f cambiarlo a $ 100 deja cero',v.t==='S/ 0.00');
+  const f=(await guardado(p)).S['2026'][10].aho.find(r=>r.m<0);T('2f la fila ya no arrastra el cambio guardado',!!f&&!f.tvc&&!f.tv);await cierra(p);}
+ // 2g. Nube: otro dispositivo ve la cuenta en cero aunque el cambio se mueva, y una moneda falsa se descarta
+ {const stub=eval(fs.readFileSync(__dirname+'/t135.js','utf8').match(/const stub=(`[\s\S]*?`);\n/)[1]);
+  const con=async(local,nube)=>{const c=await b.newContext({viewport:{width:1366,height:800}});await c.clock.install({time:new Date('2026-11-22T12:00:00-05:00')});
+   await c.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({...JS,body:chart});return r.abort();});await c.addInitScript(stub);
+   await c.addInitScript(([d,n,k])=>{if(sessionStorage.getItem('__s'))return;sessionStorage.setItem('__s','1');if(d)localStorage.setItem(k,d);localStorage.setItem(k+'-instalar','1');if(n)sessionStorage.setItem('__nube',n);},[local,nube,K]);
+   const p=await c.newPage();p.errs=[];p.on('pageerror',e=>p.errs.push(e.message));p.on('dialog',x=>x.accept());await p.goto('http://127.0.0.1:8765/wrap-repo.html#noviembre');await p.waitForSelector('#app .card');for(const ms of [2000,4000]){await p.clock.runFor(ms);await p.waitForTimeout(450);}return p;};
+  const p=await con(datos(DEP,{9:3.4,10:3.8}),null);await ahorro(p,'ret','380','S/','liq:0');await p.click('#sheet .sact button.p');for(const ms of [2000,4000,4000]){await p.clock.runFor(ms);await p.waitForTimeout(450);}
+  const nube=await p.evaluate(()=>sessionStorage.getItem('__nube'));T('2g la nube lleva el cambio guardado',/tvc/.test(nube||''));await cierra(p);
+  const j=JSON.parse(nube);j.registro.forEach(f=>{if(f[1]===11&&f[3]==='_TC')f[4]=JSON.stringify({'$':4.2});});
+  const q=await con(null,JSON.stringify(j));const d=await guardado(q);T('2g el otro dispositivo recibió el cambio nuevo',+d.S['2026'][10].tc['$']===4.2);T('2g y sigue en cero',await total(q)==='S/ 0.00');
+  await q.locator('#app [data-act="adel"]').click();await q.clock.runFor(500);T('2g la cuenta se puede quitar',await q.locator('#app .ahocard .aacct').count()===0);await cierra(q);
+  const h=JSON.parse(nube);h.registro.forEach(f=>{if(typeof f[15]==='string'&&/tvc/.test(f[15])){const x=JSON.parse(f[15]);x.tvc='<img src=x onerror=window.__x=1>';f[15]=JSON.stringify(x);}});
+  const w=await con(null,JSON.stringify(h));T('2g moneda falsa desde la nube descartada',await w.evaluate(()=>!window.__x&&!document.querySelector('#app .ahocard img'))&&!/onerror/.test(JSON.stringify((await guardado(w)).S)));await cierra(w);}
  // 3. Lo anotado antes de este cambio: se retiró en soles el mismo mes
  {const p=await abre(datos({9:[fila(100,'5-oct','$'),fila(-340,'20-oct')]},{9:3.4,10:3.8}));T('3 un retiro antiguo en soles sigue dando cero',await total(p)==='S/ 0.00');await cierra(p);}
  // 4. Mes sin tipo de cambio propio: usa el último, no el de respaldo, y todo coincide
