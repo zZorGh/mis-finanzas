@@ -264,7 +264,7 @@ function liqHereda(p,m){
 }
 function liqSync(){
   try{const ms=liqMeses();for(let k=1;k<ms.length;k++){const m=ms[k].m;if(!Array.isArray(m.lb))continue;const p=ms[k-1].m,par=liqPares(p,m);
-    (m.liq||[]).forEach((r,i)=>{if(par[i]<0)return;const v=+p.liq[par[i]].m||0,b=m.lb[i];if(b){const d=r2L(v-b[1]);/* si en esa posición ahora hay otra cuenta (renombrada o corrida), no se mueve dinero: solo se vuelve a fijar la base */if(d&&b[0]===nomL(r))r.m=r2L((+r.m||0)+d);}m.lb[i]=[nomL(r),v];});}}catch(e){}
+    (m.liq||[]).forEach((r,i)=>{if(par[i]<0)return;const v=+p.liq[par[i]].m||0,b=m.lb[i];if(b&&!liqOculta(r)){const d=r2L(v-b[1]);/* si en esa posición ahora hay otra cuenta (renombrada o corrida), no se mueve dinero: solo se vuelve a fijar la base */if(d&&b[0]===nomL(r))r.m=r2L((+r.m||0)+d);}m.lb[i]=[nomL(r),v];});}}catch(e){}
 }
 /* Hereda hasta el mes en curso (también los que se saltaron). Devuelve el mes del que salieron los saldos si trajo algo. */
 function liqCarry(){

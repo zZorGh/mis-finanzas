@@ -49,6 +49,26 @@ const datos=()=>JSON.stringify({v:1,S:demo.S,cfg:Object.assign({},demo.cfg,{onb:
  T('7 en diciembre sigue quitada y las demás en su sitio',(await cuentas(p,11))==='Yape=430, Plin=0 (quitada), Efectivo billetes=200, Efectivo monedas=18');
  T('7 y no se muestra',(await filas(p)).every(t=>!/Plin/.test(t)));await p.context().close();
 
+ // 9. Lo recordado o un recurrente no guardan contra una cuenta que no se ve
+ const conRec=JSON.stringify({v:1,S:demo.S,cfg:Object.assign({},demo.cfg,{onb:1,ahoV:3,rec:[{sec:'fij',s:'fij',c:'T138 internet',m:90,k:'',src:'liq:1',f:5}]})});
+ p=await abre('2026-11-22','#noviembre',conRec);await p.evaluate(k=>localStorage.setItem(k+'-src','liq:1'),K);await editar(p);await quita(p,1);await editar(p);
+ await p.click('.caplink');await p.waitForSelector('#sheet');await avanza(p,400);await p.fill('#sa','9');await p.fill('#sd','Delivery');await avanza(p,400);
+ T('9 la cuenta recordada o del historial no queda elegida',await p.locator('#ssrc [data-src="liq:1"]').count()===0);await p.click('#sheet .sact button.p');await avanza(p,600);
+ T('9 y no guarda sin elegir otra',await p.locator('#sheet').count()===1&&(await mes(p,10)).liq[1].m===0);await p.keyboard.press('Escape');await avanza(p,400);
+ await p.click('#app [data-pay]');await avanza(p,800);if(await p.locator('#sheet').count()){T('9 «Pagado» de un recurrente de esa cuenta pide otra',await p.locator('#ssrc [data-src="liq:1"]').count()===0);await p.keyboard.press('Escape');await avanza(p,300);}else T('9 «Pagado» no descuenta de la cuenta quitada',(await mes(p,10)).liq[1].m===0);
+ T('9 la cuenta quitada sigue en cero',(await mes(p,10)).liq[1].m===0&&!!(await mes(p,10)).liq[1].h);await p.context().close();
+
+ // 10. Recuperar en noviembre la recupera también en diciembre; deshacer con diciembre ya heredado devuelve los dos
+ p=await abre('2026-12-01','#diciembre',datos());await p.evaluate(()=>{location.hash='#noviembre';});await avanza(p,800);await editar(p);await quita(p,1);
+ T('10 quitada en noviembre, en diciembre queda en cero y oculta',(await cuentas(p,11))==='Yape=430, Plin=0 (quitada), Efectivo billetes=200, Efectivo monedas=18');
+ await p.click('#toast [data-undo]');await avanza(p,800);T('10 Deshacer devuelve los dos meses',(await cuentas(p,10))==='Yape=430, Plin=130, Efectivo billetes=200, Efectivo monedas=18'&&(await cuentas(p,11))==='Yape=430, Plin=130, Efectivo billetes=200, Efectivo monedas=18');
+ await quita(p,1);await p.click('#app [data-liqback="1"]');await avanza(p,800);T('10 Recuperar la muestra también en diciembre',!(await mes(p,11)).liq[1].h&&!(await mes(p,10)).liq[1].h);await p.context().close();
+
+ // 11. Dejar una cuenta sin nombre no corre las demás tras la nube
+ p=await abre('2026-11-22','#noviembre',datos());await gasto(p,'30','T138 luz','liq:2');
+ await p.evaluate(()=>{location.hash='#noviembre';});await editar(p);await p.fill('#app .liq-rows #liq-1-c','');await p.fill('#app .liq-rows #liq-1-m','0');await avanza(p,5000);await p.reload();await p.waitForSelector('#app .card');await avanza(p,2000);await avanza(p,4000);
+ await borraGasto(p,'T138 luz');const c11=(await mes(p,10)).liq;T('11 sin nombre: la tercera sigue siendo la tercera',c11.length===4&&c11[2].c==='Efectivo billetes'&&c11[2].m===200&&c11[3].m===18);await p.context().close();
+
  p=await abre('2026-11-22','#noviembre',datos(),null,'en');await editar(p);await quita(p,1);
  T('8 en inglés',/You removed Plin, which had/.test(await p.innerText('#toast'))&&/Restore Plin/.test(await p.innerText('#app .liq')));await p.context().close();
  console.log('Total '+(ok+bad)+' ok '+ok+' fallas '+bad);await b.close();process.exit(bad?1:0);

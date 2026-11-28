@@ -96,7 +96,7 @@ function hormAlert(b,a,t){
 }
 function srcList(none){
   const m=S[ent.yr][+ent.mo],out=[];
-  (m.liq||[]).forEach((r,i)=>{if(liqVis(r))out.push(['liq:'+i,r.c.trim()+' · '+curOf('liq')+' '+num2(+r.m||0),'--h-liq']);});
+  (m.liq||[]).forEach((r,i)=>{if(liqVis(r)||(ent.edit&&ent.src==='liq:'+i&&(r.c||'').trim()))out.push(['liq:'+i,r.c.trim()+' · '+curOf('liq')+' '+num2(+r.m||0),'--h-liq']);});
   if(none)out.push(['none',typeof none==='string'?none:'No descontar','--muted']);
   return out;
 }
@@ -116,11 +116,15 @@ const liqUsada=(m,i)=>['ing','fij','hor','aho'].some(s=>(m[s]||[]).some(x=>x.src
 function liqQuita(m,i){
   const a=m.liq,r=a&&a[i];if(!r)return null;
   if(!(r.c||'').trim()&&!+r.m&&i===a.length-1&&!liqUsada(m,i)){a.splice(i,1);if(Array.isArray(m.lb))m.lb.splice(i,1);if(!a.length)a.push(row());return null;}
-  const antes={r,h:r.h,m:r.m,c:r.c};if(!(r.c||'').trim())r.c='Cuenta '+(i+1);r.h=1;r.m=0;
+  const antes={r,h:r.h,m:r.m,c:r.c};if(!(r.c||'').trim())r.c='Cuenta '+(i+1);r.m=0;liqSync();/* los meses que solo la heredaron quedan en cero */r.h=1;
   /* También en los meses siguientes donde esa cuenta no tiene dinero ni movimientos */
   const ms=liqMeses(),k=ms.findIndex(x=>x.m===m),otros=[];
   if(k>=0)ms.slice(k+1).forEach(x=>{const q=x.m.liq&&x.m.liq[i];if(q&&nomL(q)===nomL(r)&&!+q.m&&!q.h&&!liqUsada(x.m,i)){q.h=1;otros.push(q);}});
   return{fn:()=>{antes.r.m=antes.m;antes.r.c=antes.c;if(antes.h)antes.r.h=antes.h;else delete antes.r.h;otros.forEach(q=>delete q.h);}};
+}
+function liqVuelve(m,i){
+  const r=m.liq&&m.liq[i];if(!r)return;delete r.h;const ms=liqMeses(),k=ms.findIndex(x=>x.m===m);
+  if(k>=0)ms.slice(k+1).forEach(x=>{const q=x.m.liq&&x.m.liq[i];if(q&&q.h&&nomL(q)===nomL(r)&&!+q.m)delete q.h;});
 }
 function delMov(m,sec,i){const a=m[sec];if(!a||!a[i])return;if(sec==='liq'){liqQuita(m,i);return;}const r=a[i];if(r.src)revDed(m,r);if(sec==='aho'&&r.t&&r.t.indexOf('tr:')===0){m.aho=a.filter(x=>x.t!==r.t);if(!m.aho.length)m.aho.push(row());return;}a.splice(i,1);if(!a.length)a.push(sec==='eur'?{a:0,b:0,d:0,s:0,p:0}:row());}
 let ent=null,lastUndo=null,toastT=0,pf=null,sheetFrom=null;
@@ -215,6 +219,8 @@ document.addEventListener('keydown',e=>{
   e.preventDefault();const u=lastUndo;lastUndo=null;undoRow(u);toast('Movimiento deshecho');});
 function syncSheet(){
   const g=id=>document.getElementById(id);if(!g('sheet'))return;
+  /* Lo recordado o propuesto por historial puede nombrar una cuenta quitada: se vuelve a pedir */
+  if(!ent.edit&&ent.src&&ent.src.slice(0,4)==='liq:'&&liqOculta((((S[ent.yr]||[])[+ent.mo]||{}).liq||[])[+ent.src.slice(4)]))ent.src='';
   const t=ent.t,gasto=t==='hor'||t==='fij',compra=t==='compra',pago=t==='pago',card=compra||pago,sec=tsec();
   {const gr=GRUPOS.find(x=>x[0]===grpOf(t));g('stype').innerHTML=chipH(GRUPOS.map(x=>[x[0],x[1],x[2]]),gr[0],'g');const ss=g('ssub');if(ss){ss.hidden=gr[3].length<2;{const its=gr[3].map(k=>[k,SUBN[k][0],SUBN[k][1]]);if(gr[0]==='gasto')its.push(['ant','Antojo','--c-hor']);ss.innerHTML=gr[3].length<2?'':chipH(its,(t==='hor'&&ent.ant)?'ant':t,'t',true);}}}
   {const ax=g('sax');if(ax){ax.hidden=t!=='aho';if(t==='aho')ax.innerHTML=chipH([['dep','Depositar','--c-aho'],['ret','Retirar','--c-aho'],['mov','Mover','--c-aho'],['aj','Ajustar saldo','--c-aho']],ent.ax,'ax',true);}g('sa').placeholder=(t==='aho'&&ent.ax==='aj')?'Saldo real ahora':'0.00';}

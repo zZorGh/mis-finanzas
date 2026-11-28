@@ -69,7 +69,7 @@ function ahoDo(o){
 }
 /* Por pagar este mes: los recurrentes (cfg.rec) de gastos que aún no están registrados en el mes. Un toque en «Pagado» los registra. */
 function pendRec(i){const m=S[year][i];return (cfg.rec||[]).map((r,k)=>[k,r]).filter(([k,r])=>(r.s==='fij'||r.s==='hor')&&(r.c||'').trim()&&+r.m>0&&!(m[r.s]||[]).some(x=>(x.c||'').trim().toLowerCase()===r.c.trim().toLowerCase()));}
-function recAdd(r,i){const m=S[year][i];const u=addRow(year,i,r.s,row(r.c,r.m,Math.min(31,Math.max(1,+r.f||1))+'-'+ABR[i].toLowerCase(),r.k||'',(r.src&&r.src!=='none')?r.src:''));if(u.r.src)applyDed(m,u.r,r.s);return u;}
+function recAdd(r,i){const m=S[year][i];const u=addRow(year,i,r.s,row(r.c,r.m,Math.min(31,Math.max(1,+r.f||1))+'-'+ABR[i].toLowerCase(),r.k||'',(r.src&&r.src!=='none'&&!liqOculta(liqRef(m,r.src)))?r.src:''));if(u.r.src)applyDed(m,u.r,r.s);return u;}
 /* Avisos del mes en curso (hasta 3, los más urgentes primero): cotidianos a ritmo de pasarse, cuenta en negativo, tarjeta por pagar y meta de ahorro.
    Se calculan con lo que ya hay; no hay servidor, así que aparecen al abrir la app. «Entendido por hoy» los oculta hasta mañana. */
 function avisosMes(i){
@@ -125,7 +125,7 @@ function doRec(){
   const m=S[year][view];let n=0,sinSaldo=0;const neg=[];
   rec.forEach(r=>{
     if(m[r.s].some(x=>(x.c||'').trim().toLowerCase()===r.c.trim().toLowerCase()))return;
-    const l=(r.src&&r.src!=='none')?liqRef(m,r.src):null;
+    const l0=(r.src&&r.src!=='none')?liqRef(m,r.src):null,l=liqOculta(l0)?null:l0;
     if(l&&(+l.m||0)-dedAmt(m,{m:r.m},r.s)<-0.004){
       if(cfg.bloquearNeg){sinSaldo++;return;}
       if(neg.indexOf(l.c)<0)neg.push(l.c);

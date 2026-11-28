@@ -71,7 +71,7 @@ function toRows(wantX){
     SECKEYS.forEach(k=>{
       const arr=m[k]||[];
       if(k==='liq'&&arr.length===4&&!arr.some(r=>r.h)&&arr.every((r,j)=>r.c===DEFLIQ[j]&&!(+r.m)))return;
-      arr.forEach(r=>{if(!r.c&&!(+r.m))return;const rr=base.concat([APART[k],txt(r.c),+r.m||0,txt(r.k),txt(r.f),txt(r.cur||''),txt(r.t||''),'','','',txt(r.src||''),txt(r.card||'')]);if(wantX){const xs=xJson(r);if(xs)rr.push(xs);}out.push(rr);});
+      arr.forEach(r=>{if(k!=='liq'&&!r.c&&!(+r.m))return;/* las cuentas van todas: su posición es su identidad */const rr=base.concat([APART[k],txt(r.c),+r.m||0,txt(r.k),txt(r.f),txt(r.cur||''),txt(r.t||''),'','','',txt(r.src||''),txt(r.card||'')]);if(wantX){const xs=xJson(r);if(xs)rr.push(xs);}out.push(rr);});
     });
     (m.eur||[]).forEach(r=>{if(!(r.a||r.b||r.d||r.s||r.p))return;out.push(base.concat(['Apuntes','',0,'','',+r.a||0,+r.b||0,+r.d||0,+r.s||0,+r.p||0,'','']));});
     const dflt=JSON.stringify([50,30,20]);

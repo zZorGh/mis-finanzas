@@ -16,7 +16,7 @@ function sembrado(){
   m.hor.push({c:P('filaC'),m:99999,f:P('filaF'),k:P('filaK'),src:P('filaSrc'),t:'ant',id:P('filaId')});
   m.fij.push({c:P('fijoC'),m:6,f:'5-nov',k:'x',card:P('fijoCard')});
   m.aho.push({c:P('ahorroC'),m:7,f:'5-nov',k:P('ahorroK'),t:P('ahorroT')});m.ing.push({c:P('ingC'),m:8,f:P('ingF'),imp:P('imp')});
-  m.liq[0].c=P('cuentaLiq');m.nota=P('nota');m.mov=[{a:P('movA'),b:P('movB'),m:P('movM'),f:P('movF'),n:P('movN'),de:P('movDe'),to:P('movTo'),from:P('movFrom')}];m.copen={bbva:P('copen')};m.tc={'$':P('tcMes'),'€':P('tcMesE')};
+  m.liq[0].c=P('cuentaLiq');m.liq.push({c:P('cuentaQuitada'),m:0,h:1});m.nota=P('nota');m.mov=[{a:P('movA'),b:P('movB'),m:P('movM'),f:P('movF'),n:P('movN'),de:P('movDe'),to:P('movTo'),from:P('movFrom')}];m.copen={bbva:P('copen')};m.tc={'$':P('tcMes'),'€':P('tcMesE')};
   return JSON.stringify(d);
 }
 (async()=>{
