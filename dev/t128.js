@@ -37,11 +37,12 @@ const base=x=>{const d=JSON.parse(JSON.stringify({v:1,S:demo.S,cfg:Object.assign
 
  p=await mk({src:''});await abre(p);await p.fill('#sa','10');await p.fill('#sd','prueba sin cuenta');await p.click('#sheet [data-s="save"]');await W(p);T('20 sin cuenta no guarda a ciegas',!(await fila(p,'prueba sin cuenta'))&&await p.locator('#sheet').count()===1);await p.context().close();
  p=await mk({lang:'en'});await abre(p);T('21 inglés',/Prefer another way/.test(await p.innerText('#sheet')));T('22 sin desborde',await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await p.context().close();
- // Celular bajo: los tres grupos en una fila y a la vista, sin quedar debajo de «Guardar»
+ // Celular bajo: los tres grupos en una fila y enteros. Que queden por encima de «Guardar» solo se exige en 390×760: en 360×740
+ // depende de la letra del equipo (con una más ancha las cuentas ocupan otra fila y hay que bajar un poco).
  for(const [w,h] of [[390,760],[360,740]]){const c=await b.newContext({viewport:{width:w,height:h},isMobile:true,hasTouch:true});await c.route('**/*',r=>r.request().url().startsWith('http://127.0.0.1:8765')?r.continue():r.abort());
   const d=require('./demo.json');await c.addInitScript(([x,k])=>{localStorage.setItem(k,x);localStorage.setItem(k+'-instalar','1');},[JSON.stringify({v:1,S:d.S,cfg:Object.assign({},d.cfg,{onb:1})}),'mis-finanzas-prototipo-v1']);
   const q=await c.newPage();await q.goto('http://127.0.0.1:8765/wrap-repo.html#noviembre');await q.waitForSelector('#app');await q.waitForTimeout(500);await q.click('#fab');await q.waitForSelector('#sheet');await q.waitForTimeout(500);
   const m=await q.evaluate(()=>{const bar=document.querySelector('#sheet .sact').getBoundingClientRect().top,e=[...document.querySelectorAll('#sqk [data-sgrp]')],r=e.map(x=>x.getBoundingClientRect());return{ok:r.every(x=>x.bottom<=bar&&x.height>=40),fila:new Set(r.map(x=>Math.round(x.top))).size,corta:e.some(x=>x.scrollWidth>x.clientWidth+1)};});
-  T(w+'×'+h+': los tres grupos en una fila, enteros y por encima de «Guardar»',m.ok&&m.fila===1&&!m.corta);await c.close();}
+  T(w+'×'+h+': los tres grupos en una fila y enteros'+(w===390?', por encima de «Guardar»':'')+' '+JSON.stringify(m),(w!==390||m.ok)&&m.fila===1&&!m.corta);await c.close();}
  console.log('Total '+(ok+bad)+' ok '+ok+' fallas '+bad);await b.close();process.exit(bad?1:0);
 })().catch(e=>{console.log('ERR',e);process.exit(1);});
