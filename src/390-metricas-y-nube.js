@@ -2,7 +2,7 @@
    Cuentan qué pantallas se usan y dónde se traba la gente. NUNCA llevan montos, conceptos, cuentas ni correo:
    solo un id aleatorio del dispositivo (cuadra-sid), el nombre del evento, un dato corto (modo, paso, tipo) y la versión.
    Apagado hasta que exista la tabla (TRACK_DEFAULT); cada persona puede apagarlo en Ajustes (cuadra-stats = 0/1). */
-const TRACK_DEFAULT=true,APPV='2026.11.28.3';
+const TRACK_DEFAULT=true,APPV='2026.11.28.4';
 /* En tu computadora (localhost, file) no se mide por defecto: así las pruebas y el desarrollo no ensucian las métricas reales. */
 const trLocal=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\]|)$/.test(location.hostname);
 const statsOn=()=>{let v=null;try{v=localStorage.getItem('cuadra-stats');}catch(e){}return v==='1'?true:v==='0'?false:(TRACK_DEFAULT&&!trLocal);};
@@ -70,7 +70,7 @@ function toRows(wantX){
     const base=[+y,i+1,MES[i]],n0=out.length;
     SECKEYS.forEach(k=>{
       const arr=m[k]||[];
-      if(k==='liq'&&arr.length===4&&arr.every((r,j)=>r.c===DEFLIQ[j]&&!(+r.m)))return;
+      if(k==='liq'&&arr.length===4&&!arr.some(r=>r.h)&&arr.every((r,j)=>r.c===DEFLIQ[j]&&!(+r.m)))return;
       arr.forEach(r=>{if(!r.c&&!(+r.m))return;const rr=base.concat([APART[k],txt(r.c),+r.m||0,txt(r.k),txt(r.f),txt(r.cur||''),txt(r.t||''),'','','',txt(r.src||''),txt(r.card||'')]);if(wantX){const xs=xJson(r);if(xs)rr.push(xs);}out.push(rr);});
     });
     (m.eur||[]).forEach(r=>{if(!(r.a||r.b||r.d||r.s||r.p))return;out.push(base.concat(['Apuntes','',0,'','',+r.a||0,+r.b||0,+r.d||0,+r.s||0,+r.p||0,'','']));});

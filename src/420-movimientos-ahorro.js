@@ -1,7 +1,7 @@
 /* ---------- Movimientos de ahorro: depositar, retirar, ajustar y mover ---------- */
 function moveAccts(y,i,to){
   const m=S[y][i],out=[];
-  (m.liq||[]).forEach((r,j)=>{if((r.c||'').trim())out.push(['liq:'+j,r.c.trim()+' · '+curOf('liq')+' '+num2(+r.m||0),'--h-liq']);});
+  (m.liq||[]).forEach((r,j)=>{if(liqVis(r))out.push(['liq:'+j,r.c.trim()+' · '+curOf('liq')+' '+num2(+r.m||0),'--h-liq']);});
   ahoAccts(y,i).forEach(a=>{if(Math.abs(a.v)>=.005)out.push(['aho:'+a.c,a.c+' · '+fmt(a.v),'--c-aho']);});
   if(to)out.push(['aho:+','+ Nueva cuenta de ahorro','--c-aho']);
   return out;
@@ -190,7 +190,7 @@ function openHist(i){
 function openCuadre(){
   closeSheet();closePanel();sheetFrom=document.activeElement;
   const m=S[year][view],items=[];
-  m.liq.forEach((r,i)=>{if((r.c||'').trim())items.push({k:'liq',i,label:r.c.trim(),cur:curOf('liq'),val:+r.m||0});});
+  m.liq.forEach((r,i)=>{if(liqVis(r))items.push({k:'liq',i,label:r.c.trim(),cur:curOf('liq'),val:+r.m||0});});
   const bg=document.createElement('div');bg.id='sheetbg';bg.className='sheetbg';
   const sh=document.createElement('div');sh.id='sheet';sh.className='sheet';
   sh.setAttribute('role','dialog');sh.setAttribute('aria-modal','true');sh.setAttribute('aria-label','Cuadrar cuentas');
@@ -343,7 +343,7 @@ function impPintar(){
   const op=(v,l,s)=>'<option value="'+esc(String(v))+'"'+(String(v)===String(s)?' selected':'')+'>'+esc(l)+'</option>';
   const sel=(k,l)=>'<label>'+l+'<select data-im="'+k+'">'+op(-1,'—',imp.map[k])+cols.map(c=>op(c[0],c[1],imp.map[k])).join('')+'</select></label>';
   const base=(S[String(now.getFullYear())]||[])[now.getMonth()]||{liq:[]};
-  const dests=(base.liq||[]).map((r,i)=>[(r.c||'').trim()?'liq:'+i:'',(r.c||'').trim()]).filter(x=>x[0]).concat(Object.keys(BANKN).map(k=>[k,'Tarjeta '+BANKN[k]]));
+  const dests=(base.liq||[]).map((r,i)=>[liqVis(r)?'liq:'+i:'',(r.c||'').trim()]).filter(x=>x[0]).concat(Object.keys(BANKN).map(k=>[k,'Tarjeta '+BANKN[k]]));
   const vis=imp.filtro==='rev'?imp.items.map((x,i)=>[x,i]).filter(x=>x[0].st!=='ok'):imp.items.map((x,i)=>[x,i]),pags=Math.max(1,Math.ceil(vis.length/IMP_PAG));imp.pag=Math.min(imp.pag,pags-1);
   const lista=vis.slice(imp.pag*IMP_PAG,(imp.pag+1)*IMP_PAG).map(([x,i])=>{
     const tipo=impEsT(x.t)?'<span class="ms">Compra</span>':'<select data-it="'+i+'" aria-label="Tipo de movimiento">'+op('hor','Cotidiano',x.t)+op('fij','Fijo',x.t)+op('ing','Ingreso',x.t)+'</select>';

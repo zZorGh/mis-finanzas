@@ -8,6 +8,7 @@ const act=(s,i)=>`<div class="rwx">${EDITABLE.indexOf(s)>=0?`<button type="butto
 const HEAD={ing:['Concepto','Fecha','Monto',''],gas:['Concepto','Monto','Grupo','Fecha',''],aho:['Cuenta','Saldo','Fecha',''],bnk:['Concepto','Monto','']};
 const mInp=(s,i,r,ph)=>{const v=inp(s,i,'m',r.m,'number',ph||'0.00');return (r.cur&&r.cur!==curOf(s))?`<span class="mwrap"><b class="curb" aria-hidden="true">${r.cur}</b>${v}</span>`:v;};
 function rowsHtml(m,s,t){return m[s].map((r,i)=>{
+  if(s==='liq'&&liqOculta(r))return'';
   let c='';
   if(t==='ing')c=inp(s,i,'c',r.c,'text','Concepto')+inp(s,i,'f',r.f,'text','Fecha')+mInp(s,i,r);
   else if(t==='gas')c=inp(s,i,'c',r.c,'text','Concepto')+mInp(s,i,r)+catSel(s,i,grupoDe(s,r))+inp(s,i,'f',r.f,'text','Fecha');
@@ -259,7 +260,7 @@ function liqHereda(p,m){
   m.liq=m.liq||[];
   (p.liq||[]).forEach(a=>{const n=nomL(a);if(n&&+a.m&&!m.liq.some(x=>nomL(x)===n))m.liq.push(row(a.c,0));});
   const par=liqPares(p,m);
-  m.lb=m.liq.map((r,i)=>{if(par[i]<0)return null;const v=+p.liq[par[i]].m||0;r.m=r2L((+r.m||0)+v);return[nomL(r),v];});
+  m.lb=m.liq.map((r,i)=>{if(par[i]<0)return null;const v=+p.liq[par[i]].m||0;if(liqOculta(p.liq[par[i]])&&!+r.m&&!liqUsada(m,i))r.h=1;r.m=r2L((+r.m||0)+v);return[nomL(r),v];});
 }
 function liqSync(){
   try{const ms=liqMeses();for(let k=1;k<ms.length;k++){const m=ms[k].m;if(!Array.isArray(m.lb))continue;const p=ms[k-1].m,par=liqPares(p,m);
@@ -321,8 +322,8 @@ function viewMes(i){
   const pm=PM();if(!m.q)m.q=[50,30,20];
   const pr=pm.rows.map((r,j)=>`<div class="pr"><div class="l"><span>${r[0]}</span><input id="p-${j}" type="number" data-p="${j}" value="${m[pm.k][j]}" aria-label="Porcentaje de ${r[0]}"><span class="ms">%</span><b id="pm${j}" style="min-width:92px;text-align:right;font-family:var(--font-num);font-weight:500">S/ 0.00</b></div><div class="bar"><div id="pb${j}" style="background:${r[1]}"></div></div><div class="l"><span class="ms" id="pu${j}"></span><span class="pill" id="ps${j}"></span></div></div>`).join('');
   const lq=sum(m.liq),hsub=i===today?'Lo que tienes hoy en Yape, Plin y efectivo.':'Lo que tenías al cierre de '+MES[i].toLowerCase()+' en Yape, Plin y efectivo.';
-  const liqRead=`<div class="liq-h"><span class="hero-l">Dónde está tu dinero</span><button type="button" class="liq-ed" data-act="liqedit">Editar</button></div><ul class="liq-list">${m.liq.map((r,j)=>[r,j]).filter(x=>(x[0].c||'').trim()||+x[0].m).map(([r,j])=>`<li><button type="button" class="liq-nm" data-act="hist" data-i="${j}" aria-label="Ver los movimientos de ${esc((r.c||'').trim()||'esta cuenta')}"><span>${esc((r.c||'').trim()||'Sin nombre')}</span><span class="liq-chev" aria-hidden="true">›</span></button><b class="${+r.m<0?'neg':''}">${fmtC('liq',+r.m||0)}</b></li>`).join('')||'<li class="ms">Agrega tus cuentas con «Editar».</li>'}</ul>`;
-  const liqEditH=`<div class="liq-h"><span class="hero-l">Edita tus cuentas</span><button type="button" class="liq-ed" data-act="liqedit">Listo</button></div><div class="liq-rows">${rowsHtml(m,'liq','bnk')}</div><button type="button" class="b add" data-add="liq">+ Agregar cuenta</button><div class="liq-n">Para dejar todo igual que tu banco usa «Cuadrar cuentas» en Cierre de mes.</div>`;
+  const liqRead=`<div class="liq-h"><span class="hero-l">Dónde está tu dinero</span><button type="button" class="liq-ed" data-act="liqedit">Editar</button></div><ul class="liq-list">${m.liq.map((r,j)=>[r,j]).filter(x=>((x[0].c||'').trim()||+x[0].m)&&!liqOculta(x[0])).map(([r,j])=>`<li><button type="button" class="liq-nm" data-act="hist" data-i="${j}" aria-label="Ver los movimientos de ${esc((r.c||'').trim()||'esta cuenta')}"><span>${esc((r.c||'').trim()||'Sin nombre')}</span><span class="liq-chev" aria-hidden="true">›</span></button><b class="${+r.m<0?'neg':''}">${fmtC('liq',+r.m||0)}</b></li>`).join('')||'<li class="ms">Agrega tus cuentas con «Editar».</li>'}</ul>`;
+  const liqEditH=`<div class="liq-h"><span class="hero-l">Edita tus cuentas</span><button type="button" class="liq-ed" data-act="liqedit">Listo</button></div><div class="liq-rows">${rowsHtml(m,'liq','bnk')}</div><button type="button" class="b add" data-add="liq">+ Agregar cuenta</button>${m.liq.map((r,i)=>liqOculta(r)?'<button type="button" class="b add" data-liqback="'+i+'">Recuperar '+esc(r.c)+'</button>':'').join('')}<div class="liq-n">Para dejar todo igual que tu banco usa «Cuadrar cuentas» en Cierre de mes.</div>`;
   return `${mtabsHtml()}<section class="hero with-liq"><div class="hero-main">
     <div class="hero-top"><div><div class="hero-k">${year}</div><h1>${MES[i]}</h1><div class="pills" style="margin-top:6px">${i===today?'<span class="pill">Mes actual</span>':''}<span class="pill" id="pillh" hidden>Cotidiano sobre ${fmt(cfg.alerta)}</span></div></div><div class="pills">${prev}${next}</div></div>
     <div><div class="hero-l">Tienes disponible</div><div class="hero-v${lq<0?' neg':''}" id="hL">${fmtC('liq',lq)}</div><div class="hero-s">${hsub}</div></div>

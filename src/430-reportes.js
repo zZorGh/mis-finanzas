@@ -64,7 +64,7 @@ function repData(a,b){
   /* Tarjetas de crédito */
   const tarjetas=CARDS.map(ck=>{let cons=0,pag=0;ms.forEach(({m})=>{cons+=sumIn(m,ck);pag+=paymentsTo(m,ck);});const deuda=cardEnding(last.y,last.i,ck),cur=curOf(ck);
     return {k:ck,n:SECN[ck],cur,cons:r2(cons),pag:r2(pag),deuda:r2(deuda),deudaS:r2(deuda*rateC(cur,last.m))};}).filter(t=>t.cons||t.pag||t.deuda);
-  const lc=curOf('liq'),liq=(last.m.liq||[]).filter(r=>(r.c||'').trim()).map(r=>({c:r.c.trim(),cur:lc,v:r2(r.m),s:r2((+r.m||0)*rateC(lc,last.m))}));
+  const lc=curOf('liq'),liq=(last.m.liq||[]).filter(liqVis).map(r=>({c:r.c.trim(),cur:lc,v:r2(r.m),s:r2((+r.m||0)*rateC(lc,last.m))}));
   const label=first===last?perOf(first.y,first.i):perOf(first.y,first.i)+' – '+perOf(last.y,last.i);
   return {first,last,label,mens,mov,T,cat,grupos,gT,ant,ahorros,tarjetas,liq,fx:[...fx.values()],
     ahoTot:r2(ahorros.reduce((s,a)=>s+a.fin,0)),deudaTot:r2(tarjetas.reduce((s,t)=>s+t.deudaS,0)),liqTot:r2(liq.reduce((s,l)=>s+l.s,0)),

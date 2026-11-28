@@ -173,6 +173,8 @@ app.addEventListener('click',e=>{
   if(b.id==='ldone'){edit=false;closePanel();render();return;}
   if(b.id==='lreset'){delete LAY[grp()];saveLay();closePanel();render();return;}
   if(d.add&&typeof view==='number'){const arr=S[year][view][d.add];arr.push(d.add==='eur'?{a:0,b:0,d:0,s:0,p:0}:row());pf=[d.add,arr.length-1,d.add==='eur'?'a':'c'];save();render();}
+  else if(d.del==='liq'&&typeof view==='number'){const m=S[year][view],c=m.liq[+d.i],tenia=c?+c.m||0:0,nom=c?(c.c||'').trim()||'Cuenta':'',u=liqQuita(m,+d.i);save();render();if(u)toast(tenia?'Quitaste '+nom+', que tenía '+fmtC('liq',tenia)+'.':'Quitaste '+nom+'.',u);}
+  else if(d.liqback!==undefined&&typeof view==='number'){const r=S[year][view].liq[+d.liqback];if(r){delete r.h;save();render();}}
   else if(d.del&&typeof view==='number'){delMov(S[year][view],d.del,+d.i);save();render();}
 
   else if(b.id==='addmeta'){const n=document.getElementById('mn').value.trim(),o=parseFloat(document.getElementById('mobj').value)||0;if(!n){toast('Escribe el nombre de la meta.');return;}cfg.metas=cfg.metas||[];const ex=cfg.metas.find(x=>x.n.toLowerCase()===n.toLowerCase());if(ex){if(o>0){ex.o=o;save();render();toast('Objetivo actualizado.');}else toast('Ya existe esa meta. Escribe un objetivo para actualizarla.');return;}cfg.metas.push({n,o});save();render();}
