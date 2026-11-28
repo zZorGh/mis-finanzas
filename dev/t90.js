@@ -153,5 +153,22 @@ const cerrar=async p=>{await p.keyboard.press('Escape');await p.waitForTimeout(2
   {const tx=await p.innerText('#sheet');T('en inglés la tarjeta está traducida',/It will be saved like this/.test(tx)&&/Paid from/.test(tx)&&!/Se guardará|Sale de/.test(tx));}
   await p.context().close();
 
+  {const p=await (await b.newContext({viewport:{width:1366,height:800}})).newPage();await p.route('**/*',r=>r.request().url().startsWith('http://127.0.0.1:8765')?r.continue():r.abort());
+   await p.goto('http://127.0.0.1:8765/wrap-repo.html#noviembre');await p.waitForSelector('#app');await p.waitForTimeout(500);
+   const W=()=>p.waitForTimeout(260),marcadas=s=>p.locator(s+' [aria-checked="true"]').count();
+   await p.click('.caplink');await p.waitForSelector('#sheet');await W();await p.click('[data-mode="manual"]');await W();
+   T('asistente: «¿Qué movimiento es?» no sale con nada marcado',await marcadas('#stype')===0&&await p.locator('#stype [role=radio][tabindex="0"]').count()===1);
+   await p.click('#stype [data-g="gasto"]');await W();T('asistente: el tipo de gasto tampoco',await marcadas('#ssub')===0);
+   await p.click('#ssub [data-t="hor"]');await W();T('asistente: ni el grupo',await marcadas('#sgrp')===0);
+   await p.click('#sgrp [data-sgrp="want"]');await W();T('asistente: ni la cuenta',await marcadas('#ssrc')===0);
+   await p.click('[data-wz="back"]');await W();T('asistente: al volver atrás se ve lo que elegiste',await p.getAttribute('#sgrp [data-sgrp="want"]','aria-checked')==='true');
+   await p.click('[data-wz="back"]');await W();await p.click('[data-wz="back"]');await W();await p.click('#stype [data-g="tarjeta"]');await W();
+   T('asistente: si cambias una respuesta, los pasos siguientes no arrastran marcas',await marcadas('#ssub')===0);
+   await p.click('#ssub [data-t="compra"]');await W();T('asistente: tampoco la tarjeta',await marcadas('#sbank')===0);
+   await p.click('#sbank [data-b="bcp"]');await W();await p.click('[data-smode="auto"], #smodesw');await W();await p.click('#smodesw');await W();
+   T('en el formulario completo (fuera del asistente) lo elegido sí se ve',await p.getAttribute('#sheet','data-wiz')===null&&await marcadas('#stype')===1&&await marcadas('#ssub')===1);
+   await p.keyboard.press('Escape');await W();await p.click('.caplink');await p.waitForSelector('#sheet');await W();await p.click('[data-mode="manual"]');await W();await p.click('[data-wz="back"]');await W();
+   T('al volver a la pantalla rápida, el tipo está marcado',await marcadas('#stype')===1);
+   await p.context().close();}
   console.log('Total '+(ok+bad)+' ok '+ok+' fallas '+bad);await b.close();process.exit(bad?1:0);
 })().catch(e=>{console.log('ERR',e);process.exit(1);});

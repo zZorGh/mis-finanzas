@@ -2464,7 +2464,7 @@ function syncSheet(){
   g('sdest').classList.remove('err');pagoMas();
   {const sm=g('ssrcmsg');if(sm)sm.hidden=true;const su=g('smsum');if(su){const bits=[ent.day+' '+ABR[+ent.mo].toLowerCase()+(ent.yr!==year?' '+ent.yr:'')];if(gasto)bits.push(GLAB[grpSel()]);if(ent.g)bits.push('Meta: '+ent.g);su.textContent=bits.join(' · ');}}
   {const q=g('sqk'),qk=!!g('sheet').dataset.quick;if(q)q.innerHTML=qk?catAutoHtml():'';const st=g('stype');if(st)st.hidden=qk&&!!ent.lock;}
-  negWarn();rove(g('sheet'));updateAuto();
+  negWarn();rove(g('sheet'));updateAuto();wizLimpia();
 }
 /* Modo del formulario: ask = elegir, manual = formulario, auto = una frase con tarjeta de confirmación. */
 /* Registro en una pantalla: un gasto con monto y concepto. La cuenta, el tipo y la categoría se deducen, se ven y se pueden cambiar antes de guardar. */
@@ -2497,7 +2497,7 @@ function qkAFrase(){
 function setMode(m,wiz){
   const sh=document.getElementById('sheet');if(!sh)return;if(m==='auto'&&sh.dataset.quick)qkAFrase();delete sh.dataset.quick;sh.dataset.mode=m;if(m!=='auto')vozStop();
   if(m!=='ask')track('reg_modo',m==='auto'?'auto':(wiz?'manual_pasos':'manual_completo'));
-  if(!(m==='manual'&&wiz)){delete sh.dataset.wiz;delete sh.dataset.step;sh.querySelectorAll('.wzshow').forEach(e=>e.classList.remove('wzshow'));}
+  if(!(m==='manual'&&wiz)){const era=sh.dataset.wiz;delete sh.dataset.wiz;delete sh.dataset.step;sh.querySelectorAll('.wzshow').forEach(e=>e.classList.remove('wzshow'));if(era)syncSheet();}
   const w=document.getElementById('smodesw');if(w){w.dataset.mode=m==='auto'?'manual':'auto';w.textContent=m==='auto'?'Cambiar a manual':'Cambiar a automático';}
   if(m==='auto'){updateAuto();const i=document.getElementById('smsg');if(i)i.focus();}
   else if(m==='manual'){if(wiz)wizGo(wizFlow()[0]);else{const a=document.getElementById('sa');if(a)a.focus();}}
@@ -2536,10 +2536,18 @@ function wizGo(step){
   const Q={type:'¿Qué movimiento es?',sub:({gasto:'¿Qué tipo de gasto es?',ahorro:'¿Es ahorro o inversión?',tarjeta:'¿Es una compra o un pago?'})[gr[0]]||'',ax:'¿Qué haces con tu ahorro?',bank:'¿Con qué tarjeta?',grp:'¿En qué grupo cae este gasto?'};
   const q=document.getElementById('swq');if(q)q.textContent=Q[step]||'';
   if(step==='form'){wizSum();negWarn();}
+  wizLimpia();
   requestAnimationFrame(()=>{
     if(step==='form'){const a=document.getElementById('sa');if(a)a.focus();return;}
     const gid={type:'stype',sub:'ssub',ax:'sax',acct:'sfrom',bank:'sbank',src:'ssrc',grp:'sgrp'}[step],gx=gid&&document.getElementById(gid);
     const b=gx&&(gx.querySelector('[aria-checked="true"]')||gx.querySelector('button'));if(b)b.focus();});
+}
+/* En el asistente nada sale marcado hasta que lo tocas (se confundía con lo elegido); al volver atrás sí se ve tu elección. */
+const WZ_ELIGE={type:'#stype',sub:'#ssub',ax:'#sax',bank:'#sbank',src:'#ssrc',grp:'#sgrp'};
+function wizLimpia(){
+  const sh=document.getElementById('sheet');if(!sh||!ent||!sh.dataset.wiz)return;
+  const s=sh.dataset.step,sel=WZ_ELIGE[s];if(!sel||(ent.wzv||{})[s])return;
+  sh.querySelectorAll(sel+' [role=radio]').forEach((b,i)=>{b.setAttribute('aria-checked','false');b.tabIndex=i?-1:0;});
 }
 function wizAdvance(step){
   if(step==='acct'&&(!ent.from||(ent.ax==='mov'&&!ent.to)))return;
@@ -2782,7 +2790,7 @@ function openSheet(ask){
     <button type="button" class="modeb" data-mode="auto"><b>Automático</b><span>Escribes o dictas una frase y la app la llena</span></button></div>
   <button type="button" class="lnk" id="smodesw" data-mode="auto">Cambiar a automático</button>`;
   document.body.append(bg,sh);presetSrc();syncSheet();
-  bg.addEventListener('click',closeSheet);sh.addEventListener('click',e=>{const st=wizClickStep(e);sheetClick(e);if(st)wizAdvance(st);});sh.addEventListener('input',sheetInput);
+  bg.addEventListener('click',closeSheet);sh.addEventListener('click',e=>{const st=wizClickStep(e);if(st&&ent)(ent.wzv=ent.wzv||{})[st]=1;sheetClick(e);if(st&&ent){const f=wizFlow(),i=f.indexOf(st);Object.keys(ent.wzv).forEach(k=>{if(k!==st&&!(f.indexOf(k)>=0&&f.indexOf(k)<i))delete ent.wzv[k];});}if(st)wizAdvance(st);});sh.addEventListener('input',sheetInput);
   sh.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();if(!e.repeat&&(!sh.dataset.wiz||sh.dataset.step==='form'))saveSheet(false);}else if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();if(e.target.id==='scn'){const bt=sh.querySelector('[data-scatnew]');if(bt)bt.click();}else if(e.target.id==='sa'&&sh.dataset.quick&&!document.getElementById('sd').value.trim())document.getElementById('sd').focus();else saveSheet(false);}else if(e.key==='Escape')closeSheet();});
   track('reg_abrir',ask?'elegir':'directo');
   if(ask&&(cfg.modoReg==='auto'||cfg.modoReg==='manual')){const pf=cfg.modoReg;queueMicrotask(()=>{const s=document.getElementById('sheet');if(s!==sh||sh.dataset.mode!=='ask'||!ent)return;const md=(pf==='auto'&&!ent.lock)?'auto':'manual';setMode(md,md==='manual');});}
@@ -3164,7 +3172,7 @@ const SB_URL=ES_PROD?'https://lmjhlghwthydpeismulb.supabase.co':'https://qfnqqhw
    Cuentan qué pantallas se usan y dónde se traba la gente. NUNCA llevan montos, conceptos, cuentas ni correo:
    solo un id aleatorio del dispositivo (cuadra-sid), el nombre del evento, un dato corto (modo, paso, tipo) y la versión.
    Apagado hasta que exista la tabla (TRACK_DEFAULT); cada persona puede apagarlo en Ajustes (cuadra-stats = 0/1). */
-const TRACK_DEFAULT=true,APPV='2026.11.27.3';
+const TRACK_DEFAULT=true,APPV='2026.11.27.4';
 /* En tu computadora (localhost, file) no se mide por defecto: así las pruebas y el desarrollo no ensucian las métricas reales. */
 const trLocal=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\]|)$/.test(location.hostname);
 const statsOn=()=>{let v=null;try{v=localStorage.getItem('cuadra-stats');}catch(e){}return v==='1'?true:v==='0'?false:(TRACK_DEFAULT&&!trLocal);};
