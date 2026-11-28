@@ -21,7 +21,15 @@ function doAho(o){
   const m=S[o.yr][o.mo],cur=o.cur||curOf('aho'),def=curOf('aho');
   const nameOf=id=>id==='aho:+'?((o.desc||'').trim()||'Nueva cuenta'):id.slice(4);
   const mk=(n,v)=>{const r=row(n,Math.round(v*100)/100,o.fch,'');if(cur!==def)r.cur=cur;return r;};
-  const add=r=>addRow(o.yr,o.mo,'aho',r),bal=n=>(ahoOf(o.yr,o.mo,n)||{v:0}).v;
+  const add=r=>{fija(r);return addRow(o.yr,o.mo,'aho',r);},bal=n=>(ahoOf(o.yr,o.mo,n)||{v:0}).v;
+  /* Si sacas en una moneda más de lo que la cuenta tiene en ella (p. ej. soles de una cuenta en dólares), el resto sale de
+     la otra con el cambio de hoy, que queda guardado en la fila: si no, el saldo volvería a moverse con el tipo de cambio */
+  const fija=r=>{
+    if(!(r.m<0))return;const a=ahoOf(o.yr,o.mo,r.c);if(!a)return;
+    const cu=r.cur||def,falta=Math.min(-r.m,-r.m-Math.max(0,a.n[cu]||0)),otra=Object.keys(a.n).find(c=>c!==cu&&a.n[c]>0);
+    if(falta<.005||!otra)return;
+    const tv=ahoTc(cu,m)/ahoTc(otra,m);r.tvc=otra;r.tv=tv;r.tvm=Math.round(Math.min(falta,a.n[otra]/tv)*1e6)/1e6;
+  };
   if(o.ax==='dep'||o.ax==='ret'){
     const sg=o.ax==='dep'?1:-1,nm=nameOf(o.from),r=mk(nm,sg*o.amt);
     if(sg>0&&o.goal)r.k=o.goal;

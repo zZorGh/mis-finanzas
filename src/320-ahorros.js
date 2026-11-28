@@ -28,7 +28,10 @@ function ahoAccts(y,i){
       const m=S[yy][ii];
       ['$','€'].forEach(c=>{if(m.tc&&+m.tc[c])tc[c]=+m.tc[c];});
       const del=new Set();
-      (m.aho||[]).forEach(r=>{if(!(r.c||'').trim()&&!+r.m)return;const n=ahoName(r),k=n.toLowerCase(),a=acc.get(k)||{c:n,n:{}},cu=rowCur('aho',r);a.n[cu]=(a.n[cu]||0)+(+r.m||0);acc.set(k,a);del.add(a);});
+      (m.aho||[]).forEach(r=>{if(!(r.c||'').trim()&&!+r.m)return;const n=ahoName(r),k=n.toLowerCase(),a=acc.get(k)||{c:n,n:{}},cu=rowCur('aho',r);let v=+r.m||0;
+        /* Salida que se pagó con otra moneda de la cuenta: se descuenta de aquella con el cambio guardado al anotarla */
+        if(r.tvc&&r.tv&&v<0){const p=Math.min(-v,+r.tvm||0);v+=p;a.n[r.tvc]=(a.n[r.tvc]||0)-p*r.tv;}
+        a.n[cu]=(a.n[cu]||0)+v;acc.set(k,a);del.add(a);});
       del.forEach(a=>ahoCruza(a.n,tasa));
     }
   }

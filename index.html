@@ -1197,7 +1197,8 @@ function saneRow(r){
     if(k==='__proto__'||k==='constructor'||k==='prototype')return;
     if(k==='m')o.m=fin(v);
     else if(k==='_d'){if(typeof v==='number'&&Number.isFinite(v))o._d=v;}
-    else if(k==='cur'){if(['S/','$','€'].indexOf(v)>=0)o.cur=v;}
+    else if(k==='cur'||k==='tvc'){if(['S/','$','€'].indexOf(v)>=0)o[k]=v;}
+    else if(k==='tv'||k==='tvm'){if(typeof v==='number'&&v>0&&Number.isFinite(v))o[k]=v;}
     else if(typeof v==='string'||typeof v==='boolean')o[k]=v;
     else if(typeof v==='number'&&Number.isFinite(v))o[k]=v;});
   if(!('m' in o))o.m=0;
@@ -1396,7 +1397,10 @@ function ahoAccts(y,i){
       const m=S[yy][ii];
       ['$','€'].forEach(c=>{if(m.tc&&+m.tc[c])tc[c]=+m.tc[c];});
       const del=new Set();
-      (m.aho||[]).forEach(r=>{if(!(r.c||'').trim()&&!+r.m)return;const n=ahoName(r),k=n.toLowerCase(),a=acc.get(k)||{c:n,n:{}},cu=rowCur('aho',r);a.n[cu]=(a.n[cu]||0)+(+r.m||0);acc.set(k,a);del.add(a);});
+      (m.aho||[]).forEach(r=>{if(!(r.c||'').trim()&&!+r.m)return;const n=ahoName(r),k=n.toLowerCase(),a=acc.get(k)||{c:n,n:{}},cu=rowCur('aho',r);let v=+r.m||0;
+        /* Salida que se pagó con otra moneda de la cuenta: se descuenta de aquella con el cambio guardado al anotarla */
+        if(r.tvc&&r.tv&&v<0){const p=Math.min(-v,+r.tvm||0);v+=p;a.n[r.tvc]=(a.n[r.tvc]||0)-p*r.tv;}
+        a.n[cu]=(a.n[cu]||0)+v;acc.set(k,a);del.add(a);});
       del.forEach(a=>ahoCruza(a.n,tasa));
     }
   }
@@ -4030,7 +4034,15 @@ function doAho(o){
   const m=S[o.yr][o.mo],cur=o.cur||curOf('aho'),def=curOf('aho');
   const nameOf=id=>id==='aho:+'?((o.desc||'').trim()||'Nueva cuenta'):id.slice(4);
   const mk=(n,v)=>{const r=row(n,Math.round(v*100)/100,o.fch,'');if(cur!==def)r.cur=cur;return r;};
-  const add=r=>addRow(o.yr,o.mo,'aho',r),bal=n=>(ahoOf(o.yr,o.mo,n)||{v:0}).v;
+  const add=r=>{fija(r);return addRow(o.yr,o.mo,'aho',r);},bal=n=>(ahoOf(o.yr,o.mo,n)||{v:0}).v;
+  /* Si sacas en una moneda más de lo que la cuenta tiene en ella (p. ej. soles de una cuenta en dólares), el resto sale de
+     la otra con el cambio de hoy, que queda guardado en la fila: si no, el saldo volvería a moverse con el tipo de cambio */
+  const fija=r=>{
+    if(!(r.m<0))return;const a=ahoOf(o.yr,o.mo,r.c);if(!a)return;
+    const cu=r.cur||def,falta=Math.min(-r.m,-r.m-Math.max(0,a.n[cu]||0)),otra=Object.keys(a.n).find(c=>c!==cu&&a.n[c]>0);
+    if(falta<.005||!otra)return;
+    const tv=ahoTc(cu,m)/ahoTc(otra,m);r.tvc=otra;r.tv=tv;r.tvm=Math.round(Math.min(falta,a.n[otra]/tv)*1e6)/1e6;
+  };
   if(o.ax==='dep'||o.ax==='ret'){
     const sg=o.ax==='dep'?1:-1,nm=nameOf(o.from),r=mk(nm,sg*o.amt);
     if(sg>0&&o.goal)r.k=o.goal;

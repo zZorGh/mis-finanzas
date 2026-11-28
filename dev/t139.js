@@ -49,6 +49,21 @@ const DEP={9:[fila(100,'5-oct','$')]};
   T('2 retirar S/ 380 deja cero',await total(p)==='S/ 0.00');
   const d=await guardado(p);d.S['2026'][11].tc={'$':3.2};const q=await abre(JSON.stringify(d),'diciembre','2026-12-02');T('2 y sigue en cero con otro cambio en diciembre',await total(q)==='S/ 0.00');await cierra(q);
   await cierra(p);}
+ // 2b. Retirar en soles o ajustar a 0 en soles y que el cambio de ESE mismo mes se mueva después (SUNAT lo cambia a diario)
+ for(const [que,ax,monto] of [['retirar S/ 380','ret','380'],['ajustar a 0 en soles','aj','0']]){const p=await abre(datos(DEP,{9:3.4,10:3.8}));await ahorro(p,ax,monto,'S/',ax==='ret'?'liq:0':null);await guarda(p);
+  for(const tc of [3.9,3.7]){const d=await guardado(p);d.S['2026'][10].tc={'$':tc};const q=await abre(JSON.stringify(d));
+   T('2b '+que+', luego el cambio pasa a '+tc+': sigue en cero',await total(q)==='S/ 0.00');
+   if(tc===3.7){await q.locator('#app [data-act="adel"]').click();await q.waitForTimeout(500);T('2b '+que+': la cuenta se puede quitar',await q.locator('#app .ahocard .aacct').count()===0);}await cierra(q);}
+  await cierra(p);}
+ // 2c. Retiro parcial en soles: salen dólares al cambio de ese momento y lo que queda son dólares
+ {const p=await abre(datos(DEP,{9:3.4,10:3.8}));await ahorro(p,'ret','190','S/','liq:0');await guarda(p);const d=await guardado(p);d.S['2026'][10].tc={'$':4};const q=await abre(JSON.stringify(d));
+  T('2c quedan $ 50, valgan lo que valgan',(await cartera(q)).includes('$ 50.00')&&await total(q)==='S/ 200.00');await cierra(q);await cierra(p);}
+ // 2d. Cuenta con S/ 50 y $ 100: retirar S/ 430 la vacía aunque luego cambie el dólar
+ {const p=await abre(datos({9:[fila(50,'4-oct'),fila(100,'5-oct','$')]},{9:3.4,10:3.8}));await ahorro(p,'ret','430','S/','liq:0');await guarda(p);const d=await guardado(p);d.S['2026'][10].tc={'$':3.5};const q=await abre(JSON.stringify(d));
+  T('2d mezcla vaciada',await total(q)==='S/ 0.00');await cierra(q);await cierra(p);}
+ // 2e. Una fila manipulada no mete nada en la pantalla
+ {const p=await abre(datos({9:[fila(100,'5-oct','$'),fila(-10,'6-oct','S/',{tvc:'<img src=x onerror=window.__x=1>',tv:2,tvm:10})]},{9:3.4,10:3.8}));
+  T('2e moneda falsa descartada',await p.evaluate(()=>!window.__x&&!document.querySelector('#app .ahocard img')));await cierra(p);}
  // 3. Lo anotado antes de este cambio: se retiró en soles el mismo mes
  {const p=await abre(datos({9:[fila(100,'5-oct','$'),fila(-340,'20-oct')]},{9:3.4,10:3.8}));T('3 un retiro antiguo en soles sigue dando cero',await total(p)==='S/ 0.00');await cierra(p);}
  // 4. Mes sin tipo de cambio propio: usa el último, no el de respaldo, y todo coincide

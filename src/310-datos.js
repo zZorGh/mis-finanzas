@@ -13,7 +13,8 @@ function saneRow(r){
     if(k==='__proto__'||k==='constructor'||k==='prototype')return;
     if(k==='m')o.m=fin(v);
     else if(k==='_d'){if(typeof v==='number'&&Number.isFinite(v))o._d=v;}
-    else if(k==='cur'){if(['S/','$','€'].indexOf(v)>=0)o.cur=v;}
+    else if(k==='cur'||k==='tvc'){if(['S/','$','€'].indexOf(v)>=0)o[k]=v;}
+    else if(k==='tv'||k==='tvm'){if(typeof v==='number'&&v>0&&Number.isFinite(v))o[k]=v;}
     else if(typeof v==='string'||typeof v==='boolean')o[k]=v;
     else if(typeof v==='number'&&Number.isFinite(v))o[k]=v;});
   if(!('m' in o))o.m=0;
