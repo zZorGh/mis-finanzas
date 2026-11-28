@@ -95,5 +95,16 @@ const solo=async(p,grupo)=>{const v=await visibles(p,todas);return todas.every((
    await q.addInitScript(([x,k])=>{localStorage.setItem(k,x);localStorage.setItem(k+'-instalar','1');localStorage.setItem(k+'-tab','mov');},[JSON.stringify({v:1,S,cfg:Object.assign({},d.cfg,{onb:1})}),'mis-finanzas-prototipo-v1']);
    await q.goto('http://127.0.0.1:8765/wrap-repo.html?tabs=on#septiembre');await q.waitForSelector('#mtabs');await q.waitForTimeout(800);
    const h=await q.evaluate(()=>Math.round(document.querySelector('#app .hero').getBoundingClientRect().height));T('360 px: «Septiembre» y cinco cifras en una línea ('+h+')',h<90);await q.context().close();}
+  // Punto de aviso en «Resumen»
+  for(const [caso,rec,hoy,esperado] of [['con aviso',null,'',true],['avisos entendidos y nada vencido',null,'22-nov',false],['recurrente vencido',[{sec:'fij',s:'fij',c:'T104 Luz',m:50,k:'',src:'liq:0',f:5}],'22-nov',true],['recurrente para más adelante',[{sec:'fij',s:'fij',c:'T104 Agua',m:50,k:'',src:'liq:0',f:29}],'22-nov',false]]){
+   const q=await (await b.newContext({viewport:{width:390,height:760},isMobile:true,hasTouch:true,timezoneId:'America/Lima'})).newPage();await q.context().clock.setFixedTime(new Date('2026-11-22T12:00:00-05:00'));
+   await q.route('**/*',r=>r.request().url().startsWith('http://127.0.0.1:8765')?r.continue():r.abort());
+   const d=require('./demo.json');
+   await q.addInitScript(([x,k,h])=>{localStorage.setItem(k,x);localStorage.setItem(k+'-instalar','1');localStorage.setItem(k+'-tab','mov');if(h)localStorage.setItem(k+'-avisos',h);},[JSON.stringify({v:1,S:d.S,cfg:Object.assign({},d.cfg,{onb:1},rec?{rec}:{rec:[]})}),'mis-finanzas-prototipo-v1',hoy]);
+   await q.goto('http://127.0.0.1:8765/wrap-repo.html?tabs=on#noviembre');await q.waitForSelector('#mtabs');await q.waitForTimeout(700);
+   T('punto: '+caso+' → '+(esperado?'se ve':'no se ve'),await q.locator('#mtabs .mdot').isVisible()===esperado);
+   if(caso==='con aviso'){T('punto: el lector de pantalla lo dice',/hay avisos/.test(await q.locator('#mtabs [data-mtab="resumen"]').innerText()));
+     await q.click('#mtabs [data-mtab="resumen"]');await q.waitForTimeout(400);await q.click('#app [data-avx]');await q.waitForTimeout(500);T('punto: «Entendido por hoy» lo apaga',!(await q.locator('#mtabs .mdot').isVisible()));}
+   await q.context().close();}
   console.log('Total '+(ok+bad)+' ok '+ok+' fallas '+bad);await b.close();process.exit(bad?1:0);
 })().catch(e=>{console.log('ERR',e);process.exit(1);});

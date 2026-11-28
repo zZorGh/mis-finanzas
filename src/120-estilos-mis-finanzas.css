@@ -266,6 +266,9 @@ h1{letter-spacing:-.03em}
   .mtabs button{flex:none;min-height:44px;padding:0 15px;border:1.5px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
   .mtabs button[aria-current]{background:var(--accent);border-color:var(--accent);color:var(--on-accent,#fff)}
   .mtabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .mdot{display:inline-block;width:9px;height:9px;margin-left:7px;border-radius:50%;background:var(--bad);box-shadow:0 0 0 2px var(--surface);vertical-align:middle}
+  .mdot[hidden]{display:none}
+  @media (forced-colors:active){.mdot{background:Highlight}}
   #app[data-mtab=mov] .hero .liq,#app[data-mtab=tar] .hero .liq,#app[data-mtab=aho] .hero .liq,#app[data-mtab=ana] .hero .liq,#app[data-mtab=mov] .hero .hbud,#app[data-mtab=tar] .hero .hbud,#app[data-mtab=aho] .hero .hbud,#app[data-mtab=ana] .hero .hbud,#app[data-mtab=mov] .hero .hbar,#app[data-mtab=tar] .hero .hbar,#app[data-mtab=aho] .hero .hbar,#app[data-mtab=ana] .hero .hbar,#app[data-mtab=mov] .hero .hleg,#app[data-mtab=tar] .hero .hleg,#app[data-mtab=aho] .hero .hleg,#app[data-mtab=ana] .hero .hleg,#app[data-mtab=mov] .hero .acts,#app[data-mtab=tar] .hero .acts,#app[data-mtab=aho] .hero .acts,#app[data-mtab=ana] .hero .acts{display:none!important}
   /* Fuera de Resumen y Todo el encabezado cabe en una línea: mes a la izquierda y saldo a la derecha.
      Las flechas se quitan aquí porque la fila de meses ya está justo encima. */

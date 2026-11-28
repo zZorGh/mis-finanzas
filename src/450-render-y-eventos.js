@@ -11,7 +11,13 @@ function bnavHtml(){
 const MTABS=[['resumen','Resumen'],['mov','Movimientos'],['tar','Tarjetas'],['aho','Ahorro'],['ana','Análisis'],['todo','Todo']];
 const TABMAP={mk:'resumen',cie:'resumen',pre:'resumen',dg:'resumen',sem:'resumen',ant:'resumen',ing:'mov',fij:'mov',hor:'mov',bbva:'tar',bcp:'tar',oh:'tar',c4:'tar',c5:'tar',c6:'tar',c7:'tar',c8:'tar',aho:'aho',inv:'aho',mc1:'ana',mc2:'ana',mc3:'ana',hm1:'ana',tcm:'ana',eur:'ana'};
 let mesTab=(()=>{try{const v=localStorage.getItem(KEY+'-tab');return MTABS.some(x=>x[0]===v)?v:'resumen';}catch(e){return'resumen';}})();
-function mtabsHtml(){return '<div id="mtabs0"></div><nav class="mtabs" id="mtabs" aria-label="Secciones del mes">'+MTABS.map(x=>'<button type="button" data-mtab="'+x[0]+'"'+(x[0]===mesTab?' aria-current="true"':'')+'>'+x[1]+'</button>').join('')+'</nav>';}
+function mtabsHtml(){return '<div id="mtabs0"></div><nav class="mtabs" id="mtabs" aria-label="Secciones del mes">'+MTABS.map(x=>'<button type="button" data-mtab="'+x[0]+'"'+(x[0]===mesTab?' aria-current="true"':'')+'>'+x[1]+(x[0]==='resumen'?'<span class="mdot" hidden><span class="sr">, hay avisos</span></span>':'')+'</button>').join('')+'</nav>';}
+/* Punto en «Resumen»: los avisos solo salen ahí y en «Todo», así que desde otra pestaña hay que saber que existen.
+   Cuenta «Para tener en cuenta», la franja de cierre y lo de «Por pagar» que vence hoy o ya venció. */
+function mtabsAviso(){
+  const d=document.querySelector('#mtabs .mdot');
+  if(d){const hay=!document.querySelector('#app .avcard,#app .ciebar,#app .ppcard .late,#app .ppcard .today');if(d.hidden!==hay)d.hidden=hay;}
+}
 function tagMes(ap){
   if(typeof view!=='number'){delete ap.dataset.mtab;return;}
   ap.dataset.mtab=mesTab;
@@ -83,7 +89,7 @@ try{new ResizeObserver(()=>document.documentElement.style.setProperty('--hh',hdr
 /* Los montos muy largos (millones) se achican para caber en su caja en vez de cortarse o empujar la página. */
 function fitNums(){document.querySelectorAll('.kv,.hero-v,.cap-big').forEach(e=>{e.style.fontSize='';if(!e.clientWidth||getComputedStyle(e).display==='inline')return;let s=parseFloat(getComputedStyle(e).fontSize);const min=Math.max(11,s*.45);let g=0;while(e.scrollWidth>e.clientWidth+1&&s>min&&g++<60){s-=1;e.style.fontSize=s+'px';}});}
 function syncBar(){try{let m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement('meta');m.name='theme-color';document.head.appendChild(m);}let c=getComputedStyle(hdr).backgroundColor;if(!c||/rgba\(0, 0, 0, 0\)|transparent/.test(c))c=getComputedStyle(document.body).backgroundColor;m.content=c;}catch(x){}}
-let FT=0;const fitSoon=()=>{cancelAnimationFrame(FT);FT=requestAnimationFrame(()=>{fitNums();syncBar();hmInk();});};
+let FT=0;const fitSoon=()=>{cancelAnimationFrame(FT);FT=requestAnimationFrame(()=>{mtabsAviso();fitNums();syncBar();hmInk();});};
 new MutationObserver(fitSoon).observe(app,{childList:true,subtree:true,characterData:true});
 new MutationObserver(fitSoon).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 addEventListener('resize',fitSoon);try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',fitSoon);}catch(x){}
