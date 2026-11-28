@@ -1990,13 +1990,16 @@ function liqHereda(p,m){
 }
 function liqSync(){
   try{const ms=liqMeses();for(let k=1;k<ms.length;k++){const m=ms[k].m;if(!Array.isArray(m.lb))continue;const p=ms[k-1].m,par=liqPares(p,m);
-    (m.liq||[]).forEach((r,i)=>{if(par[i]<0)return;const v=+p.liq[par[i]].m||0,b=m.lb[i];if(b){const d=r2L(v-b[1]);if(d)r.m=r2L((+r.m||0)+d);}m.lb[i]=[nomL(r),v];});}}catch(e){}
+    (m.liq||[]).forEach((r,i)=>{if(par[i]<0)return;const v=+p.liq[par[i]].m||0,b=m.lb[i];if(b){const d=r2L(v-b[1]);/* si en esa posición ahora hay otra cuenta (renombrada o corrida), no se mueve dinero: solo se vuelve a fijar la base */if(d&&b[0]===nomL(r))r.m=r2L((+r.m||0)+d);}m.lb[i]=[nomL(r),v];});}}catch(e){}
 }
 /* Hereda hasta el mes en curso (también los que se saltaron). Devuelve el mes del que salieron los saldos si trajo algo. */
 function liqCarry(){
-  try{if(backend&&!sync.ready)return null;}catch(e){return null;}
+  /* Con sesión, solo después de cargar la nube: antes, un cambio automático se subiría encima de lo que haya en la cuenta */
+  try{if((IS_SB||backend)&&!sync.ready)return null;}catch(e){return null;}
   const ms=liqMeses(),y=String(now.getFullYear()),t=ms.findIndex(x=>x.y===y&&x.i===now.getMonth());if(t<1)return null;
-  let s=t-1;while(s>=0&&!ms[s].m.lb&&liqIntacto(ms[s].m))s--;if(s<0)return null;
+  /* Origen: el último mes con saldos propios; si nadie anotó saldos (solo movimientos), el primero que tenga algo */
+  let s=t-1;while(s>=0&&!ms[s].m.lb&&liqIntacto(ms[s].m))s--;
+  if(s<0){s=ms.findIndex((x,k)=>k<t&&(x.m.liq||[]).some(r=>+r.m));if(s<0)return null;}
   let de=null;
   for(let k=s+1;k<=t;k++){const m=ms[k].m,p=ms[k-1].m;if(m.lb||m.tot||!liqIntacto(m))continue;
     if(!(p.liq||[]).some(r=>+r.m))continue;liqHereda(p,m);de=ms[s];}
@@ -3814,7 +3817,7 @@ async function pushNow(force){
   finally{sync.busy=false;updateChip();if(sync.again){sync.again=false;queueSync();}}
 }
 async function loadFromSheet(auto){
-  if(auto&&sync.dirty&&backend){sync.ready=true;sync.msg='Subiendo cambios que quedaron pendientes…';await pushNow(false);if(sync.state==='conflict'){sync.msg='Tienes cambios en este dispositivo que no se subieron y tu cuenta también cambió desde otro. Tus datos de aquí se conservan: usa «Guardar todo ahora» para guardar estos o «Recargar mis datos» para traer los otros.';updateChip();}fxAuto();return;}
+  if(auto&&sync.dirty&&backend){sync.ready=true;sync.msg='Subiendo cambios que quedaron pendientes…';await pushNow(false);if(sync.state==='conflict'){sync.msg='Tienes cambios en este dispositivo que no se subieron y tu cuenta también cambió desde otro. Tus datos de aquí se conservan: usa «Guardar todo ahora» para guardar estos o «Recargar mis datos» para traer los otros.';updateChip();}render();fxAuto();return;}
   if(!backend){sync.msg='Esta vista guarda tus datos solo en este navegador.';updateChip();return;}
   if(backend.name==='mcp'&&!sync.id){sync.state='error';sync.msg='Escribe el ID de tu hoja.';updateChip();return;}
   clearTimeout(sync.timer);sync.state='loading';updateChip();
@@ -3822,7 +3825,7 @@ async function loadFromSheet(auto){
   try{
     const d=await backend.read();const rows=(Array.isArray(d.reg)?d.reg:[]).filter(Array.isArray);
     if((sync.rev||0)!==rev0){sync.ready=true;sync.dirty=true;persistSync();sync.msg='Seguiste editando mientras se cargaban tus datos: se conservaron tus cambios de aquí.';await pushNow(false);if(sync.state==='conflict'){sync.msg='Seguiste editando mientras se cargaban tus datos y tu cuenta también tenía cambios. Tus datos de aquí se conservan: usa «Guardar todo ahora» para guardar estos o «Recargar mis datos» para traer los otros.';}updateChip();return;}
-    if(!rows.length){sync.ready=true;sync.msg='Tu cuenta estaba vacía: guardando tus datos…';await pushNow(true);toast('Tus datos se guardaron en tu cuenta');return;}
+    if(!rows.length){sync.ready=true;sync.msg='Tu cuenta estaba vacía: guardando tus datos…';await pushNow(true);render();toast('Tus datos se guardaron en tu cuenta');return;}
     applyRemote(rows,d.conf||[]);
     sync.ready=true;sync.connected=true;sync.dirty=false;persistSync();
     sync.state='saved';sync.at=Date.now();sync.msg='Datos cargados desde tu cuenta ('+rows.length+' movimientos).';

@@ -1,4 +1,4 @@
-// t135: lo que cada movimiento sumó o restó a su cuenta sobrevive a la nube. Con sesión simulada (la «nube» vive en
+// t135: lo que cada movimiento sumó o restó a su cuenta sobrevive a la nube, y el cambio de mes con sesión. Con sesión simulada (la «nube» vive en
 // sessionStorage) y por la interfaz: registrar, cerrar y abrir, editar sin cambios y borrar. Datos inventados.
 const {chromium}=require('playwright');const fs=require('fs');
 const chart=fs.readFileSync(__dirname+'/node_modules/chart.js/dist/chart.umd.js','utf8');
@@ -47,5 +47,27 @@ const stub=`(()=>{const tabla=t=>{const q={select(){return q;},eq(){return q;},o
  T('3 nube antigua: el ingreso recupera lo que sumó',!!r&&r._d===-50);await borra(p,'ing','T135 viejo');T('3 y borrarlo devuelve el saldo',Math.abs(await yape(p)-z)<.005);
 
  T('sin errores',!p.errs.length);if(p.errs.length)console.log(p.errs.slice(0,3));
+ await p.context().close();
+ // 4. Primero de mes con sesión: el arrastre espera a la nube, se guarda y no se repite en otro dispositivo
+ const NOV='430,130,200,18';
+ const sesion=async(nube,local,fecha)=>{const c=await b.newContext({viewport:{width:1366,height:800}});await c.clock.install({time:new Date((fecha||'2026-12-01')+'T12:00:00-05:00')});
+  await c.route('**/*',r=>{const u=r.request().url();if(u.startsWith('http://127.0.0.1:8765'))return r.continue();if(u.includes('hart'))return r.fulfill({contentType:'application/javascript',headers:{'access-control-allow-origin':'*'},body:chart});return r.abort();});
+  await c.addInitScript(stub);
+  await c.addInitScript(([d,n,k])=>{if(sessionStorage.getItem('__s'))return;sessionStorage.setItem('__s','1');if(d){localStorage.setItem(k,d);}localStorage.setItem(k+'-instalar','1');if(n)sessionStorage.setItem('__nube',n);},[local,nube,K]);
+  const q=await c.newPage();q.errs=[];q.on('pageerror',e=>q.errs.push(e.message));q.on('dialog',x=>x.accept());await q.goto('http://127.0.0.1:8765/wrap-repo.html#diciembre');await q.waitForSelector('#app .card');await avanza(q,2000);await avanza(q,4000);return q;};
+ const dic=async q=>(await q.evaluate(k=>JSON.parse(localStorage.getItem(k)).S['2026'][11],K)).liq.map(r=>+r.m).join(',');
+ const nube=q=>q.evaluate(()=>sessionStorage.getItem('__nube'));
+ const chip=async q=>(await q.locator('#syn').innerText());
+ const datos=JSON.stringify({v:1,S:demo.S,cfg:Object.assign({},demo.cfg,{onb:1,ahoV:3,rec:[]})});
+ let q=await sesion(null,datos);T('4 con sesión, diciembre recibe los saldos',await dic(q)===NOV);
+ T('4 queda guardado, sin conflicto',/Guardado/.test(await chip(q)));const n1=await nube(q);T('4 la nube tiene la marca del mes (_Liq)',JSON.parse(n1).registro.some(f=>f[3]==='_Liq'&&f[1]===12));
+ await q.reload();await q.waitForSelector('#app .card');await avanza(q,2000);await avanza(q,4000);T('4 abrir otra vez no vuelve a sumar',await dic(q)===NOV&&/Guardado/.test(await chip(q)));
+ T('4 sin errores',!q.errs.length);await q.context().close();
+ q=await sesion(n1,null);T('5 otro dispositivo ve los mismos saldos, sin sumar dos veces ni conflicto',await dic(q)===NOV&&/Guardado/.test(await chip(q)));await q.context().close();
+ // 6. Datos locales viejos y una nube más nueva: manda la nube, nada se pisa antes de leerla
+ const nueva=JSON.parse(n1);nueva.registro.forEach(f=>{if(f[1]===12&&f[3]!=='_Liq'&&f[4]==='Yape')f[5]=999;});
+ q=await sesion(JSON.stringify(nueva),datos);T('6 con datos locales viejos se respeta lo de la nube',(await dic(q)).startsWith('999'));
+ T('6 y la nube no fue pisada',JSON.parse(await nube(q)).registro.some(f=>f[1]===12&&f[4]==='Yape'&&+f[5]===999));await q.context().close();
+
  console.log('Total '+(ok+bad)+' ok '+ok+' fallas '+bad);await b.close();process.exit(bad?1:0);
 })().catch(e=>{console.log('ERR',e);process.exit(1);});

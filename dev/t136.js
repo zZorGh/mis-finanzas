@@ -82,6 +82,21 @@ const base=mod=>{const d=JSON.parse(JSON.stringify({v:1,S:demo.S,cfg:Object.assi
  T('11 trae saldos y no los fijos',igual(await saldos(p,11),NOV)&&!(await mes(p,11)).fij.some(r=>+r.m));
  T('11 el aviso dice lo que trajo',/saldos de tus cuentas/.test(await p.innerText('#toast')));await p.context().close();
 
+ // 13. Cuenta nueva que nunca anotó saldos: el origen son sus movimientos
+ p=await abre('2026-12-01','#diciembre',base(S=>{Object.values(S).forEach(a=>a.forEach(m=>{['liq','ing','fij','hor','aho','inv','bbva','bcp','oh'].forEach(k=>{m[k]=k==='liq'?m.liq.map(r=>({c:r.c,m:0})):[{c:'',m:0,f:'',k:''}];});m.copen={};}));const n=S['2026'][10];n.ing=[{c:'Sueldo',m:3000,f:'1-nov',k:'',src:'liq:0',_d:-3000}];n.hor=[{c:'Gasto',m:100,f:'2-nov',k:'Deseo',src:'liq:0',_d:100}];n.liq[0].m=2900;}));
+ T('13 cuenta nueva: diciembre abre con 2,900',(await saldos(p,11))[0]===2900);await p.context().close();
+
+ // 14. Si las cuentas se corren (una sin nombre se pierde en la nube), no se mueve dinero de una a otra
+ p=await abre('2026-12-01','#diciembre');
+ await p.evaluate(k=>{const d=JSON.parse(localStorage.getItem(k)),m=d.S['2026'][11];m.liq.splice(1,1);d.S['2026'][10].liq[1].m=130;localStorage.setItem(k,JSON.stringify(d));},K);await p.reload();await p.waitForSelector('#app');await W(p);await frase(p,'taxi 1 yape');
+ T('14 cuentas corridas: ninguna toma el saldo de otra',igual(await saldos(p,11),[429,200,18]));await p.context().close();
+
+ // 15. Depósito de ahorro fechado el mes anterior y su Deshacer
+ p=await abre('2026-12-01','#diciembre');await registro(p);await p.click('#stype [data-g="ahorro"]');await W(p);await p.click('#sax [data-ax="dep"]');await W(p);await p.evaluate(()=>document.getElementById('smore').open=true);await p.selectOption('#smo','10');await p.fill('#sday','30');await W(p);await p.locator('#sfrom [role=radio]').first().click();await p.fill('#sa','40');await p.click('#ssrc [data-src="liq:0"]');await guarda(p);
+ T('15 depósito del 30 de noviembre: baja en los dos meses',(await saldos(p,10))[0]===390&&(await saldos(p,11))[0]===390);
+ await p.click('#toast [data-undo]');await W(p);await p.reload();await p.waitForSelector('#app');await W(p);await W(p);
+ T('15 Deshacer lo devuelve en los dos',igual(await saldos(p,10),NOV)&&igual(await saldos(p,11),NOV));await p.context().close();
+
  // 12. Inglés
  p=await abre('2026-12-01','#diciembre',null,'en');T('12 el aviso en inglés',/balances carry on/i.test(await p.innerText('#toast')));await p.context().close();
 

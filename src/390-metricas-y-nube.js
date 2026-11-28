@@ -572,7 +572,7 @@ async function pushNow(force){
   finally{sync.busy=false;updateChip();if(sync.again){sync.again=false;queueSync();}}
 }
 async function loadFromSheet(auto){
-  if(auto&&sync.dirty&&backend){sync.ready=true;sync.msg='Subiendo cambios que quedaron pendientes…';await pushNow(false);if(sync.state==='conflict'){sync.msg='Tienes cambios en este dispositivo que no se subieron y tu cuenta también cambió desde otro. Tus datos de aquí se conservan: usa «Guardar todo ahora» para guardar estos o «Recargar mis datos» para traer los otros.';updateChip();}fxAuto();return;}
+  if(auto&&sync.dirty&&backend){sync.ready=true;sync.msg='Subiendo cambios que quedaron pendientes…';await pushNow(false);if(sync.state==='conflict'){sync.msg='Tienes cambios en este dispositivo que no se subieron y tu cuenta también cambió desde otro. Tus datos de aquí se conservan: usa «Guardar todo ahora» para guardar estos o «Recargar mis datos» para traer los otros.';updateChip();}render();fxAuto();return;}
   if(!backend){sync.msg='Esta vista guarda tus datos solo en este navegador.';updateChip();return;}
   if(backend.name==='mcp'&&!sync.id){sync.state='error';sync.msg='Escribe el ID de tu hoja.';updateChip();return;}
   clearTimeout(sync.timer);sync.state='loading';updateChip();
@@ -580,7 +580,7 @@ async function loadFromSheet(auto){
   try{
     const d=await backend.read();const rows=(Array.isArray(d.reg)?d.reg:[]).filter(Array.isArray);
     if((sync.rev||0)!==rev0){sync.ready=true;sync.dirty=true;persistSync();sync.msg='Seguiste editando mientras se cargaban tus datos: se conservaron tus cambios de aquí.';await pushNow(false);if(sync.state==='conflict'){sync.msg='Seguiste editando mientras se cargaban tus datos y tu cuenta también tenía cambios. Tus datos de aquí se conservan: usa «Guardar todo ahora» para guardar estos o «Recargar mis datos» para traer los otros.';}updateChip();return;}
-    if(!rows.length){sync.ready=true;sync.msg='Tu cuenta estaba vacía: guardando tus datos…';await pushNow(true);toast('Tus datos se guardaron en tu cuenta');return;}
+    if(!rows.length){sync.ready=true;sync.msg='Tu cuenta estaba vacía: guardando tus datos…';await pushNow(true);render();toast('Tus datos se guardaron en tu cuenta');return;}
     applyRemote(rows,d.conf||[]);
     sync.ready=true;sync.connected=true;sync.dirty=false;persistSync();
     sync.state='saved';sync.at=Date.now();sync.msg='Datos cargados desde tu cuenta ('+rows.length+' movimientos).';

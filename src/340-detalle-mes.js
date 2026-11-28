@@ -263,13 +263,16 @@ function liqHereda(p,m){
 }
 function liqSync(){
   try{const ms=liqMeses();for(let k=1;k<ms.length;k++){const m=ms[k].m;if(!Array.isArray(m.lb))continue;const p=ms[k-1].m,par=liqPares(p,m);
-    (m.liq||[]).forEach((r,i)=>{if(par[i]<0)return;const v=+p.liq[par[i]].m||0,b=m.lb[i];if(b){const d=r2L(v-b[1]);if(d)r.m=r2L((+r.m||0)+d);}m.lb[i]=[nomL(r),v];});}}catch(e){}
+    (m.liq||[]).forEach((r,i)=>{if(par[i]<0)return;const v=+p.liq[par[i]].m||0,b=m.lb[i];if(b){const d=r2L(v-b[1]);/* si en esa posición ahora hay otra cuenta (renombrada o corrida), no se mueve dinero: solo se vuelve a fijar la base */if(d&&b[0]===nomL(r))r.m=r2L((+r.m||0)+d);}m.lb[i]=[nomL(r),v];});}}catch(e){}
 }
 /* Hereda hasta el mes en curso (también los que se saltaron). Devuelve el mes del que salieron los saldos si trajo algo. */
 function liqCarry(){
-  try{if(backend&&!sync.ready)return null;}catch(e){return null;}
+  /* Con sesión, solo después de cargar la nube: antes, un cambio automático se subiría encima de lo que haya en la cuenta */
+  try{if((IS_SB||backend)&&!sync.ready)return null;}catch(e){return null;}
   const ms=liqMeses(),y=String(now.getFullYear()),t=ms.findIndex(x=>x.y===y&&x.i===now.getMonth());if(t<1)return null;
-  let s=t-1;while(s>=0&&!ms[s].m.lb&&liqIntacto(ms[s].m))s--;if(s<0)return null;
+  /* Origen: el último mes con saldos propios; si nadie anotó saldos (solo movimientos), el primero que tenga algo */
+  let s=t-1;while(s>=0&&!ms[s].m.lb&&liqIntacto(ms[s].m))s--;
+  if(s<0){s=ms.findIndex((x,k)=>k<t&&(x.m.liq||[]).some(r=>+r.m));if(s<0)return null;}
   let de=null;
   for(let k=s+1;k<=t;k++){const m=ms[k].m,p=ms[k-1].m;if(m.lb||m.tot||!liqIntacto(m))continue;
     if(!(p.liq||[]).some(r=>+r.m))continue;liqHereda(p,m);de=ms[s];}
